@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Sign In — BTS Project{% endblock %}
+{% block content %}
+<section class="section" style="min-height:80vh;display:flex;align-items:center;background:var(--surface);">
+  <div class="container" style="max-width:440px;">
+
+    <div style="text-align:center;margin-bottom:32px;">
+      <a href="{% url 'home' %}">
+        <img src="{% static 'images/bts-logo.jpeg' %}" alt="BTS Project" style="height:52px;margin:0 auto;"
+             onerror="this.style.display='none'">
+      </a>
+      <h1 style="font-size:1.6rem;font-weight:800;color:var(--dark);margin-top:20px;margin-bottom:6px;">Welcome back!</h1>
+      <p style="color:var(--gray);font-size:0.9rem;">Sign in to your BTS account</p>
+    </div>
+
+    <div class="card">
+      {% if messages %}
+        {% for msg in messages %}
+        <div class="alert alert-{{ msg.tags }}">
+          <i class="fas fa-exclamation-circle"></i> {{ msg }}
+        </div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input type="text" name="username" class="form-control" required
+                 placeholder="Your username" autofocus>
+        </div>
+        <div class="form-group">
+          <label class="form-label">
+            Password
+            <a href="{% url 'password_reset' %}"
+               style="float:right;font-size:0.78rem;color:var(--green);font-weight:600;text-decoration:none;">
+              Forgot password?
+            </a>
+          </label>
+          <input type="password" name="password" class="form-control" required placeholder="Your password">
+        </div>
+
+        {% if form.errors %}
+        <div class="alert alert-error">
+          <i class="fas fa-exclamation-circle"></i> Invalid username or password. Please try again.
+        </div>
+        {% endif %}
+
+        <button type="submit" class="btn btn-primary btn-lg btn-block" style="margin-top:8px;">
+          <i class="fas fa-sign-in-alt"></i> Sign In
+        </button>
+      </form>
+
+      <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);text-align:center;">
+        <p style="color:var(--gray);font-size:0.875rem;">
+          Don't have an account?
+          <a href="{% url 'register' %}" style="color:var(--green);font-weight:600;">Create one — it's free</a>
+        </p>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

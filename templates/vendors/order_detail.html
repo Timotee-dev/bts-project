@@ -1,0 +1,43 @@
+{% extends 'vendors/base.html' %}
+{% block title %}Order #{{ order.order_number }} — {{ vendor.business_name }}{% endblock %}
+{% block vendor_content %}
+<div style="max-width:700px;">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+    <a href="{% url 'vendor_orders' %}" style="color:var(--gray);text-decoration:none;"><i class="fas fa-arrow-left"></i></a>
+    <h1 style="font-size:1.5rem;font-weight:800;color:var(--dark);">Order #{{ order.order_number }}</h1>
+    <span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span>
+  </div>
+
+  <div class="card" style="margin-bottom:16px;">
+    <h3 style="font-size:0.9rem;font-weight:700;color:var(--dark);margin-bottom:14px;">Your Items in This Order</h3>
+    {% for item in vendor_items %}
+    <div style="display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
+      <div style="flex:1;">
+        <p style="font-weight:600;color:var(--dark);">{{ item.product_name }}</p>
+        {% if item.selected_size %}<p style="font-size:0.78rem;color:var(--gray);">Size: {{ item.selected_size }}</p>{% endif %}
+      </div>
+      <p style="color:var(--gray);">×{{ item.quantity }}</p>
+      <p style="font-weight:700;color:var(--green);">₦{{ item.line_total|floatformat:0 }}</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="card" style="margin-bottom:16px;">
+    <h3 style="font-size:0.9rem;font-weight:700;color:var(--dark);margin-bottom:14px;">Delivery Details</h3>
+    <p style="margin-bottom:6px;"><strong>Name:</strong> {{ order.full_name }}</p>
+    <p style="margin-bottom:6px;"><strong>Phone:</strong> {{ order.phone }}</p>
+    <p style="margin-bottom:6px;"><strong>Address:</strong> {{ order.shipping_address }}</p>
+    {% if order.notes %}<p><strong>Notes:</strong> {{ order.notes }}</p>{% endif %}
+  </div>
+
+  <div class="card">
+    <h3 style="font-size:0.9rem;font-weight:700;color:var(--dark);margin-bottom:14px;">Payment</h3>
+    <p style="color:{% if order.payment_status == 'paid' %}var(--success){% else %}var(--danger){% endif %};font-weight:700;">
+      {{ order.payment_status|title }}
+    </p>
+    {% if order.payment_reference %}
+      <p style="font-size:0.8rem;color:var(--gray);margin-top:4px;">Ref: {{ order.payment_reference }}</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

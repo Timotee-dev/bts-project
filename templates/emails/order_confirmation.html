@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmed — BTS Project</title>
+  <style>
+    body { margin:0; padding:0; background:#f4f4f4; font-family:'Helvetica Neue',Arial,sans-serif; }
+    .wrapper { max-width:600px; margin:32px auto; background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.08); }
+    .header { background:#0F3D1F; padding:32px 40px; text-align:center; }
+    .header h1 { color:#F5EDD6; font-size:22px; margin:0 0 4px; font-weight:800; }
+    .header p  { color:rgba(245,237,214,0.7); font-size:13px; margin:0; }
+    .hero { background:#E8F5EC; padding:32px 40px; text-align:center; border-bottom:1px solid #D4E4D8; }
+    .hero .icon { font-size:48px; margin-bottom:12px; }
+    .hero h2 { color:#0F3D1F; font-size:22px; font-weight:800; margin:0 0 8px; }
+    .hero p  { color:#5A7A63; margin:0; font-size:14px; }
+    .body { padding:32px 40px; }
+    .section-title { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#0F3D1F; margin-bottom:12px; }
+    .order-meta { background:#F7FBF8; border-radius:8px; padding:16px 20px; margin-bottom:24px; }
+    .meta-row { display:flex; justify-content:space-between; padding:6px 0; font-size:14px; border-bottom:1px solid #E5E7EB; }
+    .meta-row:last-child { border:none; }
+    .meta-label { color:#5A7A63; }
+    .meta-value { color:#0A2912; font-weight:600; }
+    .item-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #E5E7EB; font-size:14px; }
+    .item-row:last-child { border:none; }
+    .item-name  { color:#0A2912; font-weight:500; }
+    .item-price { color:#0F3D1F; font-weight:700; }
+    .total-row  { display:flex; justify-content:space-between; padding:14px 0 0; font-size:16px; font-weight:800; color:#0F3D1F; border-top:2px solid #D4E4D8; margin-top:8px; }
+    .delivery-box { background:#F7FBF8; border-radius:8px; padding:16px 20px; margin-top:24px; font-size:14px; color:#5A7A63; line-height:1.7; }
+    .delivery-box strong { color:#0A2912; display:block; margin-bottom:4px; }
+    .cta { text-align:center; padding:28px 40px; }
+    .cta a { background:#0F3D1F; color:#F5EDD6; text-decoration:none; padding:14px 36px; border-radius:999px; font-weight:700; font-size:15px; display:inline-block; }
+    .footer { background:#0A2912; padding:24px 40px; text-align:center; }
+    .footer p { color:rgba(245,237,214,0.5); font-size:12px; margin:4px 0; }
+    .footer a { color:#C8A951; text-decoration:none; }
+    @media (max-width:600px) {
+      .body, .hero, .header, .cta, .footer { padding:20px 20px; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>THE BTS PROJECT</h1>
+    <p>Everything you need in a box.</p>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="icon">✅</div>
+    <h2>Order Confirmed!</h2>
+    <p>Thank you {{ order.full_name }}. Your BTS package is being prepared.</p>
+  </div>
+
+  <!-- Body -->
+  <div class="body">
+
+    <!-- Order details -->
+    <p class="section-title">Order Details</p>
+    <div class="order-meta">
+      <div class="meta-row">
+        <span class="meta-label">Order Number</span>
+        <span class="meta-value">#{{ order.order_number }}</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">Order Date</span>
+        <span class="meta-value">{{ order.created_at|date:"F j, Y" }}</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">Payment Status</span>
+        <span class="meta-value" style="color:#16A34A;">✓ Paid</span>
+      </div>
+    </div>
+
+    <!-- Items -->
+    <p class="section-title">What You Ordered</p>
+    {% for item in order.items.all %}
+    <div class="item-row">
+      <div>
+        <span class="item-name">{{ item.product_name }}</span>
+        {% if item.selected_size %}
+          <span style="color:#5A7A63;font-size:12px;margin-left:6px;">({{ item.selected_size }})</span>
+        {% endif %}
+        <span style="color:#5A7A63;font-size:13px;"> × {{ item.quantity }}</span>
+      </div>
+      <span class="item-price">₦{{ item.line_total }}</span>
+    </div>
+    {% endfor %}
+
+    {% if order.packaging_fee > 0 %}
+    <div class="item-row">
+      <span class="item-name" style="color:#5A7A63;">Custom Packaging Fee</span>
+      <span class="item-price" style="color:#5A7A63;">₦{{ order.packaging_fee }}</span>
+    </div>
+    {% endif %}
+
+    <div class="total-row">
+      <span>Total Paid</span>
+      <span>₦{{ order.total }}</span>
+    </div>
+
+    <!-- Delivery address -->
+    <div class="delivery-box">
+      <strong>📦 Delivering to:</strong>
+      {{ order.full_name }}<br>
+      {{ order.shipping_address }}<br>
+      {{ order.phone }}
+      {% if order.notes %}
+      <br><br><strong>Notes:</strong> {{ order.notes }}
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- CTA -->
+  <div class="cta">
+    <a href="{{ site_url }}/accounts/orders/">Track My Order</a>
+    <p style="color:#5A7A63;font-size:12px;margin-top:14px;">
+      Questions? Chat with us on
+      <a href="https://wa.me/2340000000000" style="color:#0F3D1F;font-weight:600;">WhatsApp</a>
+    </p>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>© 2024 BTS Project · Nigeria's smartest back-to-school platform</p>
+    <p>You received this because you placed an order on <a href="{{ site_url }}">btsproject.ng</a></p>
+  </div>
+
+</div>
+</body>
+</html>

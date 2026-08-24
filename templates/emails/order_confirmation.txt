@@ -1,0 +1,32 @@
+THE BTS PROJECT — Order Confirmed!
+
+Hi {{ order.full_name }},
+
+Your order has been confirmed and is being prepared.
+
+ORDER DETAILS
+Order Number: #{{ order.order_number }}
+Date: {{ order.created_at|date:"F j, Y" }}
+Payment: Paid ✓
+
+WHAT YOU ORDERED
+{% for item in order.items.all %}
+- {{ item.product_name }}{% if item.selected_size %} ({{ item.selected_size }}){% endif %} x{{ item.quantity }} — ₦{{ item.line_total }}
+{% endfor %}
+{% if order.packaging_fee > 0 %}
+- Custom Packaging Fee — ₦{{ order.packaging_fee }}
+{% endif %}
+
+TOTAL PAID: ₦{{ order.total }}
+
+DELIVERING TO:
+{{ order.full_name }}
+{{ order.shipping_address }}
+{{ order.phone }}
+
+Track your order: {{ site_url }}/accounts/orders/
+
+Questions? WhatsApp us: https://wa.me/2340000000000
+
+The BTS Project Team
+Everything you need in a box.

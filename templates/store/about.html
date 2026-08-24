@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}About BTS Project{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-header-title">About BTS Project</h1>
+  <p class="page-header-sub">Nigeria's leading back-to-school shopping destination for university students.</p>
+</div>
+<section class="section">
+  <div class="container" style="max-width:800px;">
+    <div style="text-align:center;margin-bottom:48px;">
+      <div style="font-size:4rem;margin-bottom:20px;">🎓</div>
+      <h2 style="font-size:1.8rem;font-weight:800;color:var(--dark);margin-bottom:16px;">Our Story</h2>
+      <p style="color:var(--gray);font-size:1rem;line-height:1.8;">
+        BTS (Back to School Project) was created with one simple goal: make back-to-school shopping easy, affordable, and exciting for Nigerian university students — especially women.
+      </p>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-bottom:48px;">
+      <div style="background:var(--green-pale);border-radius:var(--radius);padding:32px;">
+        <h3 style="font-weight:800;color:var(--green);margin-bottom:12px;">Our Vision</h3>
+        <p style="color:var(--dark);font-size:0.95rem;line-height:1.7;">To become Nigeria's leading back-to-school shopping destination for university students.</p>
+      </div>
+      <div style="background:var(--green-xpale);border-radius:var(--radius);padding:32px;">
+        <h3 style="font-weight:800;color:var(--green-mid);margin-bottom:12px;">Our Mission</h3>
+        <p style="color:var(--dark);font-size:0.95rem;line-height:1.7;">To simplify back-to-school shopping by offering thoughtfully curated packages, trusted partner brands, and exclusive BTS prices.</p>
+      </div>
+    </div>
+    <div style="text-align:center;">
+      <a href="{% url 'packages' %}" class="btn btn-primary btn-lg">Shop Our Packages</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends 'vendors/base.html' %}
+{% block title %}{{ action }} Package — {{ vendor.business_name }}{% endblock %}
+{% block vendor_content %}
+<div style="max-width:760px;">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+    <a href="{% url 'vendor_packages' %}" style="color:var(--gray);text-decoration:none;"><i class="fas fa-arrow-left"></i></a>
+    <h1 style="font-size:1.5rem;font-weight:800;color:var(--dark);">{{ action }} Package</h1>
+  </div>
+  <div class="card">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label">Package Name *</label>
+          <input type="text" name="name" class="form-control" required
+                 value="{% if package %}{{ package.name }}{% endif %}" placeholder="e.g. The Campus Girl Starter Pack">
+        </div>
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label">Description *</label>
+          <textarea name="description" class="form-control" rows="3" required
+                    placeholder="Describe what makes this package great...">{% if package %}{{ package.description }}{% endif %}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Package Price (₦) *</label>
+          <input type="number" name="price" class="form-control" required min="0" step="0.01"
+                 value="{% if package %}{{ package.price }}{% endif %}" placeholder="Bundle price">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Original Price (₦) *</label>
+          <input type="number" name="original_price" class="form-control" required min="0" step="0.01"
+                 value="{% if package %}{{ package.original_price }}{% endif %}" placeholder="Sum of individual items">
+          <p class="form-help">Used to show savings. Must be higher than package price.</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Budget Tier</label>
+          <select name="budget_tier" class="form-control">
+            <option value="budget" {% if package and package.budget_tier == 'budget' %}selected{% endif %}>Budget-Friendly</option>
+            <option value="mid" {% if not package or package.budget_tier == 'mid' %}selected{% endif %}>Mid-Range</option>
+            <option value="premium" {% if package and package.budget_tier == 'premium' %}selected{% endif %}>Premium</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cover Image</label>
+          <input type="file" name="cover_image" class="form-control" accept="image/*">
+          {% if package and package.cover_image %}
+            <img src="{{ package.cover_image.url }}" style="width:80px;height:60px;object-fit:cover;border-radius:8px;margin-top:8px;">
+          {% endif %}
+        </div>
+        <div class="form-group" style="display:flex;align-items:center;gap:10px;grid-column:1/-1;">
+          <input type="checkbox" name="is_active" id="pkg_active"
+                 {% if not package or package.is_active %}checked{% endif %}
+                 style="width:18px;height:18px;accent-color:var(--green);">
+          <label for="pkg_active" class="form-label" style="margin:0;">Package is active (visible to shoppers)</label>
+        </div>
+      </div>
+
+      <!-- Product selector -->
+      <div style="margin-top:24px;border-top:1px solid var(--border);padding-top:24px;">
+        <h3 style="font-size:1rem;font-weight:700;color:var(--dark);margin-bottom:4px;">Select Products for this Package</h3>
+        <p style="color:var(--gray);font-size:0.83rem;margin-bottom:16px;">Choose from your active products. These will be shown as "what's included" on the package page.</p>
+        {% if vendor_products %}
+          <div style="display:grid;gap:10px;max-height:360px;overflow-y:auto;padding:4px;">
+            {% for product in vendor_products %}
+            <label style="display:flex;align-items:center;gap:12px;padding:12px;border:2px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all 0.2s;"
+                   onmouseover="this.style.borderColor='var(--green)'" onmouseout="if(!this.querySelector('input').checked)this.style.borderColor='var(--border)'">
+              <input type="checkbox" name="package_products" value="{{ product.pk }}"
+                     {% if selected_ids and product.pk in selected_ids %}checked{% endif %}
+                     style="width:18px;height:18px;accent-color:var(--green);flex-shrink:0;"
+                     onchange="this.closest('label').style.borderColor=this.checked?'var(--green)':'var(--border)'">
+              {% if product.image %}
+                <img src="{{ product.image.url }}" style="width:48px;height:48px;object-fit:cover;border-radius:6px;flex-shrink:0;">
+              {% else %}
+                <div style="width:48px;height:48px;background:var(--green-pale);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">📦</div>
+              {% endif %}
+              <div style="flex:1;">
+                <p style="font-weight:600;color:var(--dark);font-size:0.9rem;">{{ product.name }}</p>
+                <p style="font-size:0.78rem;color:var(--gray);">{{ product.category.name }} · ₦{{ product.price|floatformat:0 }}</p>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div style="background:var(--green-xpale);border-radius:var(--radius-sm);padding:20px;text-align:center;">
+            <p style="color:var(--gray);">You have no active products yet. <a href="{% url 'vendor_product_add' %}" style="color:var(--green);font-weight:600;">Add products first.</a></p>
+          </div>
+        {% endif %}
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:24px;">
+        <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save"></i> {{ action }} Package</button>
+        <a href="{% url 'vendor_packages' %}" class="btn btn-outline-green btn-lg">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}My Wishlist — BTS Project{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-header-title">My Wishlist</h1>
+</div>
+<section class="section">
+  <div class="container">
+    {% if wishlist.items.exists %}
+    <div class="products-grid">
+      {% for item in wishlist.items.all %}
+      <div class="product-card">
+        <div class="product-card-img">
+          {% if item.product and item.product.image %}
+            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+          {% elif item.package and item.package.cover_image %}
+            <img src="{{ item.package.cover_image.url }}" alt="{{ item.package.name }}">
+          {% else %}
+            <div style="font-size:3rem;opacity:0.2;">❤️</div>
+          {% endif %}
+        </div>
+        <div class="product-card-body">
+          {% if item.product %}
+          <p class="product-category">{{ item.product.category.name }}</p>
+          <h3 class="product-name">{{ item.product.name }}</h3>
+          <p class="product-price">₦{{ item.product.price|floatformat:0 }}</p>
+          <a href="{% url 'product_detail' item.product.slug %}" class="btn btn-outline-green btn-sm btn-block">View Product</a>
+          {% elif item.package %}
+          <p class="product-category">BTS Package</p>
+          <h3 class="product-name">{{ item.package.name }}</h3>
+          <p class="product-price">₦{{ item.package.price|floatformat:0 }}</p>
+          <a href="{% url 'package_detail' item.package.slug %}" class="btn btn-outline-green btn-sm btn-block">View Package</a>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:80px;color:var(--gray);">
+      <div style="font-size:4rem;margin-bottom:20px;">💔</div>
+      <h3 style="margin-bottom:8px;">Your wishlist is empty</h3>
+      <p style="margin-bottom:24px;">Save items you love for later.</p>
+      <a href="{% url 'packages' %}" class="btn btn-primary">Start Shopping</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

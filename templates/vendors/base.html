@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="vendor-layout">
+
+  <!-- ── Vendor Sidebar ── -->
+  <aside class="vendor-sidebar">
+    <div class="vsb-brand">
+      {% if vendor.logo %}
+        <img src="{{ vendor.logo.url }}" class="vsb-logo" alt="{{ vendor.business_name }}">
+      {% else %}
+        <div class="vsb-avatar">{{ vendor.business_name|slice:":1" }}</div>
+      {% endif %}
+      <p class="vsb-name">{{ vendor.business_name }}</p>
+      <p class="vsb-role">Vendor Store</p>
+      <a href="{% url 'vendor_storefront' vendor.slug %}" class="vsb-view-store" target="_blank">
+        <i class="fas fa-external-link-alt"></i> View My Store
+      </a>
+    </div>
+
+    <nav class="vsb-nav">
+      <a href="{% url 'vendor_dashboard' %}" class="vsb-link {% if request.resolver_match.url_name == 'vendor_dashboard' %}vsb-active{% endif %}">
+        <i class="fas fa-chart-line fa-fw"></i> Dashboard
+      </a>
+      <a href="{% url 'vendor_products' %}" class="vsb-link {% if 'product' in request.resolver_match.url_name %}vsb-active{% endif %}">
+        <i class="fas fa-box fa-fw"></i> My Products
+      </a>
+      <a href="{% url 'vendor_packages' %}" class="vsb-link {% if 'package' in request.resolver_match.url_name %}vsb-active{% endif %}">
+        <i class="fas fa-box-open fa-fw"></i> My Packages
+      </a>
+      <a href="{% url 'vendor_orders' %}" class="vsb-link {% if 'order' in request.resolver_match.url_name %}vsb-active{% endif %}">
+        <i class="fas fa-shopping-bag fa-fw"></i> Orders
+      </a>
+      <hr class="vsb-divider">
+      <a href="{% url 'vendor_settings' %}" class="vsb-link {% if request.resolver_match.url_name == 'vendor_settings' %}vsb-active{% endif %}">
+        <i class="fas fa-cog fa-fw"></i> Store Settings
+      </a>
+      <a href="{% url 'home' %}" class="vsb-link vsb-back">
+        <i class="fas fa-arrow-left fa-fw"></i> Back to BTS
+      </a>
+    </nav>
+  </aside>
+
+  <!-- ── Mobile top bar for vendor ── -->
+  <div class="vendor-mobile-bar">
+    <button class="vendor-menu-btn" id="vendorMenuBtn">
+      <i class="fas fa-bars"></i> Menu
+    </button>
+    <span style="font-weight:700;color:var(--dark);">{{ vendor.business_name }}</span>
+    <a href="{% url 'vendor_product_add' %}" class="btn btn-primary btn-sm">
+      <i class="fas fa-plus"></i> Add
+    </a>
+  </div>
+
+  <!-- ── Main Content ── -->
+  <main class="vendor-main">
+    {% block vendor_content %}{% endblock %}
+  </main>
+
+</div>
+
+<style>
+.vendor-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: auto 1fr;
+  min-height: calc(100vh - var(--nav-h));
+}
+.vendor-sidebar {
+  grid-row: 1 / -1;
+  background: var(--green);
+  position: sticky;
+  top: var(--nav-h);
+  height: calc(100vh - var(--nav-h));
+  overflow-y: auto;
+}
+.vendor-mobile-bar { display: none; }
+.vendor-main {
+  background: var(--surface);
+  padding: clamp(20px, 4vw, 36px);
+  overflow-y: auto;
+}
+
+/* Sidebar styles */
+.vsb-brand {
+  padding: 24px 20px;
+  border-bottom: 1px solid rgba(245,237,214,0.12);
+  text-align: center;
+}
+.vsb-logo {
+  width: 64px; height: 64px; border-radius: 50%;
+  object-fit: cover; margin: 0 auto 10px;
+  border: 3px solid rgba(245,237,214,0.2); display: block;
+}
+.vsb-avatar {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: rgba(245,237,214,0.12);
+  border: 2px solid rgba(245,237,214,0.2);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 10px;
+  font-size: 1.6rem; font-weight: 800; color: var(--cream);
+}
+.vsb-name  { font-weight: 700; color: var(--cream); font-size: 0.9rem; margin-bottom: 2px; }
+.vsb-role  { font-size: 0.72rem; color: rgba(245,237,214,0.5); margin-bottom: 10px; }
+.vsb-view-store {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 0.72rem; color: var(--gold);
+  text-decoration: none; font-weight: 600;
+}
+.vsb-view-store:hover { color: var(--gold-light); }
+
+.vsb-nav   { padding: 10px 0; }
+.vsb-link  {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 20px;
+  color: rgba(245,237,214,0.75);
+  text-decoration: none; font-size: 0.875rem; font-weight: 500;
+  transition: var(--transition);
+}
+.vsb-link:hover { background: rgba(245,237,214,0.10); color: var(--cream); }
+.vsb-active    { background: rgba(245,237,214,0.14) !important; color: var(--cream) !important; font-weight: 600; }
+.vsb-divider   { border: none; border-top: 1px solid rgba(245,237,214,0.10); margin: 6px 0; }
+.vsb-back      { color: rgba(245,237,214,0.45) !important; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .vendor-layout { grid-template-columns: 1fr; }
+  .vendor-sidebar {
+    display: none; position: fixed;
+    top: var(--nav-h); left: 0; right: 0; bottom: 0;
+    height: auto; z-index: 900; overflow-y: auto;
+  }
+  .vendor-sidebar.open { display: block; }
+  .vendor-mobile-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px var(--px);
+    background: white; border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+  .vendor-menu-btn {
+    background: var(--green); color: var(--cream);
+    border: none; padding: 8px 14px; border-radius: var(--radius-sm);
+    font-size: 0.85rem; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+  }
+}
+</style>
+
+<script>
+const vendorMenuBtn = document.getElementById('vendorMenuBtn');
+const vendorSidebar = document.querySelector('.vendor-sidebar');
+if (vendorMenuBtn && vendorSidebar) {
+  vendorMenuBtn.addEventListener('click', () => {
+    vendorSidebar.classList.toggle('open');
+    document.body.style.overflow = vendorSidebar.classList.contains('open') ? 'hidden' : '';
+  });
+  document.addEventListener('click', (e) => {
+    if (vendorSidebar.classList.contains('open') &&
+        !vendorSidebar.contains(e.target) &&
+        !vendorMenuBtn.contains(e.target)) {
+      vendorSidebar.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  });
+}
+</script>
+{% endblock %}

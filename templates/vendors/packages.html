@@ -1,0 +1,41 @@
+{% extends 'vendors/base.html' %}
+{% block title %}My Packages — {{ vendor.business_name }}{% endblock %}
+{% block vendor_content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+  <h1 style="font-size:1.5rem;font-weight:800;color:var(--dark);">My Packages</h1>
+  <a href="{% url 'vendor_package_add' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Create Package</a>
+</div>
+{% if packages %}
+<div style="display:grid;gap:12px;">
+  {% for pkg in packages %}
+  <div class="card" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+    {% if pkg.cover_image %}
+      <img src="{{ pkg.cover_image.url }}" style="width:80px;height:60px;object-fit:cover;border-radius:var(--radius-sm);flex-shrink:0;">
+    {% else %}
+      <div style="width:80px;height:60px;background:var(--green-pale);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0;">📦</div>
+    {% endif %}
+    <div style="flex:1;min-width:0;">
+      <p style="font-weight:700;color:var(--dark);margin-bottom:2px;">{{ pkg.name }}</p>
+      <p style="font-size:0.8rem;color:var(--gray);">{{ pkg.package_items.count }} items · {{ pkg.get_budget_tier_display }}</p>
+    </div>
+    <div style="text-align:right;">
+      <p style="font-weight:800;color:var(--green);">₦{{ pkg.price|floatformat:0 }}</p>
+      <p style="font-size:0.78rem;color:var(--success);">Save {{ pkg.savings_percent }}%</p>
+    </div>
+    <a href="{% url 'vendor_package_edit' pkg.pk %}" class="btn btn-sm btn-outline-green"><i class="fas fa-edit"></i> Edit</a>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card" style="text-align:center;padding:60px;">
+  <div style="font-size:4rem;margin-bottom:16px;">🎁</div>
+  <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:8px;">No packages yet</h2>
+  <p style="color:var(--gray);margin-bottom:24px;">Bundle your products into a BTS package to increase sales.</p>
+  {% if vendor.total_products > 0 %}
+    <a href="{% url 'vendor_package_add' %}" class="btn btn-primary btn-lg"><i class="fas fa-plus"></i> Create Your First Package</a>
+  {% else %}
+    <p style="color:var(--gray);">You need to <a href="{% url 'vendor_product_add' %}" style="color:var(--green);">add products</a> first before creating a package.</p>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

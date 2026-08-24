@@ -1,0 +1,56 @@
+{% extends 'vendors/base.html' %}
+{% block title %}Store Settings — {{ vendor.business_name }}{% endblock %}
+{% block vendor_content %}
+<div style="max-width:680px;">
+  <h1 style="font-size:1.5rem;font-weight:800;color:var(--dark);margin-bottom:24px;">Store Settings</h1>
+  <div class="card">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label">Business Name</label>
+          <input type="text" name="business_name" class="form-control" value="{{ vendor.business_name }}" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Business Email</label>
+          <input type="email" name="email" class="form-control" value="{{ vendor.email }}" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input type="tel" name="phone" class="form-control" value="{{ vendor.phone }}" required>
+        </div>
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label">Description</label>
+          <textarea name="description" class="form-control" rows="3">{{ vendor.description }}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Store Logo</label>
+          <input type="file" name="logo" class="form-control" accept="image/*">
+          {% if vendor.logo %}<img src="{{ vendor.logo.url }}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-top:8px;">{% endif %}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Bank Name</label>
+          <input type="text" name="bank_name" class="form-control" value="{{ vendor.bank_name }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Account Number</label>
+          <input type="text" name="account_number" class="form-control" value="{{ vendor.account_number }}">
+        </div>
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label">Account Name</label>
+          <input type="text" name="account_name" class="form-control" value="{{ vendor.account_name }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Instagram</label>
+          <input type="url" name="instagram" class="form-control" value="{{ vendor.instagram }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Twitter</label>
+          <input type="url" name="twitter" class="form-control" value="{{ vendor.twitter }}">
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-lg" style="margin-top:8px;"><i class="fas fa-save"></i> Save Changes</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

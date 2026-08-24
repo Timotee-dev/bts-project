@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Order Confirmed! — BTS Project{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container" style="max-width:600px;text-align:center;">
+
+    <!-- Success icon -->
+    <div style="width:96px;height:96px;background:var(--green-pale);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:2.8rem;">
+      ✅
+    </div>
+
+    <h1 style="font-size:2rem;font-weight:900;color:var(--dark);margin-bottom:12px;">Order Confirmed!</h1>
+    <p style="color:var(--gray);font-size:1rem;margin-bottom:8px;">
+      Thank you, <strong>{{ order.full_name }}</strong>! Your BTS package is on its way.
+    </p>
+    <p style="color:var(--gray);font-size:0.9rem;margin-bottom:32px;">
+      Order <strong style="color:var(--green);">#{{ order.order_number }}</strong> has been confirmed and is being processed.
+    </p>
+
+    <!-- Order details card -->
+    <div class="card" style="text-align:left;margin-bottom:24px;">
+      <h3 style="font-size:1rem;font-weight:700;color:var(--dark);margin-bottom:16px;">Order Summary</h3>
+      {% for item in order.items.all %}
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.875rem;">
+        <span style="color:var(--dark);">{{ item.product_name }} ×{{ item.quantity }}{% if item.selected_size %} ({{ item.selected_size }}){% endif %}</span>
+        <span style="font-weight:600;color:var(--green);">₦{{ item.line_total|floatformat:0 }}</span>
+      </div>
+      {% endfor %}
+      <div style="display:flex;justify-content:space-between;padding:14px 0 0;font-weight:800;font-size:1rem;">
+        <span>Total Paid</span>
+        <span style="color:var(--green);">₦{{ order.total|floatformat:0 }}</span>
+      </div>
+    </div>
+
+    <!-- Delivery address -->
+    <div class="card" style="text-align:left;margin-bottom:32px;">
+      <h3 style="font-size:1rem;font-weight:700;color:var(--dark);margin-bottom:10px;">Delivering To</h3>
+      <p style="color:var(--gray);font-size:0.875rem;">{{ order.full_name }}</p>
+      <p style="color:var(--gray);font-size:0.875rem;">{{ order.shipping_address }}</p>
+      <p style="color:var(--gray);font-size:0.875rem;">{{ order.phone }}</p>
+    </div>
+
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <a href="{% url 'order_history' %}" class="btn btn-primary btn-lg">
+        <i class="fas fa-box"></i> Track My Order
+      </a>
+      <a href="{% url 'packages' %}" class="btn btn-outline-green btn-lg">
+        Continue Shopping
+      </a>
+    </div>
+
+    <p style="color:var(--gray);font-size:0.78rem;margin-top:24px;">
+      Questions? Chat with us on <a href="https://wa.me/2340000000000" style="color:var(--green);">WhatsApp</a>
+    </p>
+  </div>
+</section>
+{% endblock %}

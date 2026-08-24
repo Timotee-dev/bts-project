@@ -1,0 +1,29 @@
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.home, name='home'),
+    path('packages/', views.packages, name='packages'),
+    path('packages/<slug:slug>/', views.package_detail, name='package_detail'),
+    path('build-your-own/', views.build_your_own, name='build_your_own'),
+    path('shop/', views.shop_by_category, name='shop_by_category'),
+    path('shop/<slug:slug>/', views.category_products, name='category_products'),
+    path('product/<slug:slug>/', views.product_detail, name='product_detail'),
+    path('brands/', views.partner_brands, name='partner_brands'),
+    path('brands/<slug:slug>/', views.brand_detail, name='brand_detail'),
+    path('about/', views.about, name='about'),
+    path('faqs/', views.faqs, name='faqs'),
+    path('contact/', views.contact, name='contact'),
+    path('cart/', views.cart_view, name='cart'),
+    path('cart/add/<str:item_type>/<int:item_id>/', views.add_to_cart, name='add_to_cart'),
+    path('cart/remove/<int:item_id>/', views.remove_from_cart, name='remove_from_cart'),
+    path('checkout/', views.checkout, name='checkout'),
+    path('pay/<str:order_number>/', views.pay_order, name='pay_order'),
+    path('payment/callback/', views.payment_callback, name='payment_callback'),
+    path('payment/webhook/', views.paystack_webhook, name='paystack_webhook'),
+    path('order/<str:order_number>/confirmed/', views.order_confirmed, name='order_confirmed'),
+    path('wishlist/', views.wishlist, name='wishlist'),
+    path('sell/', views.sell_on_bts, name='sell_on_bts'),
+    path('review/product/<slug:product_slug>/', views.submit_review, name='submit_product_review'),
+    path('review/package/<slug:package_slug>/', views.submit_review, name='submit_package_review'),
+]

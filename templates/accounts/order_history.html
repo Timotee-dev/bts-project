@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Order History — BTS Project{% endblock %}
+{% block content %}
+<div class="dashboard-layout">
+  <div class="sidebar">
+    <nav class="sidebar-nav" style="padding:8px 0;">
+      <a href="{% url 'dashboard' %}"><i class="fas fa-home"></i> Dashboard</a>
+      <a href="{% url 'order_history' %}" class="active"><i class="fas fa-box"></i> My Orders</a>
+      <a href="{% url 'wishlist' %}"><i class="far fa-heart"></i> Wishlist</a>
+      <a href="{% url 'profile' %}"><i class="fas fa-user-cog"></i> Profile Settings</a>
+      <a href="{% url 'logout' %}" style="color:var(--danger);"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+    </nav>
+  </div>
+  <div>
+    <h1 style="font-size:1.8rem;font-weight:800;color:var(--dark);margin-bottom:24px;">Order History</h1>
+    {% if orders %}
+      {% for order in orders %}
+      <div style="background:white;border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;border:1px solid #f0f0f8;margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+          <div>
+            <p style="font-weight:800;color:var(--dark);font-size:1.05rem;">#{{ order.order_number }}</p>
+            <p style="color:var(--gray);font-size:0.85rem;">{{ order.created_at|date:"F j, Y · g:i A" }}</p>
+          </div>
+          <span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span>
+          <p style="font-weight:800;font-size:1.2rem;color:var(--green);">₦{{ order.total|floatformat:0 }}</p>
+        </div>
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid #f0f0f8;">
+          {% for item in order.items.all %}
+          <span style="font-size:0.85rem;color:var(--gray);margin-right:12px;">{{ item.product_name }} ×{{ item.quantity }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div style="text-align:center;padding:80px;color:var(--gray);">
+        <div style="font-size:4rem;margin-bottom:20px;">📭</div>
+        <h3 style="margin-bottom:8px;">No orders yet</h3>
+        <p style="margin-bottom:24px;">Your order history will appear here.</p>
+        <a href="{% url 'packages' %}" class="btn btn-primary">Shop Packages</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

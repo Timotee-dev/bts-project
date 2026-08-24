@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block title %}Checkout — BTS Project{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1 class="page-header-title">Checkout</h1>
+  <p class="page-header-sub">Fill in your delivery details to complete your order.</p>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div class="checkout-grid" style="display:grid;grid-template-columns:1fr 360px;gap:32px;align-items:start;">
+
+      <!-- Delivery Form -->
+      <div>
+        <div class="card">
+          <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin-bottom:24px;">
+            <i class="fas fa-map-marker-alt" style="color:var(--green);margin-right:8px;"></i>Delivery Information
+          </h2>
+          <form method="post" id="checkoutForm">
+            {% csrf_token %}
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+              <div class="form-group">
+                <label class="form-label">Full Name *</label>
+                <input type="text" name="full_name" class="form-control" required
+                       value="{{ user.get_full_name }}" placeholder="As on ID">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Phone Number *</label>
+                <input type="tel" name="phone" class="form-control" required
+                       value="{{ user.phone }}" placeholder="08012345678">
+              </div>
+              <div class="form-group" style="grid-column:1/-1;">
+                <label class="form-label">Street Address *</label>
+                <textarea name="street" class="form-control" rows="2" required
+                          placeholder="House number, street name, area, nearest landmark..."></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">City / Town *</label>
+                <input type="text" name="city" class="form-control" required placeholder="e.g. Ibadan">
+              </div>
+              <div class="form-group">
+                <label class="form-label">State *</label>
+                <select name="state" class="form-control" required id="stateSelect">
+                  <option value="">-- Select State --</option>
+                  {% for state_name, fee in states_with_fees %}
+                  <option value="{{ state_name }}" {% if user.state and user.state.lower == state_name %}selected{% endif %}>
+                    {{ state_name|title }} — ₦{{ fee }}
+                  </option>
+                  {% endfor %}
+                </select>
+                <p class="form-help">Delivery fee is calculated based on your state.</p>
+              </div>
+              <div class="form-group" style="grid-column:1/-1;">
+                <label class="form-label">Order Notes (optional)</label>
+                <textarea name="notes" class="form-control" rows="2"
+                          placeholder="Any special delivery instructions?"></textarea>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg btn-block" style="margin-top:8px;" id="placeOrderBtn">
+              <i class="fas fa-lock"></i> Place Order & Proceed to Payment
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="order-summary" style="position:sticky;top:calc(var(--nav-h) + 16px);">
+        <h3 class="summary-title">Order Summary</h3>
+        {% for item in cart.items.all %}
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.875rem;">
+          <span style="color:var(--dark);">
+            {% if item.package %}{{ item.package.name }}{% else %}{{ item.product.name }}{% endif %}
+            {% if item.selected_size %}<span style="color:var(--gray);"> ({{ item.selected_size }})</span>{% endif %}
+            × {{ item.quantity }}
+          </span>
+          <span style="font-weight:600;color:var(--green);">₦{{ item.line_total|floatformat:0 }}</span>
+        </div>
+        {% endfor %}
+
+        <div class="summary-row" style="margin-top:8px;">
+          <span>Subtotal</span>
+          <span>₦{{ cart.subtotal|floatformat:0 }}</span>
+        </div>
+        {% if cart.packaging_fee > 0 %}
+        <div class="summary-row">
+          <span>Packaging Fee</span>
+          <span>₦{{ cart.packaging_fee|floatformat:0 }}</span>
+        </div>
+        {% endif %}
+        <div class="summary-row">
+          <span>Delivery Fee</span>
+          <span id="deliveryFeeDisplay" style="color:var(--gray);">Select state</span>
+        </div>
+        <div class="summary-row total">
+          <span>Total</span>
+          <span id="grandTotalDisplay" style="color:var(--green);">₦{{ cart.subtotal|floatformat:0 }}</span>
+        </div>
+
+        <div style="margin-top:16px;background:white;border-radius:var(--radius-sm);padding:12px;border:1px solid var(--border);">
+          <p style="font-size:0.78rem;color:var(--gray);text-align:center;margin-bottom:8px;">Secure payment via</p>
+          <div style="display:flex;gap:8px;justify-content:center;font-size:1rem;">💳 🏦 📱</div>
+          <p style="font-size:0.72rem;color:var(--gray);text-align:center;margin-top:6px;">Cards · Bank Transfer · USSD</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+// Delivery fees map
+const fees = {
+  {% for state_name, fee in states_with_fees %}
+  '{{ state_name }}': {{ fee }},
+  {% endfor %}
+};
+const subtotal = {{ cart.subtotal }} + {{ cart.packaging_fee }};
+
+document.getElementById('stateSelect').addEventListener('change', function() {
+  const fee = fees[this.value] || 0;
+  const total = subtotal + fee;
+  document.getElementById('deliveryFeeDisplay').textContent = fee ? '₦' + fee.toLocaleString() : 'Select state';
+  document.getElementById('deliveryFeeDisplay').style.color = fee ? 'var(--dark)' : 'var(--gray)';
+  document.getElementById('grandTotalDisplay').textContent = '₦' + total.toLocaleString();
+});
+</script>
+{% endblock %}

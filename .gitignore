@@ -1,0 +1,42 @@
+# ─── Python ────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ─── Django ────────────────────────────────────────────────────
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+staticfiles/
+media/
+
+# ─── Environment ───────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+!.env.example        # Keep the example file in git
+
+# ─── Virtual Environments ──────────────────────────────────────
+venv/
+env/
+.venv/
+.env/
+
+# ─── IDEs & Editors ────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ─── Testing ───────────────────────────────────────────────────
+.coverage
+htmlcov/
+.pytest_cache/

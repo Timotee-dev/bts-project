@@ -1,0 +1,88 @@
+{% extends 'vendors/base.html' %}
+{% block title %}{{ action }} Product — {{ vendor.business_name }}{% endblock %}
+
+{% block vendor_content %}
+<div style="max-width:720px;">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+    <a href="{% url 'vendor_products' %}" style="color:var(--gray);text-decoration:none;"><i class="fas fa-arrow-left"></i></a>
+    <h1 style="font-size:1.5rem;font-weight:800;color:var(--dark);">{{ action }} Product</h1>
+  </div>
+
+  <div class="card">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label">Product Name *</label>
+          <input type="text" name="name" class="form-control" required
+                 value="{% if product %}{{ product.name }}{% endif %}" placeholder="e.g. Classic White Top">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category *</label>
+          <select name="category" class="form-control" required>
+            <option value="">-- Select Category --</option>
+            {% for cat in form.fields.category.queryset %}
+            <option value="{{ cat.pk }}" {% if product and product.category_id == cat.pk %}selected{% endif %}>{{ cat.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Price (₦) *</label>
+          <input type="number" name="price" class="form-control" required min="0" step="0.01"
+                 value="{% if product %}{{ product.price }}{% endif %}" placeholder="5000">
+        </div>
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label">Description *</label>
+          <textarea name="description" class="form-control" rows="4" required
+                    placeholder="Describe your product — material, colour, style...">{% if product %}{{ product.description }}{% endif %}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Available Sizes</label>
+          <input type="text" name="available_sizes" class="form-control"
+                 value="{% if product %}{{ product.available_sizes }}{% endif %}"
+                 placeholder="S,M,L,XL or 36,37,38,39 or ONE_SIZE">
+          <p class="form-help">Comma-separated. Leave blank if no sizing needed.</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Stock Quantity</label>
+          <input type="number" name="stock" class="form-control" min="0"
+                 value="{% if product %}{{ product.stock }}{% else %}100{% endif %}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Main Product Image</label>
+          <input type="file" name="image" class="form-control" accept="image/*">
+          {% if product and product.image %}
+            <img src="{{ product.image.url }}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;margin-top:8px;">
+          {% endif %}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Image 2 (optional)</label>
+          <input type="file" name="image2" class="form-control" accept="image/*">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Image 3 (optional)</label>
+          <input type="file" name="image3" class="form-control" accept="image/*">
+        </div>
+        <div class="form-group" style="display:flex;align-items:center;gap:10px;">
+          <input type="checkbox" name="is_active" id="is_active"
+                 {% if not product or product.is_active %}checked{% endif %}
+                 style="width:18px;height:18px;accent-color:var(--green);">
+          <label for="is_active" class="form-label" style="margin:0;">Product is active (visible to shoppers)</label>
+        </div>
+        <div class="form-group" style="display:flex;align-items:center;gap:10px;">
+          <input type="checkbox" name="is_featured" id="is_featured"
+                 {% if product and product.is_featured %}checked{% endif %}
+                 style="width:18px;height:18px;accent-color:var(--gold);">
+          <label for="is_featured" class="form-label" style="margin:0;">Mark as featured product</label>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:8px;">
+        <button type="submit" class="btn btn-primary btn-lg">
+          <i class="fas fa-save"></i> {{ action }} Product
+        </button>
+        <a href="{% url 'vendor_products' %}" class="btn btn-outline-green btn-lg">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

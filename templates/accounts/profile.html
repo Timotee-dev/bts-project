@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Profile Settings — BTS Project{% endblock %}
+{% block content %}
+<div class="dashboard-layout">
+  <div class="sidebar">
+    <nav class="sidebar-nav" style="padding:8px 0;">
+      <a href="{% url 'dashboard' %}"><i class="fas fa-home"></i> Dashboard</a>
+      <a href="{% url 'order_history' %}"><i class="fas fa-box"></i> My Orders</a>
+      <a href="{% url 'wishlist' %}"><i class="far fa-heart"></i> Wishlist</a>
+      <a href="{% url 'profile' %}" class="active"><i class="fas fa-user-cog"></i> Profile Settings</a>
+      <a href="{% url 'logout' %}" style="color:var(--danger);"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+    </nav>
+  </div>
+  <div>
+    <h1 style="font-size:1.8rem;font-weight:800;color:var(--dark);margin-bottom:24px;">Profile Settings</h1>
+    <div style="background:white;border-radius:var(--radius);box-shadow:var(--shadow);padding:32px;border:1px solid #f0f0f8;">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          {% for field in form %}
+          <div class="form-group">
+            <label class="form-label">{{ field.label }}</label>
+            {% if field.field.widget.input_type == 'file' %}
+              <input type="file" name="{{ field.html_name }}" class="form-control">
+            {% else %}
+              <input type="{{ field.field.widget.input_type }}" name="{{ field.html_name }}" class="form-control" {% if field.value %}value="{{ field.value }}"{% endif %}>
+            {% endif %}
+            {% if field.errors %}<p class="form-error">{{ field.errors.0 }}</p>{% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-top:16px;">Save Changes</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

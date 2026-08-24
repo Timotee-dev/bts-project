@@ -1,0 +1,20 @@
+# ─── Core Django ───────────────────────────────────────────────
+Django==5.0.6
+djangorestframework==3.15.2
+django-cors-headers==4.4.0
+
+# ─── Database ──────────────────────────────────────────────────
+psycopg2-binary==2.9.9
+dj-database-url==2.2.0
+
+# ─── Static Files ──────────────────────────────────────────────
+whitenoise==6.7.0
+
+# ─── Production Server ─────────────────────────────────────────
+gunicorn==22.0.0
+
+# ─── Config / Env ──────────────────────────────────────────────
+python-decouple==3.8
+
+# ─── Image Processing ──────────────────────────────────────────
+Pillow==10.4.0

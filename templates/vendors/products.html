@@ -1,0 +1,52 @@
+{% extends 'vendors/base.html' %}
+{% block title %}My Products — {{ vendor.business_name }}{% endblock %}
+
+{% block vendor_content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+  <h1 style="font-size:1.5rem;font-weight:800;color:var(--dark);">My Products</h1>
+  <a href="{% url 'vendor_product_add' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Add Product</a>
+</div>
+
+{% if products %}
+<div style="display:grid;gap:12px;">
+  {% for product in products %}
+  <div class="card" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+    {% if product.image %}
+      <img src="{{ product.image.url }}" style="width:72px;height:72px;object-fit:cover;border-radius:var(--radius-sm);flex-shrink:0;">
+    {% else %}
+      <div style="width:72px;height:72px;background:var(--green-pale);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0;">📦</div>
+    {% endif %}
+    <div style="flex:1;min-width:0;">
+      <p style="font-weight:700;color:var(--dark);margin-bottom:2px;">{{ product.name }}</p>
+      <p style="font-size:0.8rem;color:var(--gray);">{{ product.category.name }} · Stock: {{ product.stock }}</p>
+      {% if product.available_sizes %}
+        <p style="font-size:0.75rem;color:var(--gray-light);">Sizes: {{ product.available_sizes }}</p>
+      {% endif %}
+    </div>
+    <div style="text-align:right;flex-shrink:0;">
+      <p style="font-weight:800;font-size:1.1rem;color:var(--green);">₦{{ product.price|floatformat:0 }}</p>
+      <span style="font-size:0.72rem;padding:2px 8px;border-radius:var(--radius-full);{% if product.is_active %}background:var(--green-pale);color:var(--green);{% else %}background:#fee2e2;color:var(--danger);{% endif %}font-weight:700;">
+        {% if product.is_active %}Active{% else %}Inactive{% endif %}
+      </span>
+    </div>
+    <div style="display:flex;gap:8px;flex-shrink:0;">
+      <a href="{% url 'vendor_product_edit' product.pk %}" class="btn btn-sm btn-outline-green">
+        <i class="fas fa-edit"></i> Edit
+      </a>
+      <form method="post" action="{% url 'vendor_product_delete' product.pk %}" onsubmit="return confirm('Delete {{ product.name }}?');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card" style="text-align:center;padding:60px;">
+  <div style="font-size:4rem;margin-bottom:16px;">📦</div>
+  <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:8px;">No products yet</h2>
+  <p style="color:var(--gray);margin-bottom:24px;">Add your first product to start selling on BTS.</p>
+  <a href="{% url 'vendor_product_add' %}" class="btn btn-primary btn-lg"><i class="fas fa-plus"></i> Add Your First Product</a>
+</div>
+{% endif %}
+{% endblock %}

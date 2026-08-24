@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block title %}Build Your Own Package — BTS Project{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1 class="page-header-title">Build Your Own Package</h1>
+  <p class="page-header-sub">Select {{ min_items }}+ items to unlock checkout and create your custom BTS package.</p>
+  <div class="breadcrumb"><a href="{% url 'home' %}">Home</a><span class="sep">/</span><span>Build Your Own</span></div>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:32px;align-items:start;">
+
+      <!-- Products -->
+      <div>
+        <!-- Filters -->
+        <div style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;align-items:center;">
+          <form class="search-bar" style="flex:1;" method="get">
+            <input type="text" name="q" placeholder="Search products..." value="{{ request.GET.q }}" class="form-control">
+            <button type="submit"><i class="fas fa-search"></i></button>
+          </form>
+        </div>
+
+        <div class="filter-tabs" style="margin-bottom:24px;">
+          <a href="{% url 'build_your_own' %}" class="filter-tab {% if not active_category %}active{% endif %}">All</a>
+          {% for cat in categories %}
+          <a href="?category={{ cat.slug }}" class="filter-tab {% if active_category == cat.slug %}active{% endif %}">
+            {% if cat.icon %}<i class="{{ cat.icon }}"></i> {% endif %}{{ cat.name }}
+          </a>
+          {% endfor %}
+        </div>
+
+        <div class="products-grid">
+          {% for product in products %}
+          <div class="product-card">
+            <div class="product-card-img">
+              {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+              {% else %}
+                <div style="font-size:3rem;opacity:0.2;">👕</div>
+              {% endif %}
+              <button class="product-wishlist-btn wishlist-toggle"><i class="far fa-heart"></i></button>
+            </div>
+            <div class="product-card-body">
+              <p class="product-category">{{ product.category.name }}</p>
+              <h3 class="product-name">{{ product.name }}</h3>
+              <p class="product-price">₦{{ product.price|floatformat:0 }}</p>
+              {% if product.sizes_list %}
+              <div class="size-group" style="margin-bottom:12px;">
+                <p style="font-size:0.75rem;color:var(--gray);margin-bottom:6px;font-weight:600;">SIZE</p>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                  {% for size in product.sizes_list %}
+                  <button class="size-btn" data-size="{{ size }}"
+                    style="padding:4px 10px;border:1.5px solid #e0e0e8;border-radius:6px;background:white;font-size:0.75rem;font-weight:600;cursor:pointer;transition:all 0.2s;">
+                    {{ size }}
+                  </button>
+                  {% endfor %}
+                  <input type="hidden" data-size-select="{{ product.id }}" value="">
+                </div>
+              </div>
+              {% endif %}
+              <form method="post" action="{% url 'add_to_cart' 'product' product.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.path }}">
+                {% if product.sizes_list %}
+                  <input type="hidden" name="size" data-size-hidden="{{ product.id }}">
+                {% endif %}
+                <button type="submit" class="btn btn-primary btn-sm btn-block">
+                  <i class="fas fa-plus"></i> Add to Package
+                </button>
+              </form>
+            </div>
+          </div>
+          {% empty %}
+          <div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--gray);">
+            <div style="font-size:3rem;margin-bottom:16px;">🔍</div>
+            <p>No products found. Try a different category or search term.</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Tracker Sidebar -->
+      <div class="build-tracker" id="build-tracker" data-min="{{ min_items }}">
+        <p class="build-tracker-title">🛍️ Your Custom Package</p>
+        <div class="build-progress-bar">
+          <div class="build-progress-fill" id="build-progress-fill" style="width:0%;"></div>
+        </div>
+        <p>
+          <span class="build-count" id="build-count">0</span>
+          <span style="color:rgba(255,255,255,0.7);font-size:1rem;"> / {{ min_items }} items</span>
+        </p>
+        <p class="build-needed">Add {{ min_items }} or more items to unlock checkout</p>
+
+        <div id="checkout-lock-msg" class="alert alert-warning" style="margin-bottom:16px;display:block;">
+          <i class="fas fa-lock"></i> Add {{ min_items }}+ items to checkout
+        </div>
+
+        <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:12px;margin-bottom:16px;font-size:0.8rem;">
+          <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,0.8);margin-bottom:4px;">
+            <span>Custom Packaging Fee</span>
+            <span>₦{{ packaging_fee }}</span>
+          </div>
+          <p style="color:rgba(255,255,255,0.5);font-size:0.75rem;">Applied at checkout for custom builds</p>
+        </div>
+
+        <a href="{% url 'cart' %}" class="btn btn-gold btn-block" id="checkout-btn">
+          <i class="fas fa-shopping-bag"></i> View Cart
+        </a>
+        <a href="{% url 'packages' %}" class="btn btn-outline btn-block btn-sm" style="margin-top:10px;">
+          Or Buy a Pre-made Package
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+{% block extra_js %}
+<script>
+  // Sync size selection to form hidden input
+  document.querySelectorAll('.size-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const group = this.closest('.size-group');
+      group.querySelectorAll('.size-btn').forEach(b => {
+        b.style.borderColor = '#e0e0e8'; b.style.background = 'white'; b.style.color = '';
+      });
+      this.style.borderColor = 'var(--green)';
+      this.style.background = 'var(--green)';
+      this.style.color = 'white';
+      // Update hidden input in form
+      const productId = group.querySelector('[data-size-select]')?.dataset.sizeSelect;
+      const formHidden = document.querySelector(`[data-size-hidden="${productId}"]`);
+      if (formHidden) formHidden.value = this.dataset.size;
+    });
+  });
+</script>
+{% endblock %}

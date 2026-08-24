@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}Become a Vendor — BTS Project{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1 class="page-header-title">Become a BTS Vendor</h1>
+  <p class="page-header-sub">Set up your store and start selling to thousands of Nigerian university students.</p>
+</div>
+
+<section class="section">
+  <div class="container" style="max-width:680px;">
+
+    <!-- Benefits row -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:40px;">
+      <div style="background:white;border-radius:var(--radius);padding:20px;text-align:center;box-shadow:var(--shadow);border:1px solid var(--border);">
+        <div style="font-size:2rem;margin-bottom:8px;">🚀</div>
+        <p style="font-weight:700;color:var(--dark);font-size:0.875rem;">Go Live Instantly</p>
+        <p style="color:var(--gray);font-size:0.78rem;margin-top:4px;">No approval wait. Create your store and start selling immediately.</p>
+      </div>
+      <div style="background:white;border-radius:var(--radius);padding:20px;text-align:center;box-shadow:var(--shadow);border:1px solid var(--border);">
+        <div style="font-size:2rem;margin-bottom:8px;">🎓</div>
+        <p style="font-weight:700;color:var(--dark);font-size:0.875rem;">Student Audience</p>
+        <p style="color:var(--gray);font-size:0.78rem;margin-top:4px;">Reach thousands of university students across Nigeria.</p>
+      </div>
+      <div style="background:white;border-radius:var(--radius);padding:20px;text-align:center;box-shadow:var(--shadow);border:1px solid var(--border);">
+        <div style="font-size:2rem;margin-bottom:8px;">📦</div>
+        <p style="font-weight:700;color:var(--dark);font-size:0.875rem;">Create Packages</p>
+        <p style="color:var(--gray);font-size:0.78rem;margin-top:4px;">Bundle your products into BTS packages and boost your sales.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="font-size:1.3rem;font-weight:800;color:var(--dark);margin-bottom:24px;">
+        <i class="fas fa-store" style="color:var(--green);margin-right:8px;"></i>Set Up Your Store
+      </h2>
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <p style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--green);margin-bottom:14px;">Business Information</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group" style="grid-column:1/-1;">
+            <label class="form-label">Business / Store Name *</label>
+            <input type="text" name="business_name" class="form-control" required placeholder="e.g. StyleHub NG">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Business Email *</label>
+            <input type="email" name="email" class="form-control" required value="{{ request.user.email }}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number *</label>
+            <input type="tel" name="phone" class="form-control" required value="{{ request.user.phone }}" placeholder="08012345678">
+          </div>
+          <div class="form-group" style="grid-column:1/-1;">
+            <label class="form-label">Store Description</label>
+            <textarea name="description" class="form-control" rows="3" placeholder="Tell students what you sell..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Store Logo</label>
+            <input type="file" name="logo" class="form-control" accept="image/*">
+          </div>
+        </div>
+
+        <p style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--green);margin:20px 0 14px;">Bank Details (for records)</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Bank Name</label>
+            <input type="text" name="bank_name" class="form-control" placeholder="e.g. GTBank">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Account Number</label>
+            <input type="text" name="account_number" class="form-control" placeholder="0123456789">
+          </div>
+          <div class="form-group" style="grid-column:1/-1;">
+            <label class="form-label">Account Name</label>
+            <input type="text" name="account_name" class="form-control" placeholder="As it appears on your bank account">
+          </div>
+        </div>
+
+        <p style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--green);margin:20px 0 14px;">Social Media (optional)</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label"><i class="fab fa-instagram"></i> Instagram URL</label>
+            <input type="url" name="instagram" class="form-control" placeholder="https://instagram.com/yourbrand">
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="fab fa-twitter"></i> Twitter URL</label>
+            <input type="url" name="twitter" class="form-control" placeholder="https://twitter.com/yourbrand">
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg btn-block" style="margin-top:10px;">
+          <i class="fas fa-store"></i> Create My Store — It's Free
+        </button>
+        <p style="text-align:center;font-size:0.78rem;color:var(--gray);margin-top:12px;">
+          By registering, you agree to BTS vendor terms. All payments are collected by BTS via Paystack.
+        </p>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

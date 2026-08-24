@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}FAQs — BTS Project{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-header-title">Frequently Asked Questions</h1>
+  <p class="page-header-sub">Everything you need to know about BTS.</p>
+</div>
+<section class="section">
+  <div class="container" style="max-width:720px;">
+
+    {% for q, a in faqs %}
+    <div class="faq-item">
+      <button class="faq-question">{{ q }}<span class="icon">+</span></button>
+      <div class="faq-answer">{{ a }}</div>
+    </div>
+    {% endfor %}
+
+    <div class="faq-item"><button class="faq-question">What is BTS Project?<span class="icon">+</span></button>
+    <div class="faq-answer">BTS (Back to School Project) is a one-stop back-to-school shopping platform for Nigerian university students. We offer curated packages containing everything you need — clothing, shoes, bags, accessories, and essentials — at exclusive partner prices.</div></div>
+
+    <div class="faq-item"><button class="faq-question">How do BTS Packages work?<span class="icon">+</span></button>
+    <div class="faq-answer">Each package contains a pre-selected set of back-to-school items (tops, pants, shoes, bags, jewellery, skincare, etc.) at a bundle price that's cheaper than buying each item individually. Simply pick the package that suits your budget and style, add it to cart, and checkout!</div></div>
+
+    <div class="faq-item"><button class="faq-question">What is the "Build Your Own Package" feature?<span class="icon">+</span></button>
+    <div class="faq-answer">If you prefer a personalised experience, you can pick individual products and create your own custom BTS package. You need a minimum of {{ min_custom_items }} items to unlock checkout. A small custom packaging fee of ₦{{ packaging_fee }} applies.</div></div>
+
+    <div class="faq-item"><button class="faq-question">How do I pay?<span class="icon">+</span></button>
+    <div class="faq-answer">We accept all major Nigerian payment methods — debit/credit cards, bank transfers, and USSD. All payments are processed securely online. You never need to send money via WhatsApp.</div></div>
+
+    <div class="faq-item"><button class="faq-question">Do you deliver nationwide?<span class="icon">+</span></button>
+    <div class="faq-answer">Yes! We deliver to all 36 states in Nigeria. Delivery fees are calculated at checkout based on your location.</div></div>
+
+    <div class="faq-item"><button class="faq-question">What is your refund and replacement policy?<span class="icon">+</span></button>
+    <div class="faq-answer">We offer a 7-day replacement policy for damaged or incorrect items. Contact our support team via WhatsApp or the contact page within 7 days of delivery.</div></div>
+
+    <div class="faq-item"><button class="faq-question">Do I need to contact you on WhatsApp to order?<span class="icon">+</span></button>
+    <div class="faq-answer">No! You can complete your entire shopping journey on this website — browse, select, pay, and track your order — all without contacting us. WhatsApp is available only as an optional customer support channel.</div></div>
+
+    <div style="text-align:center;margin-top:48px;padding:40px;background:var(--green-pale);border-radius:var(--radius);">
+      <p style="font-size:1rem;font-weight:600;margin-bottom:12px;">Still have questions?</p>
+      <a href="{% url 'contact' %}" class="btn btn-primary">Contact Us</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
+{% block extra_js %}
+<script>
+const minItems = {{ min_custom_items }};
+const packFee = {{ packaging_fee }};
+</script>
+{% endblock %}

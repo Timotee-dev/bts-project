@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}{{ category.name }} — BTS Project{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-header-title">{{ category.name }}</h1>
+  <div class="breadcrumb"><a href="{% url 'home' %}">Home</a><span class="sep">/</span><a href="{% url 'shop_by_category' %}">Shop</a><span class="sep">/</span><span>{{ category.name }}</span></div>
+</div>
+<section class="section">
+  <div class="container">
+    <div class="products-grid">
+      {% for product in products %}
+      <div class="product-card">
+        <div class="product-card-img">
+          {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}">{% else %}<div style="font-size:3rem;opacity:0.2;">👕</div>{% endif %}
+          <button class="product-wishlist-btn wishlist-toggle"><i class="far fa-heart"></i></button>
+        </div>
+        <div class="product-card-body">
+          <p class="product-category">{{ product.category.name }}</p>
+          <h3 class="product-name">{{ product.name }}</h3>
+          <p class="product-price">₦{{ product.price|floatformat:0 }}</p>
+          <a href="{% url 'product_detail' product.slug %}" class="btn btn-outline-green btn-sm btn-block">View Details</a>
+        </div>
+      </div>
+      {% empty %}
+      <div style="grid-column:1/-1;text-align:center;padding:80px;color:var(--gray);">
+        <p>No products in this category yet.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

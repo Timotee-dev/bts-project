@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Sell on BTS Project — Reach Thousands of Nigerian Students{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<section style="background:linear-gradient(135deg,var(--dark) 0%,var(--green) 55%,#1A6B35 100%);padding:clamp(60px,10vw,100px) var(--px);text-align:center;position:relative;overflow:hidden;">
+  <div style="position:absolute;width:500px;height:500px;background:radial-gradient(circle,rgba(245,237,214,0.06) 0%,transparent 70%);top:-100px;right:-100px;border-radius:50%;pointer-events:none;"></div>
+  <div style="position:absolute;width:300px;height:300px;background:radial-gradient(circle,rgba(200,169,81,0.10) 0%,transparent 70%);bottom:-80px;left:-60px;border-radius:50%;pointer-events:none;"></div>
+  <div style="max-width:700px;margin:0 auto;position:relative;z-index:1;">
+    <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(245,237,214,0.10);border:1px solid rgba(245,237,214,0.20);color:var(--cream-mid);padding:6px 18px;border-radius:var(--radius-full);font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:20px;">
+      🏪 Vendor Programme
+    </div>
+    <h1 style="font-size:clamp(2rem,5.5vw,3.6rem);font-weight:900;color:var(--cream);line-height:1.1;margin-bottom:18px;">
+      Sell to Thousands of<br><span style="color:var(--gold);">Nigerian University Students</span>
+    </h1>
+    <p style="color:rgba(245,237,214,0.75);font-size:clamp(0.95rem,2vw,1.1rem);margin-bottom:36px;max-width:540px;margin-left:auto;margin-right:auto;">
+      Join BTS Project as a vendor. List your products, create packages, and reach Nigeria's biggest back-to-school audience — for free.
+    </p>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+      {% if user.is_authenticated %}
+        {% if user.vendor %}
+          <a href="{% url 'vendor_dashboard' %}" class="btn btn-cream btn-lg">
+            <i class="fas fa-chart-line"></i> Go to My Dashboard
+          </a>
+        {% else %}
+          <a href="{% url 'register' %}#vendor" class="btn btn-cream btn-lg">
+            <i class="fas fa-store"></i> Open My Store — Free
+          </a>
+        {% endif %}
+      {% else %}
+        <a href="{% url 'register' %}" class="btn btn-cream btn-lg">
+          <i class="fas fa-store"></i> Open My Store — Free
+        </a>
+        <a href="{% url 'login' %}" class="btn btn-outline-cream btn-lg">
+          Already a vendor? Sign In
+        </a>
+      {% endif %}
+    </div>
+    <p style="color:rgba(245,237,214,0.45);font-size:0.78rem;margin-top:16px;">No approval needed · Goes live instantly · Free to join</p>
+  </div>
+</section>
+
+<!-- Stats bar -->
+<section style="background:var(--cream);padding:28px var(--px);">
+  <div style="max-width:var(--max-w);margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;text-align:center;">
+    <div>
+      <p style="font-size:2rem;font-weight:900;color:var(--green);">Free</p>
+      <p style="font-size:0.83rem;color:var(--gray);font-weight:600;">To Join</p>
+    </div>
+    <div>
+      <p style="font-size:2rem;font-weight:900;color:var(--green);">Instant</p>
+      <p style="font-size:0.83rem;color:var(--gray);font-weight:600;">Store Goes Live</p>
+    </div>
+    <div>
+      <p style="font-size:2rem;font-weight:900;color:var(--green);">36</p>
+      <p style="font-size:0.83rem;color:var(--gray);font-weight:600;">States Reached</p>
+    </div>
+    <div>
+      <p style="font-size:2rem;font-weight:900;color:var(--green);">100%</p>
+      <p style="font-size:0.83rem;color:var(--gray);font-weight:600;">Secure Payments</p>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section class="section" style="background:var(--surface);">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-eyebrow">Simple Process</p>
+      <h2 class="section-title">How Selling on BTS Works</h2>
+      <p class="section-sub">From sign-up to first sale in minutes.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <div style="font-size:2rem;margin-bottom:10px;">📝</div>
+        <h3 class="step-title">Create Your Store</h3>
+        <p class="step-desc">Register as a vendor, fill in your business name, phone, and bank details. Your store goes live immediately — no waiting, no approval.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <div style="font-size:2rem;margin-bottom:10px;">📦</div>
+        <h3 class="step-title">List Your Products</h3>
+        <p class="step-desc">Add your products with photos, prices, sizes, and descriptions. They appear on the BTS marketplace instantly.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <div style="font-size:2rem;margin-bottom:10px;">🎁</div>
+        <h3 class="step-title">Create Packages</h3>
+        <p class="step-desc">Bundle your products into BTS packages. Packages sell faster because students love the convenience and savings.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">4</div>
+        <div style="font-size:2rem;margin-bottom:10px;">💰</div>
+        <h3 class="step-title">Get Paid</h3>
+        <p class="step-desc">Customers pay securely via Paystack. You get notified instantly when an order comes in and manage everything from your dashboard.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Benefits -->
+<section class="section">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:clamp(28px,5vw,60px);align-items:center;">
+      <div>
+        <p class="section-eyebrow">Why BTS?</p>
+        <h2 class="section-title" style="text-align:left;">Everything you need to sell smarter</h2>
+        <div style="display:flex;flex-direction:column;gap:18px;margin-top:24px;">
+          {% for icon, title, desc in benefits %}
+          <div style="display:flex;gap:14px;align-items:flex-start;">
+            <div style="width:44px;height:44px;background:var(--green-pale);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.2rem;">{{ icon }}</div>
+            <div>
+              <p style="font-weight:700;color:var(--dark);margin-bottom:3px;">{{ title }}</p>
+              <p style="color:var(--gray);font-size:0.875rem;line-height:1.6;">{{ desc }}</p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="card" style="text-align:center;border-top:4px solid var(--green);">
+          <div style="font-size:2rem;margin-bottom:8px;">🚀</div>
+          <p style="font-weight:700;color:var(--dark);font-size:0.9rem;">Instant Setup</p>
+          <p style="color:var(--gray);font-size:0.78rem;margin-top:4px;">No paperwork, no waiting</p>
+        </div>
+        <div class="card" style="text-align:center;border-top:4px solid var(--gold);">
+          <div style="font-size:2rem;margin-bottom:8px;">📊</div>
+          <p style="font-weight:700;color:var(--dark);font-size:0.9rem;">Sales Dashboard</p>
+          <p style="color:var(--gray);font-size:0.78rem;margin-top:4px;">Track everything in real time</p>
+        </div>
+        <div class="card" style="text-align:center;border-top:4px solid var(--green-light);">
+          <div style="font-size:2rem;margin-bottom:8px;">🎓</div>
+          <p style="font-weight:700;color:var(--dark);font-size:0.9rem;">Student Audience</p>
+          <p style="color:var(--gray);font-size:0.78rem;margin-top:4px;">Built specifically for uni students</p>
+        </div>
+        <div class="card" style="text-align:center;border-top:4px solid var(--success);">
+          <div style="font-size:2rem;margin-bottom:8px;">🔒</div>
+          <p style="font-weight:700;color:var(--dark);font-size:0.9rem;">Secure Payments</p>
+          <p style="color:var(--gray);font-size:0.78rem;margin-top:4px;">Powered by Paystack</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:var(--surface);">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <p class="section-eyebrow">Vendor FAQs</p>
+      <h2 class="section-title">Common Questions</h2>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question">How much does it cost to sell on BTS?<span class="icon">+</span></button>
+      <div class="faq-answer">It's completely free to join and list your products. BTS collects payment from customers on your behalf via Paystack.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question">Do I need approval before my store goes live?<span class="icon">+</span></button>
+      <div class="faq-answer">No. Once you complete the vendor registration, your store and products are live on the BTS marketplace immediately.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question">What can I sell on BTS?<span class="icon">+</span></button>
+      <div class="faq-answer">Anything a Nigerian university student needs — clothing, shoes, bags, jewellery, perfume, skincare, accessories, and room essentials. Products should be relevant to the back-to-school experience.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question">How do I get notified when I receive an order?<span class="icon">+</span></button>
+      <div class="faq-answer">You receive an email notification to your registered business email whenever a customer places an order containing your products. You can also monitor orders in real time from your vendor dashboard.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question">Can I create my own BTS packages?<span class="icon">+</span></button>
+      <div class="faq-answer">Yes. You can bundle your own products into BTS packages from your vendor dashboard. Packages tend to sell faster as customers love the bundle savings.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Final CTA -->
+<section class="section" style="background:linear-gradient(135deg,var(--green),var(--green-mid));text-align:center;">
+  <div class="container" style="max-width:600px;">
+    <h2 style="font-size:clamp(1.6rem,4vw,2.4rem);font-weight:900;color:var(--cream);margin-bottom:14px;">
+      Ready to start selling?
+    </h2>
+    <p style="color:rgba(245,237,214,0.75);margin-bottom:32px;font-size:1rem;">
+      Join BTS Project today. Your store goes live in under 5 minutes.
+    </p>
+    {% if user.is_authenticated and not user.vendor %}
+      <a href="{% url 'register' %}" class="btn btn-cream btn-lg">
+        <i class="fas fa-store"></i> Open My Store Now
+      </a>
+    {% elif user.is_authenticated and user.vendor %}
+      <a href="{% url 'vendor_dashboard' %}" class="btn btn-cream btn-lg">
+        <i class="fas fa-chart-line"></i> Go to My Dashboard
+      </a>
+    {% else %}
+      <a href="{% url 'register' %}" class="btn btn-cream btn-lg">
+        <i class="fas fa-store"></i> Open My Store — It's Free
+      </a>
+    {% endif %}
+  </div>
+</section>
+
+{% endblock %}

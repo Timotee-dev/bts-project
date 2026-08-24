@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Shop by Category — BTS Project{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-header-title">Shop by Category</h1>
+  <p class="page-header-sub">Browse our full range of back-to-school essentials.</p>
+</div>
+<section class="section">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px;">
+      {% for cat in categories %}
+      <a href="{% url 'category_products' cat.slug %}" style="text-decoration:none;">
+        <div style="background:white;border-radius:var(--radius);box-shadow:var(--shadow);padding:32px;text-align:center;border:2px solid transparent;transition:all 0.3s;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='transparent'">
+          {% if cat.image %}
+            <img src="{{ cat.image.url }}" alt="{{ cat.name }}" style="width:64px;height:64px;object-fit:cover;border-radius:50%;margin:0 auto 12px;">
+          {% else %}
+            <div style="font-size:2.5rem;margin-bottom:12px;">
+              {% if 'tops' in cat.name|lower or 'shirt' in cat.name|lower %}👕
+              {% elif 'shoe' in cat.name|lower or 'footwear' in cat.name|lower %}👟
+              {% elif 'bag' in cat.name|lower %}👜
+              {% elif 'jewel' in cat.name|lower or 'access' in cat.name|lower %}💎
+              {% elif 'skin' in cat.name|lower or 'beauty' in cat.name|lower %}✨
+              {% elif 'pant' in cat.name|lower or 'trouser' in cat.name|lower %}👖
+              {% elif 'perfume' in cat.name|lower %}🌸
+              {% else %}🛍️{% endif %}
+            </div>
+          {% endif %}
+          <p style="font-weight:700;color:var(--dark);">{{ cat.name }}</p>
+          <p style="color:var(--gray);font-size:0.8rem;margin-top:4px;">{{ cat.products.filter.count }} items</p>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

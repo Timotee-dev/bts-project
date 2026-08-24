@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block title %}Your Cart — BTS Project{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1 class="page-header-title">Your Cart</h1>
+  <div class="breadcrumb"><a href="{% url 'home' %}">Home</a><span class="sep">/</span><span>Cart</span></div>
+</div>
+
+<section class="section">
+  <div class="container">
+    {% if cart.items.exists %}
+    <div class="cart-layout">
+      <!-- Cart Items -->
+      <div>
+        {% if cart.cart_type == 'custom' %}
+        <div class="alert alert-info" style="margin-bottom:24px;">
+          <i class="fas fa-info-circle"></i>
+          Custom Package: <strong>{{ cart.custom_item_count }} of {{ min_items }} items</strong> selected.
+          {% if not cart.can_checkout %} Add {{ min_items|add:"-"|add:cart.custom_item_count }} more item(s) to checkout.{% else %} ✅ Ready to checkout!{% endif %}
+        </div>
+        {% endif %}
+
+        {% for item in cart.items.all %}
+        <div class="cart-item-row">
+          {% if item.package and item.package.cover_image %}
+            <img src="{{ item.package.cover_image.url }}" class="cart-item-img" alt="{{ item.package.name }}">
+          {% elif item.product and item.product.image %}
+            <img src="{{ item.product.image.url }}" class="cart-item-img" alt="{{ item.product.name }}">
+          {% else %}
+            <div class="cart-item-img" style="background:var(--green-pale);display:flex;align-items:center;justify-content:center;font-size:1.5rem;">📦</div>
+          {% endif %}
+          <div style="flex:1;">
+            <p class="cart-item-name">
+              {% if item.package %}{{ item.package.name }}{% else %}{{ item.product.name }}{% endif %}
+            </p>
+            <p class="cart-item-meta">
+              {% if item.package %}BTS Package{% else %}{{ item.product.category.name }}{% if item.selected_size %} · Size: {{ item.selected_size }}{% endif %}{% endif %}
+            </p>
+            <div class="qty-control">
+              <span style="font-size:0.85rem;color:var(--gray);">Qty: {{ item.quantity }}</span>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <p style="font-size:1.1rem;font-weight:700;color:var(--green);">₦{{ item.line_total|floatformat:0 }}</p>
+            <p style="font-size:0.8rem;color:var(--gray);">₦{{ item.unit_price|floatformat:0 }} each</p>
+            <a href="{% url 'remove_from_cart' item.id %}" style="color:var(--danger);font-size:0.8rem;text-decoration:none;margin-top:8px;display:block;">
+              <i class="fas fa-trash-alt"></i> Remove
+            </a>
+          </div>
+        </div>
+        {% endfor %}
+
+        <div style="margin-top:24px;">
+          <a href="{% url 'packages' %}" class="btn btn-outline-green"><i class="fas fa-arrow-left"></i> Continue Shopping</a>
+        </div>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="order-summary">
+        <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;">Order Summary</h3>
+        <div class="summary-row">
+          <span>Subtotal ({{ cart.total_items }} items)</span>
+          <span>₦{{ cart.subtotal|floatformat:0 }}</span>
+        </div>
+        {% if cart.cart_type == 'custom' %}
+        <div class="summary-row">
+          <span>Custom Packaging Fee</span>
+          <span>₦{{ cart.packaging_fee|floatformat:0 }}</span>
+        </div>
+        {% endif %}
+        <div class="summary-row">
+          <span>Delivery</span>
+          <span style="color:var(--success);">Calculated at checkout</span>
+        </div>
+        <div class="summary-row total">
+          <span>Total</span>
+          <span style="color:var(--green);">₦{{ cart.total|floatformat:0 }}</span>
+        </div>
+
+        {% if cart.can_checkout %}
+          <a href="{% url 'checkout' %}" class="btn btn-primary btn-lg btn-block" style="margin-top:20px;">
+            <i class="fas fa-lock"></i> Proceed to Checkout
+          </a>
+        {% else %}
+          <button disabled class="btn btn-outline-green btn-lg btn-block" style="margin-top:20px;opacity:0.6;cursor:not-allowed;">
+            <i class="fas fa-lock"></i> Add {{ min_items|add:"-"|add:cart.custom_item_count }} more item(s)
+          </button>
+          <p style="font-size:0.8rem;color:var(--gray);text-align:center;margin-top:8px;">
+            Minimum {{ min_items }} items required for custom packages
+          </p>
+        {% endif %}
+
+        <div style="margin-top:20px;padding:16px;background:white;border-radius:8px;border:1px solid #f0f0f8;">
+          <p style="font-size:0.8rem;color:var(--gray);text-align:center;margin-bottom:8px;">We accept</p>
+          <div style="display:flex;gap:8px;justify-content:center;font-size:1.2rem;">
+            💳 🏦 📱
+          </div>
+          <p style="font-size:0.75rem;color:var(--gray);text-align:center;margin-top:6px;">Cards · Bank Transfer · USSD</p>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:80px 24px;">
+      <div style="font-size:5rem;margin-bottom:24px;">🛒</div>
+      <h2 style="font-size:1.8rem;font-weight:800;color:var(--dark);margin-bottom:12px;">Your cart is empty</h2>
+      <p style="color:var(--gray);margin-bottom:32px;">Start shopping for your back-to-school package!</p>
+      <div style="display:flex;gap:16px;justify-content:center;">
+        <a href="{% url 'packages' %}" class="btn btn-primary btn-lg">Shop Packages</a>
+        <a href="{% url 'build_your_own' %}" class="btn btn-outline-green btn-lg">Build Your Own</a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

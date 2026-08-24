@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% block title %}{{ product.name }} — BTS Project
+{% if user.is_authenticated %}
+<section style="background:var(--surface);padding:40px var(--px);">
+  <div class="container" style="max-width:640px;">
+    <h2 style="font-size:1.2rem;font-weight:800;color:var(--dark);margin-bottom:20px;">Leave a Review</h2>
+    <div class="card">
+      <form method="post" action="{% url 'submit_product_review' product.slug %}">
+        {% csrf_token %}
+        <div class="form-group">
+          <label class="form-label">Rating</label>
+          <div style="display:flex;gap:8px;margin-bottom:4px;">
+            {% for i in "12345" %}
+            <label style="cursor:pointer;font-size:1.5rem;">
+              <input type="radio" name="rating" value="{{ forloop.counter }}" style="display:none;"
+                     {% if forloop.counter == 5 %}checked{% endif %}>
+              <span class="star-label" data-val="{{ forloop.counter }}">⭐</span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Review Title</label>
+          <input type="text" name="title" class="form-control" required placeholder="Summarise your experience">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Your Review</label>
+          <textarea name="body" class="form-control" rows="4" required placeholder="Tell other students what you think..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-star"></i> Submit Review</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-header-title">{{ product.name }}</h1>
+  <div class="breadcrumb"><a href="{% url 'home' %}">Home</a><span class="sep">/</span><a href="{% url 'category_products' product.category.slug %}">{{ product.category.name }}</a><span class="sep">/</span><span>{{ product.name }}</span></div>
+</div>
+<section class="section">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start;">
+      <div>
+        <div style="background:var(--surface);border-radius:var(--radius);aspect-ratio:1;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:16px;">
+          {% if product.image %}<img id="main-product-img" src="{{ product.image.url }}" alt="{{ product.name }}" style="width:100%;height:100%;object-fit:cover;">{% else %}<div style="font-size:6rem;opacity:0.2;">👕</div>{% endif %}
+        </div>
+        {% if product.image2 or product.image3 %}
+        <div style="display:flex;gap:8px;">
+          {% if product.image %}<img src="{{ product.image.url }}" class="product-thumb" style="width:72px;height:72px;object-fit:cover;border-radius:8px;cursor:pointer;border:2px solid var(--green);">{% endif %}
+          {% if product.image2 %}<img src="{{ product.image2.url }}" class="product-thumb" style="width:72px;height:72px;object-fit:cover;border-radius:8px;cursor:pointer;border:2px solid transparent;">{% endif %}
+          {% if product.image3 %}<img src="{{ product.image3.url }}" class="product-thumb" style="width:72px;height:72px;object-fit:cover;border-radius:8px;cursor:pointer;border:2px solid transparent;">{% endif %}
+        </div>
+        {% endif %}
+      </div>
+      <div style="position:sticky;top:90px;">
+        {% if product.brand %}<p style="color:var(--green);font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">{{ product.brand.name }}</p>{% endif %}
+        <h1 style="font-size:1.8rem;font-weight:800;color:var(--dark);margin-bottom:12px;">{{ product.name }}</h1>
+        <div class="stars" style="margin-bottom:12px;">{% for i in "12345" %}{% if forloop.counter <= product.average_rating %}⭐{% endif %}{% endfor %} <span style="color:var(--gray);font-size:0.85rem;">({{ reviews.count }} reviews)</span></div>
+        <p style="font-size:2rem;font-weight:900;color:var(--green);margin-bottom:20px;">₦{{ product.price|floatformat:0 }}</p>
+        <p style="color:var(--gray);margin-bottom:24px;line-height:1.7;">{{ product.description }}</p>
+        {% if product.sizes_list %}
+        <div class="size-group" style="margin-bottom:20px;">
+          <p style="font-size:0.875rem;font-weight:700;color:var(--dark);margin-bottom:12px;">SELECT SIZE</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            {% for size in product.sizes_list %}<button class="size-btn" data-size="{{ size }}" style="padding:8px 16px;border:2px solid #e0e0e8;border-radius:8px;background:white;font-weight:600;cursor:pointer;transition:all 0.2s;">{{ size }}</button>{% endfor %}
+          </div>
+          <input type="hidden" data-size-select="{{ product.id }}" value="">
+        </div>
+        {% endif %}
+        <form method="post" action="{% url 'add_to_cart' 'product' product.id %}">
+          {% csrf_token %}
+          {% if product.sizes_list %}<input type="hidden" name="size" data-size-hidden="{{ product.id }}">{% endif %}
+          <div style="display:flex;gap:12px;">
+            <button type="submit" class="btn btn-primary btn-lg" style="flex:1;"><i class="fas fa-plus"></i> Add to Package</button>
+            <button type="button" class="btn btn-outline-green wishlist-toggle"><i class="far fa-heart"></i></button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    {% if related_products %}
+    <div style="margin-top:64px;">
+      <h2 style="font-size:1.5rem;font-weight:800;margin-bottom:32px;">You May Also Like</h2>
+      <div class="products-grid">
+        {% for rp in related_products %}
+        <div class="product-card">
+          <div class="product-card-img">
+            {% if rp.image %}<img src="{{ rp.image.url }}" alt="{{ rp.name }}">{% else %}<div style="font-size:3rem;opacity:0.2;">👕</div>{% endif %}
+          </div>
+          <div class="product-card-body">
+            <h3 class="product-name">{{ rp.name }}</h3>
+            <p class="product-price">₦{{ rp.price|floatformat:0 }}</p>
+            <a href="{% url 'product_detail' rp.slug %}" class="btn btn-outline-green btn-sm btn-block">View</a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

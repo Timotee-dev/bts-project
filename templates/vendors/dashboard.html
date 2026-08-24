@@ -1,0 +1,81 @@
+{% extends 'vendors/base.html' %}
+{% block title %}Vendor Dashboard — {{ vendor.business_name }}{% endblock %}
+
+{% block vendor_content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;flex-wrap:wrap;gap:12px;">
+  <div>
+    <h1 style="font-size:1.6rem;font-weight:800;color:var(--dark);">Welcome back 👋</h1>
+    <p style="color:var(--gray);font-size:0.9rem;">Here's what's happening with {{ vendor.business_name }} today.</p>
+  </div>
+  <a href="{% url 'vendor_product_add' %}" class="btn btn-primary">
+    <i class="fas fa-plus"></i> Add Product
+  </a>
+</div>
+
+<!-- Stats -->
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:28px;">
+  <div class="card" style="text-align:center;border-top:4px solid var(--green);">
+    <div style="font-size:1.8rem;margin-bottom:4px;">📦</div>
+    <div style="font-size:2rem;font-weight:900;color:var(--green);">{{ vendor.total_products }}</div>
+    <div style="color:var(--gray);font-size:0.8rem;">Active Products</div>
+  </div>
+  <div class="card" style="text-align:center;border-top:4px solid var(--gold);">
+    <div style="font-size:1.8rem;margin-bottom:4px;">🛒</div>
+    <div style="font-size:2rem;font-weight:900;color:var(--green);">{{ vendor.total_orders }}</div>
+    <div style="color:var(--gray);font-size:0.8rem;">Total Orders</div>
+  </div>
+  <div class="card" style="text-align:center;border-top:4px solid var(--success);">
+    <div style="font-size:1.8rem;margin-bottom:4px;">💰</div>
+    <div style="font-size:2rem;font-weight:900;color:var(--green);">₦{{ monthly_revenue|floatformat:0 }}</div>
+    <div style="color:var(--gray);font-size:0.8rem;">This Month</div>
+  </div>
+  <div class="card" style="text-align:center;border-top:4px solid var(--green-light);">
+    <div style="font-size:1.8rem;margin-bottom:4px;">🏪</div>
+    <div style="font-size:2rem;font-weight:900;color:var(--green);">{{ vendor.packages.count }}</div>
+    <div style="color:var(--gray);font-size:0.8rem;">Packages Created</div>
+  </div>
+</div>
+
+<!-- Quick actions -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;">
+  <a href="{% url 'vendor_product_add' %}" class="card" style="text-decoration:none;display:flex;align-items:center;gap:16px;border-left:4px solid var(--green);">
+    <div style="width:48px;height:48px;background:var(--green-pale);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.3rem;">📦</div>
+    <div>
+      <p style="font-weight:700;color:var(--dark);">Add New Product</p>
+      <p style="color:var(--gray);font-size:0.8rem;">List a product on BTS</p>
+    </div>
+  </a>
+  <a href="{% url 'vendor_package_add' %}" class="card" style="text-decoration:none;display:flex;align-items:center;gap:16px;border-left:4px solid var(--gold);">
+    <div style="width:48px;height:48px;background:#fef9e7;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.3rem;">🎁</div>
+    <div>
+      <p style="font-weight:700;color:var(--dark);">Create a Package</p>
+      <p style="color:var(--gray);font-size:0.8rem;">Bundle your products</p>
+    </div>
+  </a>
+</div>
+
+<!-- Recent orders -->
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+    <h2 style="font-size:1rem;font-weight:700;color:var(--dark);">Recent Orders</h2>
+    <a href="{% url 'vendor_orders' %}" style="color:var(--green);font-size:0.85rem;font-weight:600;text-decoration:none;">View All</a>
+  </div>
+  {% if recent_orders %}
+    {% for order in recent_orders %}
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px;">
+      <div>
+        <p style="font-weight:600;color:var(--dark);font-size:0.9rem;">#{{ order.order_number }}</p>
+        <p style="font-size:0.78rem;color:var(--gray);">{{ order.created_at|date:"M d, Y" }}</p>
+      </div>
+      <span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span>
+      <p style="font-weight:700;color:var(--green);">₦{{ order.total|floatformat:0 }}</p>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div style="text-align:center;padding:40px;color:var(--gray);">
+      <div style="font-size:3rem;margin-bottom:12px;">📭</div>
+      <p>No orders yet. Add products to get started!</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
