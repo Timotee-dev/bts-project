@@ -17,4 +17,4 @@ gunicorn==22.0.0
 python-decouple==3.8
 
 # ─── Image Processing ──────────────────────────────────────────
-Pillow==10.4.0
+Pillow>=11.0.0
