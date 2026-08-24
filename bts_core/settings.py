@@ -1,13 +1,12 @@
 """
 BTS Project — Production-Ready Django Settings
-Supports: SQLite (dev) → PostgreSQL (prod/Render)
+Supports: SQLite (dev) → PostgreSQL/Supabase (prod/Render)
 Static files: WhiteNoise
-Media files: Local (dev) → Cloudinary (prod, optional)
 """
 
 from pathlib import Path
 from decouple import config, Csv
-import dj_database_url
+import urllib.parse
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -36,7 +35,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',   # serve static in prod
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -68,10 +67,27 @@ TEMPLATES = [
 WSGI_APPLICATION = 'bts_core.wsgi.application'
 
 # ─── Database ────────────────────────────────────────────────
-# Uses DATABASE_URL if set (Render PostgreSQL), else SQLite for dev
+# Local dev  → SQLite (no config needed)
+# Production → set DATABASE_URL in Render environment variables
+# Format: postgresql://user:password@host:port/dbname
 _db_url = config('DATABASE_URL', default='')
+
 if _db_url:
-    DATABASES = {'default': dj_database_url.parse(_db_url, conn_max_age=600)}
+    _parsed = urllib.parse.urlparse(_db_url)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': _parsed.path[1:],
+            'USER': _parsed.username,
+            'PASSWORD': _parsed.password,
+            'HOST': _parsed.hostname,
+            'PORT': _parsed.port or 5432,
+            'OPTIONS': {
+                'sslmode': 'require',
+            },
+            'CONN_MAX_AGE': 600,
+        }
+    }
 else:
     DATABASES = {
         'default': {
@@ -110,7 +126,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# ─── Security Headers (production) ───────────────────────────
+# ─── Security Headers (production only) ──────────────────────
 if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
