@@ -2,6 +2,25 @@
 {% load static %}
 {% block title %}{{ product.name }} — BTS Project{% endblock %}
 
+{% block extra_css %}
+<style>
+.pd-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+@media (min-width: 900px) {
+  .pd-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(32px, 5vw, 56px);
+    align-items: start;
+  }
+  .pd-sticky { position: sticky; top: calc(var(--nav-h) + 16px); }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 
 <div class="page-header">
@@ -17,81 +36,48 @@
 
 <section class="section">
   <div class="container">
+    <div class="pd-grid">
 
-    <!-- Product grid — stacks on mobile -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,5vw,56px);align-items:start;">
-
-      <!-- LEFT: Images -->
-      <div class="product-gallery">
-        <div class="main-img-wrap">
+      <!-- Image -->
+      <div>
+        <div style="background:var(--green-xpale);border-radius:var(--radius);aspect-ratio:1;overflow:hidden;margin-bottom:12px;display:flex;align-items:center;justify-content:center;">
           {% if product.image %}
-            <img id="main-product-img" src="{{ product.image.url }}" alt="{{ product.name }}">
+            <img id="main-product-img" src="{{ product.image.url }}" alt="{{ product.name }}" style="width:100%;height:100%;object-fit:cover;">
           {% else %}
-            <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--gray);">
-              <i class="fas fa-tshirt" style="font-size:4rem;opacity:0.15;"></i>
-            </div>
+            <i class="fas fa-tshirt" style="font-size:5rem;opacity:0.1;color:var(--green);"></i>
           {% endif %}
         </div>
-
         {% if product.image2 or product.image3 %}
-        <div class="thumb-row">
-          {% if product.image %}
-            <img src="{{ product.image.url }}" class="product-thumb active" alt="{{ product.name }}">
-          {% endif %}
-          {% if product.image2 %}
-            <img src="{{ product.image2.url }}" class="product-thumb" alt="{{ product.name }}">
-          {% endif %}
-          {% if product.image3 %}
-            <img src="{{ product.image3.url }}" class="product-thumb" alt="{{ product.name }}">
-          {% endif %}
+        <div style="display:flex;gap:8px;">
+          {% if product.image %}<img src="{{ product.image.url }}" class="product-thumb active" alt="">{% endif %}
+          {% if product.image2 %}<img src="{{ product.image2.url }}" class="product-thumb" alt="">{% endif %}
+          {% if product.image3 %}<img src="{{ product.image3.url }}" class="product-thumb" alt="">{% endif %}
         </div>
         {% endif %}
       </div>
 
-      <!-- RIGHT: Product info -->
-      <div>
+      <!-- Info -->
+      <div class="pd-sticky">
         {% if product.brand %}
-          <p style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--green);margin-bottom:6px;">
-            {{ product.brand.name }}
-          </p>
+          <p style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--green);margin-bottom:6px;">{{ product.brand.name }}</p>
         {% endif %}
+        <h1 style="font-size:clamp(1.4rem,5vw,2rem);font-weight:800;color:var(--dark);margin-bottom:10px;">{{ product.name }}</h1>
 
-        <h1 style="font-size:clamp(1.4rem,4vw,2rem);font-weight:800;color:var(--dark);margin-bottom:10px;">
-          {{ product.name }}
-        </h1>
-
-        <!-- Rating -->
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
-          <div class="stars">
-            {% with avg=product.average_rating %}
-              {% for i in "12345" %}
-                {% if forloop.counter <= avg %}
-                  <i class="fas fa-star" style="color:var(--gold);font-size:0.85rem;"></i>
-                {% else %}
-                  <i class="far fa-star" style="color:var(--border);font-size:0.85rem;"></i>
-                {% endif %}
-              {% endfor %}
-            {% endwith %}
-          </div>
-          <span style="color:var(--gray);font-size:0.83rem;">({{ reviews.count }} review{{ reviews.count|pluralize }})</span>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+          {% with avg=product.average_rating %}
+          {% for i in "12345" %}
+            <i class="{% if forloop.counter <= avg %}fas{% else %}far{% endif %} fa-star" style="color:var(--gold);font-size:0.85rem;"></i>
+          {% endfor %}
+          {% endwith %}
+          <span style="color:var(--gray);font-size:0.82rem;">({{ reviews.count }})</span>
         </div>
 
-        <!-- Price -->
-        <p style="font-size:clamp(1.6rem,5vw,2.2rem);font-weight:900;color:var(--green);margin-bottom:16px;">
-          &#x20A6;{{ product.price|floatformat:0 }}
-        </p>
+        <p style="font-size:clamp(1.8rem,6vw,2.4rem);font-weight:900;color:var(--green);margin-bottom:14px;">&#x20A6;{{ product.price|floatformat:0 }}</p>
+        <p style="color:var(--gray);line-height:1.75;margin-bottom:20px;font-size:0.9rem;">{{ product.description }}</p>
 
-        <!-- Description -->
-        <p style="color:var(--gray);line-height:1.75;margin-bottom:24px;font-size:0.9rem;">
-          {{ product.description }}
-        </p>
-
-        <!-- Size selector -->
         {% if product.sizes_list %}
-        <div class="size-group" style="margin-bottom:24px;">
-          <p style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dark);margin-bottom:10px;">
-            Select Size
-          </p>
+        <div class="size-group" style="margin-bottom:20px;">
+          <p style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dark);margin-bottom:10px;">Select Size</p>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             {% for size in product.sizes_list %}
             <button class="size-btn" data-size="{{ size }}">{{ size }}</button>
@@ -101,62 +87,44 @@
         </div>
         {% endif %}
 
-        <!-- Add to cart -->
         <form method="post" action="{% url 'add_to_cart' 'product' product.id %}">
           {% csrf_token %}
           <input type="hidden" name="next" value="{{ request.path }}">
           {% if product.sizes_list %}
             <input type="hidden" name="size" data-size-hidden="{{ product.id }}">
           {% endif %}
-          <div style="display:flex;gap:12px;flex-wrap:wrap;">
-            <button type="submit" class="btn btn-primary btn-lg" style="flex:1;min-width:160px;">
+          <div style="display:flex;gap:10px;">
+            <button type="submit" class="btn btn-primary btn-lg" style="flex:1;">
               <i class="fas fa-plus"></i> Add to Cart
             </button>
-            <button type="button" class="btn btn-outline-green wishlist-toggle" aria-label="Add to wishlist">
+            <button type="button" class="btn btn-outline-green wishlist-toggle">
               <i class="far fa-heart"></i>
             </button>
           </div>
         </form>
 
-        <!-- Trust badges -->
-        <div style="margin-top:24px;padding:16px;background:var(--surface);border-radius:var(--radius-sm);border:1px solid var(--border);">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            <div style="display:flex;gap:8px;align-items:center;font-size:0.8rem;color:var(--gray);">
-              <i class="fas fa-shield-alt" style="color:var(--success);flex-shrink:0;"></i> Secure payment
-            </div>
-            <div style="display:flex;gap:8px;align-items:center;font-size:0.8rem;color:var(--gray);">
-              <i class="fas fa-truck" style="color:var(--success);flex-shrink:0;"></i> Nationwide delivery
-            </div>
-            <div style="display:flex;gap:8px;align-items:center;font-size:0.8rem;color:var(--gray);">
-              <i class="fas fa-undo" style="color:var(--success);flex-shrink:0;"></i> 7-day replacement
-            </div>
-            <div style="display:flex;gap:8px;align-items:center;font-size:0.8rem;color:var(--gray);">
-              <i class="fas fa-award" style="color:var(--success);flex-shrink:0;"></i> Verified vendor
-            </div>
-          </div>
+        <div style="margin-top:20px;padding:14px;background:var(--surface);border-radius:var(--radius-sm);border:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div style="display:flex;gap:6px;align-items:center;font-size:0.78rem;color:var(--gray);"><i class="fas fa-shield-alt" style="color:var(--success);"></i> Secure payment</div>
+          <div style="display:flex;gap:6px;align-items:center;font-size:0.78rem;color:var(--gray);"><i class="fas fa-truck" style="color:var(--success);"></i> Nationwide delivery</div>
+          <div style="display:flex;gap:6px;align-items:center;font-size:0.78rem;color:var(--gray);"><i class="fas fa-undo" style="color:var(--success);"></i> 7-day replacement</div>
+          <div style="display:flex;gap:6px;align-items:center;font-size:0.78rem;color:var(--gray);"><i class="fas fa-award" style="color:var(--success);"></i> Verified vendor</div>
         </div>
       </div>
     </div>
 
     <!-- Reviews -->
     {% if reviews %}
-    <div style="margin-top:clamp(40px,6vw,64px);">
-      <h2 style="font-size:1.3rem;font-weight:800;color:var(--dark);margin-bottom:24px;">
-        Customer Reviews
-      </h2>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:16px;">
+    <div style="margin-top:40px;">
+      <h2 style="font-size:1.2rem;font-weight:800;color:var(--dark);margin-bottom:20px;">Customer Reviews</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:14px;">
         {% for review in reviews %}
         <div class="card">
-          <div style="display:flex;gap:4px;margin-bottom:10px;">
-            {% for i in "12345" %}
-              <i class="fas fa-star" style="color:{% if forloop.counter <= review.rating %}var(--gold){% else %}var(--border){% endif %};font-size:0.8rem;"></i>
-            {% endfor %}
+          <div style="display:flex;gap:3px;margin-bottom:8px;">
+            {% for i in "12345" %}<i class="fas fa-star" style="color:{% if forloop.counter <= review.rating %}var(--gold){% else %}var(--border){% endif %};font-size:0.78rem;"></i>{% endfor %}
           </div>
-          <p style="font-weight:700;color:var(--dark);margin-bottom:6px;">{{ review.title }}</p>
-          <p style="color:var(--gray);font-size:0.875rem;line-height:1.6;margin-bottom:10px;">{{ review.body }}</p>
-          <p style="font-size:0.78rem;color:var(--gray-light);">
-            — {{ review.customer.get_full_name|default:review.customer.username }}
-          </p>
+          <p style="font-weight:700;color:var(--dark);margin-bottom:5px;font-size:0.9rem;">{{ review.title }}</p>
+          <p style="color:var(--gray);font-size:0.85rem;line-height:1.6;margin-bottom:8px;">{{ review.body }}</p>
+          <p style="font-size:0.75rem;color:var(--gray-light);">— {{ review.customer.get_full_name|default:review.customer.username }}</p>
         </div>
         {% endfor %}
       </div>
@@ -165,18 +133,17 @@
 
     <!-- Leave a review -->
     {% if user.is_authenticated %}
-    <div style="margin-top:clamp(32px,5vw,48px);max-width:560px;">
-      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin-bottom:16px;">Leave a Review</h2>
+    <div style="margin-top:32px;max-width:540px;">
+      <h2 style="font-size:1rem;font-weight:800;color:var(--dark);margin-bottom:14px;">Leave a Review</h2>
       <div class="card">
         <form method="post" action="{% url 'submit_product_review' product.slug %}">
           {% csrf_token %}
           <div class="form-group">
             <label class="form-label">Rating</label>
             <div style="display:flex;gap:8px;">
-              {% for i in "54321" %}
-              <label style="cursor:pointer;font-size:1.5rem;color:var(--gold);">
-                <input type="radio" name="rating" value="{{ forloop.revcounter }}" style="display:none;"
-                  {% if forloop.revcounter == 5 %}checked{% endif %}>
+              {% for i in "12345" %}
+              <label style="cursor:pointer;font-size:1.4rem;color:var(--gold);">
+                <input type="radio" name="rating" value="{{ forloop.counter }}" style="display:none;" {% if forloop.counter == 5 %}checked{% endif %}>
                 <i class="fas fa-star"></i>
               </label>
               {% endfor %}
@@ -188,11 +155,9 @@
           </div>
           <div class="form-group">
             <label class="form-label">Review</label>
-            <textarea name="body" class="form-control" rows="4" required placeholder="Tell other students what you think..."></textarea>
+            <textarea name="body" class="form-control" rows="3" required placeholder="Tell other students what you think..."></textarea>
           </div>
-          <button type="submit" class="btn btn-primary">
-            <i class="fas fa-star"></i> Submit Review
-          </button>
+          <button type="submit" class="btn btn-primary"><i class="fas fa-star"></i> Submit Review</button>
         </form>
       </div>
     </div>
@@ -200,19 +165,14 @@
 
     <!-- Related products -->
     {% if related_products %}
-    <div style="margin-top:clamp(40px,6vw,64px);">
-      <h2 style="font-size:1.3rem;font-weight:800;color:var(--dark);margin-bottom:24px;">You May Also Like</h2>
+    <div style="margin-top:40px;">
+      <h2 style="font-size:1.2rem;font-weight:800;color:var(--dark);margin-bottom:20px;">You May Also Like</h2>
       <div class="products-grid">
         {% for rp in related_products %}
         <div class="product-card">
           <div class="product-card-img">
-            {% if rp.image %}
-              <img src="{{ rp.image.url }}" alt="{{ rp.name }}">
-            {% else %}
-              <div style="display:flex;align-items:center;justify-content:center;height:100%;">
-                <i class="fas fa-tshirt" style="font-size:2rem;opacity:0.15;"></i>
-              </div>
-            {% endif %}
+            {% if rp.image %}<img src="{{ rp.image.url }}" alt="{{ rp.name }}">
+            {% else %}<div style="display:flex;align-items:center;justify-content:center;height:100%;"><i class="fas fa-tshirt" style="font-size:2rem;opacity:0.1;"></i></div>{% endif %}
           </div>
           <div class="product-card-body">
             <p class="product-category">{{ rp.category.name }}</p>
@@ -233,7 +193,6 @@
 
 {% block extra_js %}
 <script>
-// Sync size button to hidden form input
 document.querySelectorAll('.size-group').forEach(group => {
   group.querySelectorAll('.size-btn').forEach(btn => {
     btn.addEventListener('click', function() {
