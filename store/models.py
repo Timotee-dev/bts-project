@@ -199,8 +199,6 @@ class Cart(models.Model):
 
     @property
     def packaging_fee(self):
-        if self.cart_type == 'custom':
-            return settings.BTS_CUSTOM_PACKAGING_FEE
         return 0
 
     @property
@@ -213,8 +211,6 @@ class Cart(models.Model):
 
     @property
     def can_checkout(self):
-        if self.cart_type == 'custom':
-            return self.custom_item_count >= settings.BTS_MIN_CUSTOM_ITEMS
         return self.items.exists()
 
 
