@@ -1,88 +1,113 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}{{ package.name }} — BTS Project{% endblock %}
+
 {% block content %}
 
 <div class="page-header">
   <h1 class="page-header-title">{{ package.name }}</h1>
-  <p class="page-header-sub">{{ package.get_budget_tier_display }} Package</p>
+  <p class="page-header-sub">{{ package.get_budget_tier_display }}</p>
   <div class="breadcrumb">
-    <a href="{% url 'home' %}">Home</a><span class="sep">/</span>
-    <a href="{% url 'packages' %}">Packages</a><span class="sep">/</span>
+    <a href="{% url 'home' %}">Home</a>
+    <span class="sep">/</span>
+    <a href="{% url 'packages' %}">Packages</a>
+    <span class="sep">/</span>
     <span>{{ package.name }}</span>
   </div>
 </div>
 
 <section class="section">
   <div class="container">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start;">
 
-      <!-- Left: Image + items -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,5vw,56px);align-items:start;">
+
+      <!-- LEFT: Image + items list -->
       <div>
-        <div style="background:var(--surface);border-radius:var(--radius);aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;margin-bottom:24px;overflow:hidden;">
+        <!-- Package image -->
+        <div style="background:var(--green-xpale);border-radius:var(--radius);aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:28px;">
           {% if package.cover_image %}
             <img src="{{ package.cover_image.url }}" alt="{{ package.name }}" style="width:100%;height:100%;object-fit:cover;">
           {% else %}
-            <div style="font-size:6rem;opacity:0.2;">📦</div>
+            <i class="fas fa-box-open" style="font-size:4rem;opacity:0.15;color:var(--green);"></i>
           {% endif %}
         </div>
-        <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:16px;color:var(--dark);">
-          What's In This Package ({{ package.package_items.count }} items)
+
+        <!-- What's inside -->
+        <h3 style="font-size:1rem;font-weight:800;color:var(--dark);margin-bottom:16px;">
+          What's Included ({{ package.package_items.count }} items)
         </h3>
+
         {% for pi in package.package_items.all %}
-        <div style="display:flex;gap:16px;align-items:center;padding:14px 0;border-bottom:1px solid #f0f0f8;">
+        <div style="display:flex;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
           {% if pi.product.image %}
-            <img src="{{ pi.product.image.url }}" alt="{{ pi.product.name }}" style="width:64px;height:64px;object-fit:cover;border-radius:8px;">
+            <img src="{{ pi.product.image.url }}" alt="{{ pi.product.name }}"
+                 style="width:56px;height:56px;object-fit:cover;border-radius:var(--radius-sm);flex-shrink:0;">
           {% else %}
-            <div style="width:64px;height:64px;background:var(--green-pale);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">👕</div>
+            <div style="width:56px;height:56px;background:var(--green-pale);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="fas fa-tshirt" style="opacity:0.3;color:var(--green);"></i>
+            </div>
           {% endif %}
-          <div style="flex:1;">
-            <p style="font-weight:600;color:var(--dark);margin-bottom:2px;">{{ pi.product.name }}</p>
-            <p style="color:var(--gray);font-size:0.8rem;">{{ pi.product.category.name }}</p>
+          <div style="flex:1;min-width:0;">
+            <p style="font-weight:600;color:var(--dark);font-size:0.9rem;margin-bottom:2px;">{{ pi.product.name }}</p>
+            <p style="color:var(--gray);font-size:0.78rem;">{{ pi.product.category.name }}</p>
           </div>
-          <div style="text-align:right;">
-            <p style="color:var(--gray);text-decoration:line-through;font-size:0.85rem;">₦{{ pi.product.price|floatformat:0 }}</p>
-            <p style="color:var(--success);font-size:0.8rem;font-weight:600;">Included ✓</p>
+          <div style="text-align:right;flex-shrink:0;">
+            <p style="color:var(--gray);text-decoration:line-through;font-size:0.82rem;">&#x20A6;{{ pi.product.price|floatformat:0 }}</p>
+            <p style="color:var(--success);font-size:0.75rem;font-weight:700;">Included</p>
           </div>
         </div>
         {% endfor %}
       </div>
 
-      <!-- Right: Price + CTA -->
-      <div style="position:sticky;top:90px;">
-        <div style="background:white;border-radius:var(--radius);box-shadow:var(--shadow);padding:32px;border:1px solid #f0f0f8;">
-          <div style="display:inline-block;background:var(--gold);color:var(--dark);font-size:0.8rem;font-weight:800;padding:4px 14px;border-radius:24px;margin-bottom:20px;">
-            SAVE {{ package.savings_percent }}% vs buying separately
+      <!-- RIGHT: Price + CTA (sticky on desktop) -->
+      <div style="position:sticky;top:calc(var(--nav-h) + 16px);">
+        <div class="card">
+
+          <!-- Savings badge -->
+          <div style="display:inline-block;background:var(--gold);color:var(--dark);font-size:0.78rem;font-weight:800;padding:4px 14px;border-radius:var(--radius-full);margin-bottom:16px;">
+            Save {{ package.savings_percent }}% vs buying separately
           </div>
-          <h2 style="font-size:2.4rem;font-weight:900;color:var(--green);margin-bottom:4px;">₦{{ package.price|floatformat:0 }}</h2>
-          <p style="color:var(--gray);text-decoration:line-through;margin-bottom:4px;">₦{{ package.original_price|floatformat:0 }}</p>
-          <p style="color:var(--success);font-size:0.9rem;font-weight:700;margin-bottom:24px;">
-            <i class="fas fa-tag"></i> You save ₦{{ package.savings|floatformat:0 }}
+
+          <!-- Price -->
+          <p style="font-size:clamp(2rem,6vw,2.8rem);font-weight:900;color:var(--green);margin-bottom:4px;">
+            &#x20A6;{{ package.price|floatformat:0 }}
           </p>
-          <p style="color:var(--gray);font-size:0.9rem;margin-bottom:24px;">{{ package.description }}</p>
+          <p style="color:var(--gray);text-decoration:line-through;font-size:0.9rem;margin-bottom:4px;">
+            &#x20A6;{{ package.original_price|floatformat:0 }}
+          </p>
+          <p style="color:var(--success);font-size:0.875rem;font-weight:700;margin-bottom:20px;">
+            <i class="fas fa-tag"></i> You save &#x20A6;{{ package.savings|floatformat:0 }}
+          </p>
+
+          <p style="color:var(--gray);font-size:0.875rem;line-height:1.7;margin-bottom:24px;">
+            {{ package.description }}
+          </p>
+
+          <!-- Add to cart -->
           <form method="post" action="{% url 'add_to_cart' 'package' package.id %}">
             {% csrf_token %}
-            <input type="hidden" name="next" value="{{ request.path }}">
-            <button type="submit" class="btn btn-primary btn-lg btn-block" style="margin-bottom:12px;">
+            <button type="submit" class="btn btn-primary btn-lg btn-block" style="margin-bottom:10px;">
               <i class="fas fa-shopping-bag"></i> Add to Cart
             </button>
           </form>
+
           <button class="btn btn-outline-green btn-block wishlist-toggle">
             <i class="far fa-heart"></i> Add to Wishlist
           </button>
-          <div style="margin-top:24px;padding-top:24px;border-top:1px solid #f0f0f8;">
-            <div style="display:flex;gap:12px;flex-direction:column;">
-              <div style="display:flex;gap:8px;font-size:0.85rem;color:var(--gray);">
-                <i class="fas fa-shield-alt" style="color:var(--success);margin-top:2px;"></i>
-                Secure online payment
-              </div>
-              <div style="display:flex;gap:8px;font-size:0.85rem;color:var(--gray);">
-                <i class="fas fa-undo" style="color:var(--success);margin-top:2px;"></i>
-                7-day replacement policy
-              </div>
-              <div style="display:flex;gap:8px;font-size:0.85rem;color:var(--gray);">
-                <i class="fas fa-truck" style="color:var(--success);margin-top:2px;"></i>
-                Nationwide delivery
-              </div>
+
+          <!-- Trust badges -->
+          <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div style="display:flex;gap:6px;align-items:center;font-size:0.78rem;color:var(--gray);">
+              <i class="fas fa-shield-alt" style="color:var(--success);"></i> Secure payment
+            </div>
+            <div style="display:flex;gap:6px;align-items:center;font-size:0.78rem;color:var(--gray);">
+              <i class="fas fa-truck" style="color:var(--success);"></i> Nationwide delivery
+            </div>
+            <div style="display:flex;gap:6px;align-items:center;font-size:0.78rem;color:var(--gray);">
+              <i class="fas fa-undo" style="color:var(--success);"></i> 7-day replacement
+            </div>
+            <div style="display:flex;gap:6px;align-items:center;font-size:0.78rem;color:var(--gray);">
+              <i class="fas fa-plus" style="color:var(--success);"></i> Add extras at checkout
             </div>
           </div>
         </div>
@@ -91,22 +116,63 @@
 
     <!-- Reviews -->
     {% if reviews %}
-    <div style="margin-top:64px;">
-      <h2 style="font-size:1.5rem;font-weight:800;margin-bottom:32px;">Customer Reviews</h2>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;">
+    <div style="margin-top:clamp(40px,6vw,64px);">
+      <h2 style="font-size:1.3rem;font-weight:800;color:var(--dark);margin-bottom:24px;">Customer Reviews</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:16px;">
         {% for review in reviews %}
-        <div style="background:white;border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);border:1px solid #f0f0f8;">
-          <div class="stars" style="margin-bottom:10px;">
-            {% for i in "12345" %}{% if forloop.counter <= review.rating %}⭐{% endif %}{% endfor %}
+        <div class="card">
+          <div style="display:flex;gap:4px;margin-bottom:10px;">
+            {% for i in "12345" %}
+              <i class="fas fa-star" style="color:{% if forloop.counter <= review.rating %}var(--gold){% else %}var(--border){% endif %};font-size:0.8rem;"></i>
+            {% endfor %}
           </div>
-          <h4 style="font-weight:700;margin-bottom:8px;">{{ review.title }}</h4>
-          <p style="color:var(--gray);font-size:0.875rem;margin-bottom:12px;">{{ review.body }}</p>
-          <p style="font-size:0.8rem;color:var(--gray);">— {{ review.customer.get_full_name|default:review.customer.username }}</p>
+          <p style="font-weight:700;color:var(--dark);margin-bottom:6px;">{{ review.title }}</p>
+          <p style="color:var(--gray);font-size:0.875rem;line-height:1.6;margin-bottom:10px;">{{ review.body }}</p>
+          <p style="font-size:0.78rem;color:var(--gray-light);">
+            — {{ review.customer.get_full_name|default:review.customer.username }}
+          </p>
         </div>
         {% endfor %}
       </div>
     </div>
     {% endif %}
+
+    <!-- Leave a review -->
+    {% if user.is_authenticated %}
+    <div style="margin-top:clamp(32px,5vw,48px);max-width:560px;">
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin-bottom:16px;">Leave a Review</h2>
+      <div class="card">
+        <form method="post" action="{% url 'submit_package_review' package.slug %}">
+          {% csrf_token %}
+          <div class="form-group">
+            <label class="form-label">Rating</label>
+            <div style="display:flex;gap:8px;">
+              {% for i in "12345" %}
+              <label style="cursor:pointer;font-size:1.5rem;color:var(--gold);">
+                <input type="radio" name="rating" value="{{ forloop.counter }}" style="display:none;"
+                  {% if forloop.counter == 5 %}checked{% endif %}>
+                <i class="fas fa-star"></i>
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Title</label>
+            <input type="text" name="title" class="form-control" required placeholder="Summarise your experience">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Review</label>
+            <textarea name="body" class="form-control" rows="4" required placeholder="Tell other students what you think..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-star"></i> Submit Review
+          </button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+
   </div>
 </section>
+
 {% endblock %}
