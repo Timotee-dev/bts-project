@@ -5,7 +5,7 @@ from .models import Customer, Address
 
 @admin.register(Customer)
 class CustomerAdmin(UserAdmin):
-    list_display = ['username', 'email', 'first_name', 'last_name', 'university', 'date_joined']
+    list_display = ['username', 'email', 'first_name', 'last_name', 'is_staff']
     fieldsets = UserAdmin.fieldsets + (
         ('BTS Profile', {'fields': ('phone', 'university', 'state', 'profile_picture')}),
     )
