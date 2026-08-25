@@ -1,0 +1,38 @@
+<div class="package-card">
+  <div class="package-card-img">
+    {% if pkg.cover_image %}
+      <img src="{{ pkg.cover_image.url }}" alt="{{ pkg.name }}">
+    {% else %}
+      <div class="package-placeholder-icon">
+        {% if pkg.budget_tier == 'essential' %}🌱{% elif pkg.budget_tier == 'glow' %}✨{% else %}👑{% endif %}
+      </div>
+    {% endif %}
+    <span class="pkg-badge pkg-badge-savings">Save {{ pkg.savings_percent }}%</span>
+    <span class="pkg-badge pkg-badge-tier">{{ pkg.get_budget_tier_display }}</span>
+  </div>
+  <div class="package-card-body">
+    <h3 class="package-name">{{ pkg.name }}</h3>
+    <p class="package-desc">{{ pkg.description|truncatechars:90 }}</p>
+    <div class="package-items-preview">
+      {% for pi in pkg.package_items.all|slice:":4" %}
+        <span class="item-pill">{{ pi.product.name }}</span>
+      {% endfor %}
+      {% if pkg.package_items.count > 4 %}
+        <span class="item-pill">+{{ pkg.package_items.count|add:"-4" }} more</span>
+      {% endif %}
+    </div>
+    <div class="package-price-row">
+      <span class="package-price">₦{{ pkg.price|floatformat:0 }}</span>
+      <span class="package-orig">₦{{ pkg.original_price|floatformat:0 }}</span>
+    </div>
+    <p class="package-save-txt" style="margin-bottom:14px;">
+      <i class="fas fa-tag"></i> Save ₦{{ pkg.savings|floatformat:0 }}
+    </p>
+    <div class="pkg-cta-row">
+      <a href="{% url 'package_detail' pkg.slug %}" class="btn btn-primary">
+        <i class="fas fa-shopping-bag"></i> Get This Package
+      </a>
+      <a href="{% url 'package_detail' pkg.slug %}" class="btn btn-outline-green">Details</a>
+    </div>
+  </div>
+</div>

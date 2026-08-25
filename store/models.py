@@ -100,9 +100,9 @@ class Product(models.Model):
 
 class BTSPackage(models.Model):
     BUDGET_CHOICES = [
-        ('budget', 'Budget-Friendly'),
-        ('mid', 'Mid-Range'),
-        ('premium', 'Premium'),
+        ('essential', 'Essential Set'),
+        ('glow',      'Glow Set'),
+        ('complete',  'Complete Set'),
     ]
 
     name = models.CharField(max_length=200)

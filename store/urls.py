@@ -18,6 +18,7 @@ urlpatterns = [
     path('cart/add/<str:item_type>/<int:item_id>/', views.add_to_cart, name='add_to_cart'),
     path('cart/remove/<int:item_id>/', views.remove_from_cart, name='remove_from_cart'),
     path('checkout/', views.checkout, name='checkout'),
+    path('checkout/addons/', views.checkout_addons, name='checkout_addons'),
     path('pay/<str:order_number>/', views.pay_order, name='pay_order'),
     path('payment/callback/', views.payment_callback, name='payment_callback'),
     path('payment/webhook/', views.paystack_webhook, name='paystack_webhook'),

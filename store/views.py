@@ -8,8 +8,6 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 import json, hmac, hashlib
-from .emails import send_order_confirmation, send_vendor_order_notification
-from .delivery import get_delivery_fee
 from .models import (
     Category, PartnerBrand, Product, BTSPackage,
     Cart, CartItem, Order, OrderItem, Wishlist, WishlistItem
@@ -30,17 +28,17 @@ def _get_or_create_cart(request):
 
 def home(request):
     featured_packages = BTSPackage.objects.filter(is_active=True, is_featured=True)[:3]
-    all_packages = BTSPackage.objects.filter(is_active=True)[:6]
-    categories = Category.objects.all()
+    all_packages      = BTSPackage.objects.filter(is_active=True)[:6]
+    categories        = Category.objects.all()
     featured_products = Product.objects.filter(is_active=True, is_featured=True)[:8]
-    partner_brands = PartnerBrand.objects.filter(is_featured=True)[:6]
+    partner_brands    = PartnerBrand.objects.filter(is_featured=True)[:6]
     return render(request, 'store/home.html', {
         'featured_packages': featured_packages,
-        'all_packages': all_packages,
-        'categories': categories,
+        'all_packages':      all_packages,
+        'categories':        categories,
         'featured_products': featured_products,
-        'partner_brands': partner_brands,
-        'min_custom_items': settings.BTS_MIN_CUSTOM_ITEMS,
+        'partner_brands':    partner_brands,
+        'min_custom_items':  settings.BTS_MIN_CUSTOM_ITEMS,
     })
 
 
@@ -49,33 +47,50 @@ def packages(request):
     pkgs = BTSPackage.objects.filter(is_active=True)
     if tier:
         pkgs = pkgs.filter(budget_tier=tier)
+
+    tiers = [
+        ('essential', 'Essential Set', '🌱'),
+        ('glow',      'Glow Set',      '✨'),
+        ('complete',  'Complete Set',  '👑'),
+    ]
+    tier_descriptions = {
+        'essential': 'The basics covered — great for first-years on a budget.',
+        'glow':      'A step up — more clothing, lifestyle, and personal care.',
+        'complete':  'The full experience — almost everything on the BTS checklist.',
+    }
     return render(request, 'store/packages.html', {
-        'packages': pkgs, 'active_tier': tier,
+        'packages':         pkgs,
+        'active_tier':      tier,
+        'tiers':            tiers,
+        'tier_descriptions': tier_descriptions,
     })
 
 
 def package_detail(request, slug):
-    pkg = get_object_or_404(BTSPackage, slug=slug, is_active=True)
+    pkg     = get_object_or_404(BTSPackage, slug=slug, is_active=True)
     reviews = pkg.reviews.all().order_by('-created_at')
     return render(request, 'store/package_detail.html', {
-        'package': pkg, 'reviews': reviews,
+        'package': pkg,
+        'reviews': reviews,
     })
 
 
 def build_your_own(request):
-    categories = Category.objects.all()
+    categories    = Category.objects.all()
     category_slug = request.GET.get('category', '')
-    search = request.GET.get('q', '')
-    products = Product.objects.filter(is_active=True)
+    search        = request.GET.get('q', '')
+    products      = Product.objects.filter(is_active=True)
     if category_slug:
         products = products.filter(category__slug=category_slug)
     if search:
         products = products.filter(Q(name__icontains=search) | Q(description__icontains=search))
     cart = _get_or_create_cart(request)
     return render(request, 'store/build_your_own.html', {
-        'products': products, 'categories': categories, 'cart': cart,
-        'min_items': settings.BTS_MIN_CUSTOM_ITEMS,
-        'packaging_fee': settings.BTS_CUSTOM_PACKAGING_FEE,
+        'products':        products,
+        'categories':      categories,
+        'cart':            cart,
+        'min_items':       settings.BTS_MIN_CUSTOM_ITEMS,
+        'packaging_fee':   settings.BTS_CUSTOM_PACKAGING_FEE,
         'active_category': category_slug,
     })
 
@@ -86,18 +101,21 @@ def shop_by_category(request):
 
 def category_products(request, slug):
     category = get_object_or_404(Category, slug=slug)
-    products = Product.objects.filter(category=category, is_active=True)
+    products  = Product.objects.filter(category=category, is_active=True)
     return render(request, 'store/category_products.html', {
-        'category': category, 'products': products,
+        'category': category,
+        'products': products,
     })
 
 
 def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug, is_active=True)
-    related = Product.objects.filter(category=product.category, is_active=True).exclude(id=product.id)[:4]
-    reviews = product.reviews.all().order_by('-created_at')
+    related  = Product.objects.filter(category=product.category, is_active=True).exclude(id=product.id)[:4]
+    reviews  = product.reviews.all().order_by('-created_at')
     return render(request, 'store/product_detail.html', {
-        'product': product, 'related_products': related, 'reviews': reviews,
+        'product':          product,
+        'related_products': related,
+        'reviews':          reviews,
     })
 
 
@@ -106,9 +124,10 @@ def partner_brands(request):
 
 
 def brand_detail(request, slug):
-    brand = get_object_or_404(PartnerBrand, slug=slug)
+    brand    = get_object_or_404(PartnerBrand, slug=slug)
+    products = brand.products.filter(is_active=True)
     return render(request, 'store/brand_detail.html', {
-        'brand': brand, 'products': brand.products.filter(is_active=True),
+        'brand': brand, 'products': products,
     })
 
 
@@ -119,7 +138,7 @@ def about(request):
 def faqs(request):
     return render(request, 'store/faqs.html', {
         'min_custom_items': settings.BTS_MIN_CUSTOM_ITEMS,
-        'packaging_fee': settings.BTS_CUSTOM_PACKAGING_FEE,
+        'packaging_fee':    settings.BTS_CUSTOM_PACKAGING_FEE,
     })
 
 
@@ -130,8 +149,8 @@ def contact(request):
 def cart_view(request):
     cart = _get_or_create_cart(request)
     return render(request, 'store/cart.html', {
-        'cart': cart,
-        'min_items': settings.BTS_MIN_CUSTOM_ITEMS,
+        'cart':         cart,
+        'min_items':    settings.BTS_MIN_CUSTOM_ITEMS,
         'packaging_fee': settings.BTS_CUSTOM_PACKAGING_FEE,
     })
 
@@ -139,12 +158,17 @@ def cart_view(request):
 def add_to_cart(request, item_type, item_id):
     cart = _get_or_create_cart(request)
     size = request.POST.get('size', '')
+    next_url = request.POST.get('next', request.META.get('HTTP_REFERER', '/'))
+
     if item_type == 'package':
         pkg = get_object_or_404(BTSPackage, id=item_id)
         CartItem.objects.get_or_create(cart=cart, package=pkg, defaults={'quantity': 1})
         cart.cart_type = 'package'
         cart.save()
         messages.success(request, f'"{pkg.name}" added to cart!')
+        # Redirect to addon step after adding a package
+        return redirect('checkout_addons')
+
     elif item_type == 'product':
         product = get_object_or_404(Product, id=item_id)
         item, created = CartItem.objects.get_or_create(
@@ -156,7 +180,7 @@ def add_to_cart(request, item_type, item_id):
         cart.cart_type = 'custom'
         cart.save()
         messages.success(request, f'"{product.name}" added to cart!')
-    next_url = request.POST.get('next', request.META.get('HTTP_REFERER', '/'))
+
     return redirect(next_url)
 
 
@@ -165,6 +189,30 @@ def remove_from_cart(request, item_id):
     CartItem.objects.filter(id=item_id, cart=cart).delete()
     messages.success(request, 'Item removed.')
     return redirect('cart')
+
+
+def checkout_addons(request):
+    """
+    Optional step between cart and checkout.
+    Shows individual products the customer can add to their package order.
+    """
+    cart = _get_or_create_cart(request)
+    if not cart.items.exists():
+        return redirect('cart')
+
+    category_slug = request.GET.get('cat', '')
+    addon_products = Product.objects.filter(is_active=True)
+    if category_slug:
+        addon_products = addon_products.filter(category__slug=category_slug)
+
+    categories = Category.objects.all()
+
+    return render(request, 'store/checkout_addons.html', {
+        'cart':           cart,
+        'addon_products': addon_products,
+        'categories':     categories,
+        'active_cat':     category_slug,
+    })
 
 
 @login_required
@@ -178,22 +226,21 @@ def checkout(request):
         return redirect('cart')
 
     if request.method == 'POST':
-        full_name    = request.POST.get('full_name', '').strip()
-        phone        = request.POST.get('phone', '').strip()
-        street       = request.POST.get('street', '').strip()
-        city         = request.POST.get('city', '').strip()
-        state        = request.POST.get('state', '').strip()
-        notes        = request.POST.get('notes', '').strip()
+        full_name = request.POST.get('full_name', '').strip()
+        phone     = request.POST.get('phone', '').strip()
+        street    = request.POST.get('street', '').strip()
+        city      = request.POST.get('city', '').strip()
+        state     = request.POST.get('state', '').strip()
+        notes     = request.POST.get('notes', '').strip()
 
         if not all([full_name, phone, street, city, state]):
             messages.error(request, 'Please fill in all delivery fields.')
             return render(request, 'store/checkout.html', {'cart': cart})
 
-        # Calculate delivery fee
+        from .delivery import get_delivery_fee
         delivery_fee = get_delivery_fee(state)
-        grand_total = cart.total + delivery_fee
+        grand_total  = cart.total + delivery_fee
 
-        # Create the order (pending payment)
         order = Order.objects.create(
             customer=request.user,
             order_number=Order.generate_order_number(),
@@ -212,7 +259,6 @@ def checkout(request):
             payment_status='unpaid',
         )
 
-        # Copy cart items to order
         for ci in cart.items.all():
             name = ci.package.name if ci.package else ci.product.name
             OrderItem.objects.create(
@@ -225,59 +271,54 @@ def checkout(request):
                 selected_size=ci.selected_size,
             )
 
-        # Clear cart
         cart.items.all().delete()
-
-        # Redirect to Paystack payment page
         return redirect('pay_order', order_number=order.order_number)
 
     from .delivery import get_all_states_with_fees
     return render(request, 'store/checkout.html', {
-        'cart': cart,
-        'user': request.user,
+        'cart':             cart,
+        'user':             request.user,
         'states_with_fees': get_all_states_with_fees(),
     })
 
 
 @login_required
 def pay_order(request, order_number):
-    order = get_object_or_404(Order, order_number=order_number, customer=request.user)
-    # Amount in kobo for Paystack
+    order       = get_object_or_404(Order, order_number=order_number, customer=request.user)
     amount_kobo = int(order.total * 100)
     return render(request, 'store/pay.html', {
-        'order': order,
-        'amount_kobo': amount_kobo,
+        'order':              order,
+        'amount_kobo':        amount_kobo,
         'paystack_public_key': settings.PAYSTACK_PUBLIC_KEY,
     })
 
 
 @login_required
 def payment_callback(request):
-    """Paystack redirects here after payment."""
     reference = request.GET.get('reference', '')
     if not reference:
         messages.error(request, 'Payment reference missing.')
         return redirect('home')
 
-    # Dev mode: simulate payment success for TEST_ references
+    # Dev mode simulation
     if reference.startswith('TEST_'):
         order_number = reference.replace('TEST_', '')
         order = Order.objects.filter(order_number=order_number, customer=request.user).first()
         if order and order.payment_status != 'paid':
             order.payment_status = 'paid'
-            order.status = 'confirmed'
+            order.status         = 'confirmed'
             order.payment_reference = reference
-            order.paid_at = timezone.now()
+            order.paid_at        = timezone.now()
             order.save()
+            from .emails import send_order_confirmation, send_vendor_order_notification
             send_order_confirmation(order, request)
             send_vendor_order_notification(order)
-            messages.success(request, f'(Dev) Payment simulated! Order #{order.order_number} confirmed.')
+            messages.success(request, f'Payment confirmed! Order #{order.order_number}')
             return redirect('order_confirmed', order_number=order.order_number)
         return redirect('home')
 
-    # Verify with Paystack API
+    # Real Paystack verification
     import urllib.request
-    import urllib.error
     try:
         req = urllib.request.Request(
             f'https://api.paystack.co/transaction/verify/{reference}',
@@ -287,43 +328,41 @@ def payment_callback(request):
             data = json.loads(response.read())
 
         if data.get('data', {}).get('status') == 'success':
-            metadata = data['data'].get('metadata', {})
-            order_number = metadata.get('order_number') or data['data'].get('reference', '').split('_')[0]
-
-            # Find order by reference
+            metadata     = data['data'].get('metadata', {})
+            order_number = metadata.get('order_number', '')
             try:
                 order = Order.objects.get(payment_reference=reference)
             except Order.DoesNotExist:
-                # Fallback: find by order_number in metadata
-                order_number = metadata.get('order_number', '')
                 order = Order.objects.filter(order_number=order_number, customer=request.user).first()
 
             if order and order.payment_status != 'paid':
-                order.payment_status = 'paid'
-                order.status = 'confirmed'
+                order.payment_status    = 'paid'
+                order.status            = 'confirmed'
                 order.payment_reference = reference
-                order.paid_at = timezone.now()
+                order.paid_at           = timezone.now()
                 order.save()
+                from .emails import send_order_confirmation, send_vendor_order_notification
+                send_order_confirmation(order, request)
+                send_vendor_order_notification(order)
                 messages.success(request, f'Payment successful! Order #{order.order_number} confirmed.')
                 return redirect('order_confirmed', order_number=order.order_number)
         else:
             messages.error(request, 'Payment verification failed. Please contact support.')
     except Exception as e:
-        messages.error(request, f'Could not verify payment. Please contact support.')
+        messages.error(request, 'Could not verify payment. Please contact support.')
 
     return redirect('home')
 
 
 @csrf_exempt
 def paystack_webhook(request):
-    """Paystack sends webhook events here."""
     if request.method != 'POST':
         return JsonResponse({'status': 'error'}, status=405)
 
-    payload = request.body
+    payload    = request.body
     sig_header = request.headers.get('X-Paystack-Signature', '')
-    secret = settings.PAYSTACK_SECRET_KEY.encode('utf-8')
-    expected = hmac.new(secret, payload, hashlib.sha512).hexdigest()
+    secret     = settings.PAYSTACK_SECRET_KEY.encode('utf-8')
+    expected   = hmac.new(secret, payload, hashlib.sha512).hexdigest()
 
     if not hmac.compare_digest(expected, sig_header):
         return JsonResponse({'status': 'invalid signature'}, status=400)
@@ -335,8 +374,8 @@ def paystack_webhook(request):
             order = Order.objects.get(payment_reference=reference)
             if order.payment_status != 'paid':
                 order.payment_status = 'paid'
-                order.status = 'confirmed'
-                order.paid_at = timezone.now()
+                order.status         = 'confirmed'
+                order.paid_at        = timezone.now()
                 order.save()
         except Order.DoesNotExist:
             pass
@@ -351,7 +390,6 @@ def order_confirmed(request, order_number):
 
 
 @login_required
-@require_POST
 def submit_review(request, product_slug=None, package_slug=None):
     rating = int(request.POST.get('rating', 5))
     title  = request.POST.get('title', '').strip()
@@ -366,7 +404,7 @@ def submit_review(request, product_slug=None, package_slug=None):
             customer=request.user, product=product,
             defaults={'rating': rating, 'title': title, 'body': body}
         )
-        messages.success(request, 'Review submitted! Thank you.')
+        messages.success(request, 'Review submitted!')
         return redirect('product_detail', slug=product_slug)
     elif package_slug:
         from .models import Review
@@ -375,7 +413,7 @@ def submit_review(request, product_slug=None, package_slug=None):
             customer=request.user, package=package,
             defaults={'rating': rating, 'title': title, 'body': body}
         )
-        messages.success(request, 'Review submitted! Thank you.')
+        messages.success(request, 'Review submitted!')
         return redirect('package_detail', slug=package_slug)
 
     return redirect('home')
@@ -383,12 +421,12 @@ def submit_review(request, product_slug=None, package_slug=None):
 
 def sell_on_bts(request):
     benefits = [
-        ('🎯', 'Targeted Student Audience', 'BTS is built exclusively for Nigerian university students — your products reach the exact people who need them most.'),
-        ('📦', 'Create BTS Packages', 'Bundle your products into packages. Students love bundles and they sell faster than individual items.'),
-        ('📊', 'Full Sales Dashboard', 'Track your products, orders, and monthly revenue in real time from your vendor dashboard.'),
+        ('🎯', 'Targeted Student Audience', 'BTS is built exclusively for Nigerian university students — your products reach exactly who needs them.'),
+        ('📦', 'Create BTS Packages', 'Bundle your products into Essential, Glow, or Complete sets. Packages sell faster than individual items.'),
+        ('📊', 'Full Sales Dashboard', 'Track your products, orders, and revenue in real time from your vendor dashboard.'),
         ('🔔', 'Instant Order Alerts', 'Get notified by email the moment a customer buys your product.'),
-        ('🌍', 'Nationwide Reach', 'BTS delivers to all 36 states in Nigeria — your products reach students everywhere.'),
-        ('💳', 'Secure Payments', 'All payments are processed securely via Paystack. No cash, no risk.'),
+        ('🌍', 'Nationwide Reach', 'BTS delivers to all 36 states in Nigeria.'),
+        ('💳', 'Secure Payments', 'All payments processed securely via Paystack. No cash, no risk.'),
     ]
     return render(request, 'store/sell_on_bts.html', {'benefits': benefits})
 

@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% block title %}Add Extras to Your Package — BTS Project{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1 class="page-header-title">Want to add anything extra?</h1>
+  <p class="page-header-sub">You've picked a great package. Enhance it with individual items below — or skip and pay now.</p>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:32px;align-items:start;" class="checkout-grid">
+
+      <!-- Addon products -->
+      <div>
+        <div style="background:var(--green-pale);border-radius:var(--radius);padding:16px 20px;margin-bottom:28px;display:flex;align-items:center;gap:12px;">
+          <span style="font-size:1.5rem;">✅</span>
+          <div>
+            <p style="font-weight:700;color:var(--green);">Your package is ready!</p>
+            <p style="font-size:0.85rem;color:var(--gray);">Browse below to add individual items, or scroll down to proceed to checkout.</p>
+          </div>
+        </div>
+
+        <!-- Category filter -->
+        <div class="filter-tabs" style="margin-bottom:20px;">
+          <a href="?{{ request.GET.urlencode }}&cat=" class="filter-tab {% if not active_cat %}active{% endif %}">All</a>
+          {% for cat in categories %}
+          <a href="?{{ request.GET.urlencode }}&cat={{ cat.slug }}" class="filter-tab {% if active_cat == cat.slug %}active{% endif %}">{{ cat.name }}</a>
+          {% endfor %}
+        </div>
+
+        <div class="products-grid">
+          {% for product in addon_products %}
+          <div class="product-card" id="product-{{ product.id }}">
+            <div class="product-card-img">
+              {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+              {% else %}
+                <div style="font-size:3rem;opacity:0.2;">👕</div>
+              {% endif %}
+              <!-- Added overlay -->
+              <div id="added-{{ product.id }}" style="display:none;position:absolute;inset:0;background:rgba(15,61,31,0.85);display:none;align-items:center;justify-content:center;flex-direction:column;gap:8px;">
+                <i class="fas fa-check-circle" style="color:var(--cream);font-size:2rem;"></i>
+                <span style="color:var(--cream);font-weight:700;font-size:0.85rem;">Added!</span>
+              </div>
+            </div>
+            <div class="product-card-body">
+              <p class="product-category">{{ product.category.name }}</p>
+              <h3 class="product-name">{{ product.name }}</h3>
+              <p class="product-price">₦{{ product.price|floatformat:0 }}</p>
+              {% if product.sizes_list %}
+              <div class="size-group" style="margin-bottom:10px;">
+                <div style="display:flex;gap:5px;flex-wrap:wrap;">
+                  {% for size in product.sizes_list %}
+                  <button class="size-btn" data-size="{{ size }}" onclick="selectSize(this, {{ product.id }})">{{ size }}</button>
+                  {% endfor %}
+                </div>
+                <input type="hidden" id="size-{{ product.id }}" value="">
+              </div>
+              {% endif %}
+              <button onclick="addAddon({{ product.id }}, '{{ product.name }}', {{ product.price }})"
+                      class="btn btn-outline-green btn-sm btn-block" id="btn-{{ product.id }}">
+                <i class="fas fa-plus"></i> Add to Order
+              </button>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Order summary sidebar -->
+      <div style="position:sticky;top:calc(var(--nav-h) + 16px);">
+        <div class="order-summary">
+          <h3 class="summary-title">Your Order</h3>
+
+          <!-- Package -->
+          {% for item in cart.items.all %}
+          <div style="padding:10px 0;border-bottom:1px solid var(--border);font-size:0.875rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="color:var(--dark);font-weight:600;">
+                {% if item.package %}📦 {{ item.package.name }}{% else %}{{ item.product.name }}{% endif %}
+              </span>
+              <span style="color:var(--green);font-weight:700;">₦{{ item.line_total|floatformat:0 }}</span>
+            </div>
+          </div>
+          {% endfor %}
+
+          <!-- Added extras (dynamic) -->
+          <div id="addons-list"></div>
+
+          <div class="summary-row" style="margin-top:8px;">
+            <span>Package Total</span>
+            <span>₦{{ cart.subtotal|floatformat:0 }}</span>
+          </div>
+          <div class="summary-row">
+            <span>Extras</span>
+            <span id="addons-total">₦0</span>
+          </div>
+          <div class="summary-row total">
+            <span>Grand Total</span>
+            <span id="grand-total" style="color:var(--green);">₦{{ cart.subtotal|floatformat:0 }}</span>
+          </div>
+
+          <a href="{% url 'checkout' %}" class="btn btn-primary btn-lg btn-block" style="margin-top:16px;">
+            <i class="fas fa-lock"></i> Proceed to Checkout
+          </a>
+          <p style="text-align:center;font-size:0.78rem;color:var(--gray);margin-top:8px;">
+            Extras will be added to your cart automatically
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const cartSubtotal = {{ cart.subtotal }};
+let addonsTotal = 0;
+const addedItems = {};
+
+function selectSize(btn, productId) {
+  const group = btn.closest('.size-group');
+  group.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(`size-${productId}`).value = btn.dataset.size;
+}
+
+async function addAddon(productId, productName, price) {
+  const size = document.getElementById(`size-${productId}`)?.value || '';
+  const btn = document.getElementById(`btn-${productId}`);
+
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/cart/add/', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCsrfToken(),
+      },
+      body: JSON.stringify({ type: 'product', id: productId, size })
+    });
+
+    if (res.ok) {
+      // Update UI
+      addedItems[productId] = { name: productName, price: price };
+      addonsTotal += price;
+
+      // Show added overlay
+      const overlay = document.getElementById(`added-${productId}`);
+      if (overlay) { overlay.style.display = 'flex'; }
+      btn.innerHTML = '<i class="fas fa-check"></i> Added';
+      btn.classList.replace('btn-outline-green', 'btn-primary');
+
+      // Update sidebar
+      updateAddonsSidebar();
+      showToast(`${productName} added! 🛒`, 'success');
+    }
+  } catch (e) {
+    btn.innerHTML = '<i class="fas fa-plus"></i> Add to Order';
+    btn.disabled = false;
+    showToast('Error adding item', 'error');
+  }
+}
+
+function updateAddonsSidebar() {
+  const list = document.getElementById('addons-list');
+  const totalEl = document.getElementById('addons-total');
+  const grandEl = document.getElementById('grand-total');
+
+  list.innerHTML = Object.entries(addedItems).map(([id, item]) =>
+    `<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:0.82rem;display:flex;justify-content:space-between;">
+      <span style="color:var(--gray);">+ ${item.name}</span>
+      <span style="color:var(--green);">₦${item.price.toLocaleString()}</span>
+    </div>`
+  ).join('');
+
+  totalEl.textContent = `₦${addonsTotal.toLocaleString()}`;
+  grandEl.textContent = `₦${(cartSubtotal + addonsTotal).toLocaleString()}`;
+}
+
+function getCsrfToken() {
+  return document.cookie.split(';').map(c => c.trim().split('=')).find(([k]) => k === 'csrftoken')?.[1] || '';
+}
+</script>
+{% endblock %}
