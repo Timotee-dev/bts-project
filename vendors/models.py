@@ -27,6 +27,12 @@ class Vendor(models.Model):
     account_number = models.CharField(max_length=20, blank=True)
     account_name = models.CharField(max_length=200, blank=True)
 
+    # Paystack subaccount — auto-created when vendor registers with bank details
+    paystack_subaccount_code = models.CharField(
+        max_length=100, blank=True,
+        help_text="Auto-created on registration via Paystack API"
+    )
+
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
     is_verified = models.BooleanField(default=False)
     joined_at = models.DateTimeField(auto_now_add=True)

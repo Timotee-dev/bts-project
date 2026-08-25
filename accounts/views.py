@@ -62,16 +62,32 @@ def register(request):
                 from vendors.models import Vendor
                 business_name  = request.POST.get('business_name', username)
                 business_email = request.POST.get('business_email', email)
-                Vendor.objects.create(
+                bank_name      = request.POST.get('bank_name', '')
+                account_number = request.POST.get('account_number', '')
+                account_name   = request.POST.get('account_name', '')
+
+                vendor = Vendor.objects.create(
                     user=user,
                     business_name=business_name,
                     phone=phone,
                     email=business_email,
                     description=request.POST.get('description', ''),
-                    bank_name=request.POST.get('bank_name', ''),
-                    account_number=request.POST.get('account_number', ''),
-                    account_name=request.POST.get('account_name', ''),
+                    bank_name=bank_name,
+                    account_number=account_number,
+                    account_name=account_name,
                 )
+
+                # Auto-create Paystack subaccount for vendor
+                try:
+                    from store.paystack_utils import create_vendor_subaccount
+                    subaccount_code = create_vendor_subaccount(vendor)
+                    if subaccount_code:
+                        vendor.paystack_subaccount_code = subaccount_code
+                        vendor.save()
+                        print(f'[BTS] Subaccount created for {vendor.business_name}')
+                except Exception as e:
+                    print(f'[BTS] Paystack subaccount creation failed: {e}')
+
                 messages.success(request, f'Vendor store "{business_name}" created! Sign in below.')
             else:
                 messages.success(request, f'Welcome to BTS, {first_name}! Sign in below.')
