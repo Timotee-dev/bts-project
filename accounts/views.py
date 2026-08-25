@@ -1,14 +1,16 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from store.models import Order, Wishlist
 from .models import Customer
-from .forms import CustomerRegistrationForm, CustomerLoginForm, ProfileUpdateForm
+from .forms import CustomerRegistrationForm, ProfileUpdateForm
 
 
 def register(request):
     if request.user.is_authenticated:
+        if hasattr(request.user, 'vendor'):
+            return redirect('vendor_dashboard')
         return redirect('dashboard')
 
     if request.method == 'POST':
@@ -17,10 +19,8 @@ def register(request):
 
         if form.is_valid():
             user = form.save()
-            login(request, user)
 
             if account_type == 'vendor':
-                # Create vendor profile immediately from the extra fields
                 from vendors.models import Vendor
                 Vendor.objects.create(
                     user=user,
@@ -32,13 +32,12 @@ def register(request):
                     account_number=request.POST.get('account_number', ''),
                     account_name=request.POST.get('account_name', ''),
                 )
-                messages.success(request, f'Welcome! Your vendor store is live. Add your first product to get started.')
-                return redirect('vendor_dashboard')
+                messages.success(request, f'Vendor store created! Please sign in to access your dashboard.')
+                return redirect('login')
             else:
-                messages.success(request, f'Welcome to BTS, {user.first_name}! Start shopping.')
-                return redirect('dashboard')
+                messages.success(request, f'Account created! Please sign in.')
+                return redirect('login')
         else:
-            # Re-render with errors — pass account_type so JS can re-open correct form
             return render(request, 'accounts/register.html', {
                 'form': form,
                 'account_type': request.POST.get('account_type', 'shopper'),
@@ -55,22 +54,23 @@ def user_login(request):
         return redirect('dashboard')
 
     if request.method == 'POST':
-        form = CustomerLoginForm(request, data=request.POST)
-        if form.is_valid():
-            user = form.get_user()
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '')
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
             login(request, user)
             next_url = request.GET.get('next', '')
             if next_url:
                 return redirect(next_url)
-            # Send vendors to vendor dashboard, shoppers to customer dashboard
             if hasattr(user, 'vendor'):
                 return redirect('vendor_dashboard')
             return redirect('dashboard')
         else:
-            messages.error(request, 'Invalid username or password.')
-    else:
-        form = CustomerLoginForm()
-    return render(request, 'accounts/login.html', {'form': form})
+            messages.error(request, 'Invalid username or password. Please try again.')
+
+    return render(request, 'accounts/login.html', {})
 
 
 def user_logout(request):
@@ -109,6 +109,5 @@ def order_history(request):
 
 @login_required
 def order_detail(request, order_number):
-    from django.shortcuts import get_object_or_404
     order = get_object_or_404(Order, order_number=order_number, customer=request.user)
     return render(request, 'accounts/order_detail.html', {'order': order})
