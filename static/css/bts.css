@@ -14,7 +14,7 @@
   --green-xpale:   #F2FAF4;
 
   --cream:         #F5EDD6;
-  --cream-dark:    #E8DC C0;
+  --cream-dark:    #E8DCC0;
   --cream-mid:     #D4C89A;
   --cream-deep:    #B8A96A;
 
@@ -61,7 +61,7 @@
 
 /* ─── Reset ─────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; overflow-x: hidden; }
 body {
   font-family: 'Poppins', system-ui, -apple-system, sans-serif;
   font-size: 16px; line-height: 1.6;
