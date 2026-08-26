@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Terms of Service — BTS Project{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1 class="page-header-title">Terms of Service</h1>
+  <p class="page-header-sub">Last updated: August 2026</p>
+</div>
+
+<section class="section">
+  <div class="container" style="max-width:780px;">
+    <div class="card" style="line-height:1.8;color:var(--gray);">
+
+      <p style="margin-bottom:20px;">These Terms of Service govern your use of the BTS Project platform. By accessing or using our website and services, you agree to be bound by these terms.</p>
+
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin:28px 0 10px;">1. About BTS Project</h2>
+      <p>BTS Project is a multi-vendor e-commerce platform that connects Nigerian university students with vendors selling back-to-school products, clothing, accessories, and essential items. We facilitate transactions between buyers and sellers but are not the seller of record for third-party vendor products.</p>
+
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin:28px 0 10px;">2. Eligibility</h2>
+      <p>You must be at least 16 years old to use this platform. By creating an account, you confirm that all information you provide is accurate and complete.</p>
+
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin:28px 0 10px;">3. Orders and Payments</h2>
+      <p>All payments are processed securely through Paystack, a licensed payment service provider in Nigeria. By placing an order, you agree to pay the listed price including any applicable delivery fees. Prices are displayed in Nigerian Naira (NGN).</p>
+      <p style="margin-top:10px;">Orders are confirmed only after successful payment. We reserve the right to cancel any order if the product is unavailable or if fraudulent activity is suspected.</p>
+
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin:28px 0 10px;">4. Delivery</h2>
+      <p>Delivery timelines vary by vendor and delivery location. Estimated delivery times are displayed at checkout. BTS Project is not responsible for delays caused by logistics providers or circumstances outside our control.</p>
+
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin:28px 0 10px;">5. Vendor Responsibilities</h2>
+      <p>Vendors are responsible for the accuracy of their product listings, the quality of their products, and timely fulfilment of orders. BTS Project reserves the right to suspend or terminate vendor accounts for breach of these terms or customer complaints.</p>
+
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin:28px 0 10px;">6. Prohibited Conduct</h2>
+      <p>You may not use this platform to post false or misleading information, engage in fraudulent transactions, harass other users, or violate any applicable Nigerian laws and regulations.</p>
+
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin:28px 0 10px;">7. Intellectual Property</h2>
+      <p>All content on this platform including the BTS Project name, logo, and design is owned by BTS Project. You may not reproduce or use any content without prior written permission.</p>
+
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin:28px 0 10px;">8. Limitation of Liability</h2>
+      <p>BTS Project is not liable for any indirect, incidental, or consequential damages arising from your use of the platform or products purchased through it. Our maximum liability is limited to the amount paid for the specific transaction in question.</p>
+
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin:28px 0 10px;">9. Changes to These Terms</h2>
+      <p>We may update these terms from time to time. Continued use of the platform after changes are posted constitutes acceptance of the new terms.</p>
+
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin:28px 0 10px;">10. Contact</h2>
+      <p>For questions about these terms, contact us at <a href="{% url 'contact' %}" style="color:var(--green);font-weight:600;">our contact page</a>.</p>
+
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -509,6 +509,18 @@ def sell_on_bts(request):
     return render(request, 'store/sell_on_bts.html', {'benefits': benefits})
 
 
+def terms(request):
+    return render(request, 'store/terms.html')
+
+
+def privacy(request):
+    return render(request, 'store/privacy.html')
+
+
+def refund_policy(request):
+    return render(request, 'store/refund.html')
+
+
 @login_required
 def wishlist(request):
     wl, _ = Wishlist.objects.get_or_create(customer=request.user)

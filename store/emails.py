@@ -64,7 +64,7 @@ def send_vendor_order_notification(order):
             # Get only this vendor's items
             vendor_items = order.items.filter(product__vendor=vendor)
 
-            subject = f'🛍️ New Order #{order.order_number} — BTS Project'
+            subject = f'New Order #{order.order_number} — BTS Project'
             text = f"""Hi {vendor.business_name},
 
 You have a new order on BTS Project!
@@ -91,3 +91,60 @@ The BTS Project Team
 
         except Exception as e:
             print(f'[BTS] Vendor notification failed for vendor {vendor_id}: {e}')
+
+
+def send_order_status_update(order):
+    """
+    Email customer when vendor updates order status to processing, shipped, or delivered.
+    """
+    if not order.customer or not order.customer.email:
+        return False
+
+    status_messages = {
+        'processing': (
+            'Your order is being prepared',
+            'The vendor is packing your items and will ship soon.'
+        ),
+        'shipped': (
+            'Your order is on its way',
+            'Your BTS package has been shipped and is heading to you. Check your delivery address below.'
+        ),
+        'delivered': (
+            'Your order has been delivered',
+            'Your BTS package has been delivered. We hope you love everything!'
+        ),
+    }
+
+    subject_suffix, body_line = status_messages.get(
+        order.status,
+        ('Order Update', 'Your order status has been updated.')
+    )
+
+    subject  = f'BTS Project: {subject_suffix} — Order #{order.order_number}'
+    message  = f"""Hi {order.full_name},
+
+{body_line}
+
+Order Details:
+  Order Number : #{order.order_number}
+  Status       : {order.get_status_display()}
+  Delivery To  : {order.shipping_address}
+  Phone        : {order.phone}
+
+If you have any questions, contact us via our website or WhatsApp.
+
+The BTS Project Team
+"""
+    from django.core.mail import send_mail
+    try:
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[order.customer.email],
+            fail_silently=True,
+        )
+        return True
+    except Exception as e:
+        print(f'[BTS] Status update email failed for #{order.order_number}: {e}')
+        return False

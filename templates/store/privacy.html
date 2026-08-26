@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Privacy Policy — BTS Project{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1 class="page-header-title">Privacy Policy</h1>
+  <p class="page-header-sub">Last updated: August 2026</p>
+</div>
+
+<section class="section">
+  <div class="container" style="max-width:780px;">
+    <div class="card" style="line-height:1.8;color:var(--gray);">
+
+      <p style="margin-bottom:20px;">BTS Project is committed to protecting your personal information. This policy explains what data we collect, how we use it, and your rights.</p>
+
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin:28px 0 10px;">1. Information We Collect</h2>
+      <p>We collect information you provide directly when you create an account, place an order, or contact us. This includes your name, email address, phone number, delivery address, and payment information (processed securely by Paystack — we do not store card details).</p>
+      <p style="margin-top:10px;">We also automatically collect certain technical information including your IP address, browser type, and pages visited on our platform.</p>
+
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin:28px 0 10px;">2. How We Use Your Information</h2>
+      <p>We use your information to process and fulfil your orders, send order confirmations and delivery updates, improve our platform, and communicate with you about relevant offers and updates. We do not sell your personal data to third parties.</p>
+
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin:28px 0 10px;">3. Sharing Your Information</h2>
+      <p>We share your delivery information with the relevant vendors so they can fulfil your order. We share payment information with Paystack solely for the purpose of processing transactions. We do not share your data with any other third parties without your consent, except as required by law.</p>
+
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin:28px 0 10px;">4. Data Security</h2>
+      <p>We use industry-standard security measures to protect your data. All payments are encrypted and processed through Paystack's secure infrastructure. However, no method of transmission over the internet is 100% secure.</p>
+
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin:28px 0 10px;">5. Cookies</h2>
+      <p>We use cookies to maintain your session and shopping cart. You can disable cookies in your browser settings, though this may affect some features of the platform.</p>
+
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin:28px 0 10px;">6. Your Rights</h2>
+      <p>You have the right to access, correct, or delete your personal data. To exercise these rights, contact us through our contact page. We will respond within 30 days.</p>
+
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin:28px 0 10px;">7. Children's Privacy</h2>
+      <p>Our platform is not directed at children under 16. We do not knowingly collect personal information from children under 16.</p>
+
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin:28px 0 10px;">8. Changes to This Policy</h2>
+      <p>We may update this policy periodically. We will notify you of significant changes by posting a notice on our platform.</p>
+
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin:28px 0 10px;">9. Contact</h2>
+      <p>For privacy-related questions, contact us at <a href="{% url 'contact' %}" style="color:var(--green);font-weight:600;">our contact page</a>.</p>
+
+    </div>
+  </div>
+</section>
+{% endblock %}

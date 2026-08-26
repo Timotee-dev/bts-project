@@ -28,6 +28,9 @@ urlpatterns = [
     path('search/', views.search, name='search'),
     path('order/<str:order_number>/track/', views.order_tracking, name='order_tracking'),
     path('bts-admin/', views.admin_dashboard, name='admin_dashboard'),
+    path('terms/', views.terms, name='terms'),
+    path('privacy/', views.privacy, name='privacy'),
+    path('refund-policy/', views.refund_policy, name='refund_policy'),
     path('review/product/<slug:product_slug>/', views.submit_review, name='submit_product_review'),
     path('review/package/<slug:package_slug>/', views.submit_review, name='submit_package_review'),
 ]

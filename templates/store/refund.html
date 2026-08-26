@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Refund Policy — BTS Project{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1 class="page-header-title">Refund &amp; Return Policy</h1>
+  <p class="page-header-sub">Last updated: August 2026</p>
+</div>
+
+<section class="section">
+  <div class="container" style="max-width:780px;">
+    <div class="card" style="line-height:1.8;color:var(--gray);">
+
+      <p style="margin-bottom:20px;">We want you to be completely satisfied with your BTS Project purchase. This policy explains your rights and options if something goes wrong.</p>
+
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin:28px 0 10px;">1. 7-Day Replacement Policy</h2>
+      <p>If you receive an item that is damaged, defective, or significantly different from what was described, you are entitled to a replacement within 7 days of delivery. To request a replacement, contact us within 7 days of receiving your order with photos of the issue.</p>
+
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin:28px 0 10px;">2. Conditions for Returns</h2>
+      <p>Items must be unused, unworn, and in their original condition with all tags attached. Items that have been used, washed, or altered are not eligible for return. Personal care items such as perfume, skincare, and hair products are not eligible for return once opened.</p>
+
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin:28px 0 10px;">3. Non-Returnable Items</h2>
+      <p>The following items are not eligible for return or refund:</p>
+      <ul style="margin:10px 0 10px 20px;">
+        <li>Opened perfume, body spray, and personal care products</li>
+        <li>Opened skincare and haircare products</li>
+        <li>Customised or personalised items</li>
+        <li>Items purchased on final sale</li>
+        <li>Stationery and notebooks once used</li>
+      </ul>
+
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin:28px 0 10px;">4. Refund Process</h2>
+      <p>Once your return is approved, refunds are processed within 5-10 business days to your original payment method. Paystack refunds typically reflect within 3-5 working days after processing.</p>
+
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin:28px 0 10px;">5. Wrong or Missing Items</h2>
+      <p>If you receive the wrong item or an item is missing from your order, contact us immediately. We will arrange a replacement or refund at no additional cost to you.</p>
+
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin:28px 0 10px;">6. Cancellations</h2>
+      <p>Orders can be cancelled within 2 hours of placement if they have not yet been processed by the vendor. After this window, cancellations are at the vendor's discretion. Contact us as soon as possible if you need to cancel.</p>
+
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin:28px 0 10px;">7. How to Request a Return or Refund</h2>
+      <p>Contact us via our <a href="{% url 'contact' %}" style="color:var(--green);font-weight:600;">contact page</a> or WhatsApp with your order number, a description of the issue, and photos where applicable. We aim to respond within 24 hours.</p>
+
+    </div>
+  </div>
+</section>
+{% endblock %}
