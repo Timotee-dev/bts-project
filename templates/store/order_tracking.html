@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block title %}Order #{{ order.order_number }} — BTS Project{% endblock %}
+
+{% block extra_css %}
+<style>
+.tracker { display:flex; flex-direction:column; gap:0; margin:24px 0; }
+.tracker-step { display:flex; gap:16px; align-items:flex-start; position:relative; }
+.tracker-step:not(:last-child)::after {
+  content:''; position:absolute; left:19px; top:40px;
+  width:2px; height:calc(100% + 8px); background:var(--border);
+}
+.tracker-step.done::after { background:var(--green); }
+.tracker-icon {
+  width:40px; height:40px; border-radius:50%; border:2px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  background:white; flex-shrink:0; z-index:1; font-size:0.9rem; color:var(--gray);
+}
+.tracker-step.done .tracker-icon { background:var(--green); border-color:var(--green); color:white; }
+.tracker-step.active .tracker-icon { border-color:var(--green); color:var(--green); }
+.tracker-body { padding-bottom:28px; }
+.tracker-label { font-weight:700; color:var(--dark); font-size:0.9rem; }
+.tracker-sub { color:var(--gray); font-size:0.8rem; margin-top:2px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-header-title">Order #{{ order.order_number }}</h1>
+  <p class="page-header-sub">Placed {{ order.created_at|date:"d M Y, g:i A" }}</p>
+  <div class="breadcrumb">
+    <a href="{% url 'home' %}">Home</a><span class="sep">/</span>
+    <a href="{% url 'order_history' %}">My Orders</a><span class="sep">/</span>
+    <span>#{{ order.order_number }}</span>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:32px;align-items:start;" class="checkout-grid">
+
+      <div>
+        <!-- Status tracker -->
+        <div class="card" style="margin-bottom:24px;">
+          <h2 style="font-size:1rem;font-weight:800;color:var(--dark);margin-bottom:20px;">
+            <i class="fas fa-map-marker-alt" style="color:var(--green);"></i> Order Status
+          </h2>
+
+          {% with s=order.status %}
+          <div class="tracker">
+            <div class="tracker-step {% if s in 'pending,confirmed,processing,shipped,delivered' %}done{% endif %}">
+              <div class="tracker-icon"><i class="fas fa-check"></i></div>
+              <div class="tracker-body">
+                <p class="tracker-label">Order Placed</p>
+                <p class="tracker-sub">{{ order.created_at|date:"d M Y" }}</p>
+              </div>
+            </div>
+            <div class="tracker-step {% if s in 'confirmed,processing,shipped,delivered' %}done{% elif s == 'pending' %}active{% endif %}">
+              <div class="tracker-icon"><i class="fas fa-credit-card"></i></div>
+              <div class="tracker-body">
+                <p class="tracker-label">Payment Confirmed</p>
+                <p class="tracker-sub">{% if order.paid_at %}{{ order.paid_at|date:"d M Y" }}{% else %}Awaiting payment{% endif %}</p>
+              </div>
+            </div>
+            <div class="tracker-step {% if s in 'processing,shipped,delivered' %}done{% elif s == 'confirmed' %}active{% endif %}">
+              <div class="tracker-icon"><i class="fas fa-box"></i></div>
+              <div class="tracker-body">
+                <p class="tracker-label">Processing</p>
+                <p class="tracker-sub">Vendor is preparing your items</p>
+              </div>
+            </div>
+            <div class="tracker-step {% if s in 'shipped,delivered' %}done{% elif s == 'processing' %}active{% endif %}">
+              <div class="tracker-icon"><i class="fas fa-truck"></i></div>
+              <div class="tracker-body">
+                <p class="tracker-label">Shipped</p>
+                <p class="tracker-sub">{% if s in 'shipped,delivered' %}On its way to you{% else %}Not yet shipped{% endif %}</p>
+              </div>
+            </div>
+            <div class="tracker-step {% if s == 'delivered' %}done{% elif s == 'shipped' %}active{% endif %}">
+              <div class="tracker-icon"><i class="fas fa-home"></i></div>
+              <div class="tracker-body">
+                <p class="tracker-label">Delivered</p>
+                <p class="tracker-sub">{% if s == 'delivered' %}Delivered!{% else %}Pending delivery{% endif %}</p>
+              </div>
+            </div>
+          </div>
+          {% endwith %}
+
+          {% if order.status == 'cancelled' %}
+          <div class="alert alert-error"><i class="fas fa-times-circle"></i> This order was cancelled.</div>
+          {% endif %}
+        </div>
+
+        <!-- Items -->
+        <div class="card">
+          <h2 style="font-size:1rem;font-weight:800;color:var(--dark);margin-bottom:16px;">Items Ordered</h2>
+          {% for item in order.items.all %}
+          <div style="display:flex;gap:14px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+            <div style="width:52px;height:52px;background:var(--green-pale);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="fas fa-tshirt" style="opacity:0.3;"></i>
+            </div>
+            <div style="flex:1;">
+              <p style="font-weight:600;color:var(--dark);font-size:0.9rem;">{{ item.product_name }}</p>
+              {% if item.selected_size %}<p style="color:var(--gray);font-size:0.78rem;">Size: {{ item.selected_size }}</p>{% endif %}
+              <p style="color:var(--gray);font-size:0.78rem;">Qty: {{ item.quantity }}</p>
+            </div>
+            <p style="font-weight:700;color:var(--green);">&#x20A6;{{ item.line_total|floatformat:0 }}</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Summary sidebar -->
+      <div>
+        <div class="order-summary">
+          <h3 class="summary-title">Order Summary</h3>
+          <div class="summary-row"><span>Subtotal</span><span>&#x20A6;{{ order.subtotal|floatformat:0 }}</span></div>
+          <div class="summary-row"><span>Delivery</span><span>&#x20A6;{{ order.delivery_fee|floatformat:0 }}</span></div>
+          {% if order.packaging_fee > 0 %}
+          <div class="summary-row"><span>Packaging</span><span>&#x20A6;{{ order.packaging_fee|floatformat:0 }}</span></div>
+          {% endif %}
+          <div class="summary-row total"><span>Total</span><span>&#x20A6;{{ order.total|floatformat:0 }}</span></div>
+          <div style="margin-top:16px;padding:12px;background:white;border-radius:var(--radius-sm);border:1px solid var(--border);">
+            <p style="font-size:0.78rem;font-weight:700;color:var(--dark);margin-bottom:4px;">Delivering to:</p>
+            <p style="font-size:0.8rem;color:var(--gray);">{{ order.full_name }}</p>
+            <p style="font-size:0.8rem;color:var(--gray);">{{ order.shipping_address }}</p>
+            <p style="font-size:0.8rem;color:var(--gray);">{{ order.phone }}</p>
+          </div>
+          {% if order.payment_status == 'unpaid' and order.status == 'pending' %}
+          <a href="{% url 'pay_order' order.order_number %}" class="btn btn-primary btn-block" style="margin-top:16px;">
+            <i class="fas fa-lock"></i> Complete Payment
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

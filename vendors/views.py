@@ -2,13 +2,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
+from django.views.decorators.http import require_POST
 from store.models import Product, BTSPackage, PackageItem, Order, OrderItem
 from .models import Vendor
 from .forms import VendorRegistrationForm, VendorProductForm, VendorPackageForm
 
 
 def vendor_register(request):
-    # If already a vendor, go to dashboard
     try:
         if request.user.is_authenticated and request.user.vendor:
             return redirect('vendor_dashboard')
@@ -24,7 +24,7 @@ def vendor_register(request):
             vendor = form.save(commit=False)
             vendor.user = request.user
             vendor.save()
-            messages.success(request, f'🎉 Welcome! Your store "{vendor.business_name}" is live.')
+            messages.success(request, f'Welcome! Your store "{vendor.business_name}" is live.')
             return redirect('vendor_dashboard')
         else:
             messages.error(request, 'Please fix the errors below.')
@@ -37,11 +37,10 @@ def vendor_register(request):
 
 
 def _get_vendor(request):
-    """Helper — get vendor for logged in user or redirect."""
     try:
         return request.user.vendor
     except Exception:
-        messages.error(request, 'You don\'t have a vendor account yet.')
+        messages.error(request, "You don't have a vendor account yet.")
         return None
 
 
@@ -51,12 +50,9 @@ def vendor_dashboard(request):
     if not vendor:
         return redirect('vendor_register')
 
-    recent_orders = Order.objects.filter(
-        items__product__vendor=vendor
-    ).distinct().order_by('-created_at')[:8]
-
     from django.utils import timezone
     now = timezone.now()
+
     monthly_items = OrderItem.objects.filter(
         product__vendor=vendor,
         order__paid_at__year=now.year,
@@ -64,16 +60,22 @@ def vendor_dashboard(request):
         order__payment_status='paid',
     )
     monthly_revenue = sum(i.line_total for i in monthly_items)
-    total_revenue = sum(i.line_total for i in OrderItem.objects.filter(
-        product__vendor=vendor,
-        order__payment_status='paid',
+    total_revenue   = sum(i.line_total for i in OrderItem.objects.filter(
+        product__vendor=vendor, order__payment_status='paid',
     ))
 
+    recent_orders = Order.objects.filter(
+        items__product__vendor=vendor
+    ).distinct().order_by('-created_at')[:8]
+
+    top_products = vendor.products.filter(is_active=True).order_by('-created_at')[:5]
+
     return render(request, 'vendors/dashboard.html', {
-        'vendor': vendor,
-        'recent_orders': recent_orders,
+        'vendor':          vendor,
+        'recent_orders':   recent_orders,
+        'top_products':    top_products,
         'monthly_revenue': monthly_revenue,
-        'total_revenue': total_revenue,
+        'total_revenue':   total_revenue,
     })
 
 
@@ -97,7 +99,7 @@ def vendor_product_add(request):
             product = form.save(commit=False)
             product.vendor = vendor
             product.save()
-            messages.success(request, f'✅ "{product.name}" added!')
+            messages.success(request, f'"{product.name}" added!')
             return redirect('vendor_products')
         else:
             messages.error(request, 'Please fix the errors below.')
@@ -118,7 +120,7 @@ def vendor_product_edit(request, pk):
         form = VendorProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
             form.save()
-            messages.success(request, f'✅ "{product.name}" updated!')
+            messages.success(request, f'"{product.name}" updated!')
             return redirect('vendor_products')
     else:
         form = VendorProductForm(instance=product)
@@ -169,15 +171,14 @@ def vendor_package_add(request):
                         PackageItem.objects.create(package=pkg, product=p, quantity=1)
                     except Product.DoesNotExist:
                         pass
-            messages.success(request, f'✅ Package "{pkg.name}" created!')
+            messages.success(request, f'Package "{pkg.name}" created!')
             return redirect('vendor_packages')
     else:
         form = VendorPackageForm()
     return render(request, 'vendors/package_form.html', {
         'vendor': vendor, 'form': form,
         'vendor_products': vendor_products,
-        'selected_ids': [],
-        'action': 'Create'
+        'selected_ids': [], 'action': 'Create'
     })
 
 
@@ -202,7 +203,7 @@ def vendor_package_edit(request, pk):
                         PackageItem.objects.create(package=pkg, product=p, quantity=1)
                     except Product.DoesNotExist:
                         pass
-            messages.success(request, f'✅ Package "{pkg.name}" updated!')
+            messages.success(request, f'Package "{pkg.name}" updated!')
             return redirect('vendor_packages')
     else:
         form = VendorPackageForm(instance=pkg)
@@ -218,10 +219,20 @@ def vendor_orders(request):
     vendor = _get_vendor(request)
     if not vendor:
         return redirect('vendor_register')
+
+    status_filter = request.GET.get('status', '')
     orders = Order.objects.filter(
         items__product__vendor=vendor
     ).distinct().order_by('-created_at')
-    return render(request, 'vendors/orders.html', {'vendor': vendor, 'orders': orders})
+
+    if status_filter:
+        orders = orders.filter(status=status_filter)
+
+    return render(request, 'vendors/orders.html', {
+        'vendor': vendor,
+        'orders': orders,
+        'status_filter': status_filter,
+    })
 
 
 @login_required
@@ -237,6 +248,43 @@ def vendor_order_detail(request, order_number):
 
 
 @login_required
+@require_POST
+def vendor_update_order_status(request, order_number):
+    vendor = _get_vendor(request)
+    if not vendor:
+        return redirect('vendor_register')
+
+    order = get_object_or_404(Order, order_number=order_number)
+
+    # Make sure this vendor has items in this order
+    if not order.items.filter(product__vendor=vendor).exists():
+        messages.error(request, 'You do not have items in this order.')
+        return redirect('vendor_orders')
+
+    new_status = request.POST.get('status', '')
+    valid_transitions = {
+        'confirmed':  'processing',
+        'processing': 'shipped',
+        'shipped':    'delivered',
+    }
+
+    if valid_transitions.get(order.status) == new_status:
+        order.status = new_status
+        order.save()
+        # Notify customer
+        try:
+            from store.emails import send_order_status_update
+            send_order_status_update(order)
+        except Exception:
+            pass
+        messages.success(request, f'Order #{order.order_number} marked as {new_status}.')
+    else:
+        messages.error(request, 'Invalid status update.')
+
+    return redirect('vendor_orders')
+
+
+@login_required
 def vendor_settings(request):
     vendor = _get_vendor(request)
     if not vendor:
@@ -244,8 +292,22 @@ def vendor_settings(request):
     if request.method == 'POST':
         form = VendorRegistrationForm(request.POST, request.FILES, instance=vendor)
         if form.is_valid():
-            form.save()
-            messages.success(request, '✅ Store settings updated!')
+            vendor = form.save()
+            # Retry Paystack subaccount if bank details were updated and no subaccount yet
+            if not vendor.paystack_subaccount_code and vendor.bank_name and vendor.account_number:
+                try:
+                    from store.paystack_utils import create_vendor_subaccount
+                    code = create_vendor_subaccount(vendor)
+                    if code:
+                        vendor.paystack_subaccount_code = code
+                        vendor.save()
+                        messages.success(request, 'Bank details saved and Paystack payments activated.')
+                    else:
+                        messages.success(request, 'Settings saved. Paystack subaccount creation pending.')
+                except Exception:
+                    messages.success(request, 'Settings saved.')
+            else:
+                messages.success(request, 'Store settings updated.')
             return redirect('vendor_settings')
     else:
         form = VendorRegistrationForm(instance=vendor)
@@ -253,7 +315,7 @@ def vendor_settings(request):
 
 
 def vendor_storefront(request, slug):
-    vendor = get_object_or_404(Vendor, slug=slug, status='active')
+    vendor   = get_object_or_404(Vendor, slug=slug, status='active')
     products = vendor.products.filter(is_active=True)
     packages = vendor.packages.filter(is_active=True)
     return render(request, 'vendors/storefront.html', {

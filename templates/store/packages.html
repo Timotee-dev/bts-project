@@ -12,17 +12,17 @@
 <div style="background:var(--cream);padding:28px var(--px);">
   <div style="max-width:var(--max-w);margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;text-align:center;">
     <div>
-      <div style="font-size:1.8rem;margin-bottom:6px;">🌱</div>
+      <div style="font-size:1.8rem;margin-bottom:6px;"></div>
       <p style="font-weight:800;color:var(--green);font-size:1rem;">Essential Set</p>
       <p style="color:var(--gray);font-size:0.82rem;">The basics covered — notebook, stationery, body spray, earring, 1 top, 1 bottom + more.</p>
     </div>
     <div>
-      <div style="font-size:1.8rem;margin-bottom:6px;">✨</div>
+      <div style="font-size:1.8rem;margin-bottom:6px;"></div>
       <p style="font-weight:800;color:var(--green);font-size:1rem;">Glow Set</p>
       <p style="color:var(--gray);font-size:0.82rem;">Everything in Essential + perfume, more clothing, and lifestyle upgrades.</p>
     </div>
     <div>
-      <div style="font-size:1.8rem;margin-bottom:6px;">👑</div>
+      <div style="font-size:1.8rem;margin-bottom:6px;"></div>
       <p style="font-weight:800;color:var(--green);font-size:1rem;">Complete Set</p>
       <p style="color:var(--gray);font-size:0.82rem;">Almost everything on the BTS checklist — the fullest back-to-school experience.</p>
     </div>
@@ -35,9 +35,9 @@
     <!-- Filter tabs -->
     <div class="filter-tabs">
       <a href="{% url 'packages' %}" class="filter-tab {% if not active_tier %}active{% endif %}">All Packages</a>
-      <a href="?tier=essential" class="filter-tab {% if active_tier == 'essential' %}active{% endif %}">🌱 Essential Set</a>
-      <a href="?tier=glow"      class="filter-tab {% if active_tier == 'glow' %}active{% endif %}">✨ Glow Set</a>
-      <a href="?tier=complete"  class="filter-tab {% if active_tier == 'complete' %}active{% endif %}">👑 Complete Set</a>
+      <a href="?tier=essential" class="filter-tab {% if active_tier == 'essential' %}active{% endif %}"> Essential Set</a>
+      <a href="?tier=glow"      class="filter-tab {% if active_tier == 'glow' %}active{% endif %}"> Glow Set</a>
+      <a href="?tier=complete"  class="filter-tab {% if active_tier == 'complete' %}active{% endif %}"> Complete Set</a>
     </div>
 
     {% if not active_tier %}
@@ -47,7 +47,7 @@
       {% with essential_pkgs=packages|dictsort:"price" %}
       <div style="margin-bottom:56px;">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
-          <span style="font-size:1.8rem;">🌱</span>
+          <span style="font-size:1.8rem;"></span>
           <div>
             <h2 style="font-size:1.3rem;font-weight:800;color:var(--dark);">Essential Set</h2>
             <p style="color:var(--gray);font-size:0.85rem;">The basics covered — great for first-years on a budget.</p>
@@ -65,7 +65,7 @@
       <!-- Glow Set -->
       <div style="margin-bottom:56px;">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
-          <span style="font-size:1.8rem;">✨</span>
+          <span style="font-size:1.8rem;"></span>
           <div>
             <h2 style="font-size:1.3rem;font-weight:800;color:var(--dark);">Glow Set</h2>
             <p style="color:var(--gray);font-size:0.85rem;">A step up — more clothing, lifestyle, and personal care.</p>
@@ -82,7 +82,7 @@
       <!-- Complete Set -->
       <div style="margin-bottom:56px;">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
-          <span style="font-size:1.8rem;">👑</span>
+          <span style="font-size:1.8rem;"></span>
           <div>
             <h2 style="font-size:1.3rem;font-weight:800;color:var(--dark);">Complete Set</h2>
             <p style="color:var(--gray);font-size:0.85rem;">The full experience — almost everything on the BTS checklist.</p>
@@ -103,7 +103,7 @@
         {% include 'store/partials/package_card.html' with pkg=pkg %}
         {% empty %}
         <div style="grid-column:1/-1;text-align:center;padding:80px;color:var(--gray);">
-          <div style="font-size:4rem;margin-bottom:20px;">📦</div>
+          <div style="font-size:4rem;margin-bottom:20px;"></div>
           <h3 style="margin-bottom:8px;">No packages in this set yet</h3>
           <p>Check back soon or browse another set.</p>
         </div>

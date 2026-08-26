@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block title %}Platform Dashboard — BTS Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+.stat-card { background:white; border-radius:var(--radius); border:1px solid var(--border); padding:24px; }
+.stat-num { font-size:2.2rem; font-weight:900; color:var(--green); }
+.stat-label { color:var(--gray); font-size:0.82rem; font-weight:600; margin-top:4px; }
+.stat-change { font-size:0.78rem; margin-top:6px; }
+.pos { color:var(--success); }
+.neg { color:var(--error); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-header-title">Platform Dashboard</h1>
+  <p class="page-header-sub">Overview of BTS Project business metrics</p>
+</div>
+
+<section class="section">
+  <div class="container">
+
+    <!-- KPI cards -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:32px;">
+      <div class="stat-card">
+        <p class="stat-num">&#x20A6;{{ total_revenue|floatformat:0 }}</p>
+        <p class="stat-label">Total Revenue (All Orders)</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-num">&#x20A6;{{ commission_total|floatformat:0 }}</p>
+        <p class="stat-label">BTS Commission (&#x20A6;2,000 x {{ paid_orders_count }} orders)</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-num">{{ total_orders }}</p>
+        <p class="stat-label">Total Orders</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-num">{{ paid_orders_count }}</p>
+        <p class="stat-label">Paid Orders</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-num">{{ total_customers }}</p>
+        <p class="stat-label">Registered Customers</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-num">{{ total_vendors }}</p>
+        <p class="stat-label">Active Vendors</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-num">{{ total_products }}</p>
+        <p class="stat-label">Products Listed</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-num">{{ total_packages }}</p>
+        <p class="stat-label">Packages Available</p>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;" class="checkout-grid">
+
+      <!-- Recent orders -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <h2 style="font-size:1rem;font-weight:800;color:var(--dark);">Recent Orders</h2>
+          <a href="/admin/store/order/" class="btn btn-outline-green btn-sm">View All</a>
+        </div>
+        {% for order in recent_orders %}
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:0.85rem;">
+          <div>
+            <p style="font-weight:600;color:var(--dark);">#{{ order.order_number }}</p>
+            <p style="color:var(--gray);font-size:0.78rem;">{{ order.created_at|date:"d M Y" }}</p>
+          </div>
+          <div style="text-align:right;">
+            <p style="font-weight:700;color:var(--green);">&#x20A6;{{ order.total|floatformat:0 }}</p>
+            <span class="badge badge-{{ order.status }}">{{ order.get_status_display }}</span>
+          </div>
+        </div>
+        {% empty %}
+        <p style="color:var(--gray);font-size:0.875rem;">No orders yet.</p>
+        {% endfor %}
+      </div>
+
+      <!-- Top vendors by revenue -->
+      <div class="card">
+        <h2 style="font-size:1rem;font-weight:800;color:var(--dark);margin-bottom:16px;">Top Vendors</h2>
+        {% for vendor in top_vendors %}
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:0.85rem;">
+          <div>
+            <p style="font-weight:600;color:var(--dark);">{{ vendor.business_name }}</p>
+            <p style="color:var(--gray);font-size:0.78rem;">{{ vendor.total_products }} products</p>
+          </div>
+          <p style="font-weight:700;color:var(--green);">&#x20A6;{{ vendor.total_sales|floatformat:0 }}</p>
+        </div>
+        {% empty %}
+        <p style="color:var(--gray);font-size:0.875rem;">No vendor sales yet.</p>
+        {% endfor %}
+      </div>
+
+    </div>
+
+    <!-- Commission breakdown -->
+    <div class="card" style="margin-top:24px;">
+      <h2 style="font-size:1rem;font-weight:800;color:var(--dark);margin-bottom:16px;">
+        Commission Report — &#x20A6;2,000 per paid order
+      </h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;">
+        <div style="background:var(--green-xpale);border-radius:var(--radius-sm);padding:16px;text-align:center;">
+          <p style="font-size:1.6rem;font-weight:900;color:var(--green);">{{ paid_orders_count }}</p>
+          <p style="color:var(--gray);font-size:0.8rem;">Paid Orders</p>
+        </div>
+        <div style="background:var(--green-xpale);border-radius:var(--radius-sm);padding:16px;text-align:center;">
+          <p style="font-size:1.6rem;font-weight:900;color:var(--green);">&#x20A6;{{ commission_total|floatformat:0 }}</p>
+          <p style="color:var(--gray);font-size:0.8rem;">Total BTS Commission</p>
+        </div>
+        <div style="background:var(--green-xpale);border-radius:var(--radius-sm);padding:16px;text-align:center;">
+          <p style="font-size:1.6rem;font-weight:900;color:var(--green);">&#x20A6;{{ vendor_total|floatformat:0 }}</p>
+          <p style="color:var(--gray);font-size:0.8rem;">Paid to Vendors</p>
+        </div>
+        <div style="background:var(--green-xpale);border-radius:var(--radius-sm);padding:16px;text-align:center;">
+          <p style="font-size:1.6rem;font-weight:900;color:var(--green);">&#x20A6;{{ total_revenue|floatformat:0 }}</p>
+          <p style="color:var(--gray);font-size:0.8rem;">Total GMV</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

@@ -49,9 +49,9 @@ def packages(request):
         pkgs = pkgs.filter(budget_tier=tier)
 
     tiers = [
-        ('essential', 'Essential Set', '🌱'),
-        ('glow',      'Glow Set',      '✨'),
-        ('complete',  'Complete Set',  '👑'),
+        ('essential', 'Essential Set', ''),
+        ('glow',      'Glow Set',      ''),
+        ('complete',  'Complete Set',  ''),
     ]
     tier_descriptions = {
         'essential': 'The basics covered — great for first-years on a budget.',
@@ -436,14 +436,75 @@ def submit_review(request, product_slug=None, package_slug=None):
     return redirect('home')
 
 
+def _decrement_stock(order):
+    """Reduce stock for each product in a paid order."""
+    for item in order.items.all():
+        if item.product and item.product.stock > 0:
+            item.product.stock = max(0, item.product.stock - item.quantity)
+            item.product.save(update_fields=['stock'])
+
+
+def search(request):
+    query    = request.GET.get('q', '').strip()
+    packages = BTSPackage.objects.none()
+    products = Product.objects.none()
+    total    = 0
+    if query:
+        packages = BTSPackage.objects.filter(
+            Q(name__icontains=query) | Q(description__icontains=query),
+            is_active=True
+        )
+        products = Product.objects.filter(
+            Q(name__icontains=query) | Q(description__icontains=query),
+            is_active=True
+        )
+        total = packages.count() + products.count()
+    return render(request, 'store/search.html', {
+        'query': query, 'packages': packages,
+        'products': products, 'total_results': total,
+    })
+
+
+@login_required
+def order_tracking(request, order_number):
+    order = get_object_or_404(Order, order_number=order_number, customer=request.user)
+    return render(request, 'store/order_tracking.html', {'order': order})
+
+
+@login_required
+def admin_dashboard(request):
+    if not request.user.is_staff:
+        return redirect('home')
+    from vendors.models import Vendor
+    from accounts.models import Customer
+    from django.db.models import Sum
+    paid_orders = Order.objects.filter(payment_status='paid')
+    paid_count  = paid_orders.count()
+    total_rev   = paid_orders.aggregate(s=Sum('total'))['s'] or 0
+    commission  = paid_count * 2000
+    return render(request, 'store/admin_dashboard.html', {
+        'total_revenue':     total_rev,
+        'commission_total':  commission,
+        'vendor_total':      total_rev - commission,
+        'total_orders':      Order.objects.count(),
+        'paid_orders_count': paid_count,
+        'total_customers':   Customer.objects.filter(is_staff=False).count(),
+        'total_vendors':     Vendor.objects.filter(status='active').count(),
+        'total_products':    Product.objects.filter(is_active=True).count(),
+        'total_packages':    BTSPackage.objects.filter(is_active=True).count(),
+        'recent_orders':     Order.objects.order_by('-created_at')[:10],
+        'top_vendors':       Vendor.objects.all()[:5],
+    })
+
+
 def sell_on_bts(request):
     benefits = [
-        ('🎯', 'Targeted Student Audience', 'BTS is built exclusively for Nigerian university students — your products reach exactly who needs them.'),
-        ('📦', 'Create BTS Packages', 'Bundle your products into Essential, Glow, or Complete sets. Packages sell faster than individual items.'),
-        ('📊', 'Full Sales Dashboard', 'Track your products, orders, and revenue in real time from your vendor dashboard.'),
-        ('🔔', 'Instant Order Alerts', 'Get notified by email the moment a customer buys your product.'),
-        ('🌍', 'Nationwide Reach', 'BTS delivers to all 36 states in Nigeria.'),
-        ('💳', 'Secure Payments', 'All payments processed securely via Paystack. No cash, no risk.'),
+        ('', 'Targeted Student Audience', 'BTS is built exclusively for Nigerian university students — your products reach exactly who needs them.'),
+        ('', 'Create BTS Packages', 'Bundle your products into Essential, Glow, or Complete sets. Packages sell faster than individual items.'),
+        ('', 'Full Sales Dashboard', 'Track your products, orders, and revenue in real time from your vendor dashboard.'),
+        ('', 'Instant Order Alerts', 'Get notified by email the moment a customer buys your product.'),
+        ('', 'Nationwide Reach', 'BTS delivers to all 36 states in Nigeria.'),
+        ('', 'Secure Payments', 'All payments processed securely via Paystack. No cash, no risk.'),
     ]
     return render(request, 'store/sell_on_bts.html', {'benefits': benefits})
 

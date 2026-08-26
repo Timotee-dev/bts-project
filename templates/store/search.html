@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Search: {{ query }} — BTS Project{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1 class="page-header-title">Search Results</h1>
+  <p class="page-header-sub">
+    {% if query %}{{ total_results }} result{{ total_results|pluralize }} for "{{ query }}"{% endif %}
+  </p>
+</div>
+
+<section class="section">
+  <div class="container">
+
+    <!-- Search bar -->
+    <form method="get" action="{% url 'search' %}" style="margin-bottom:32px;">
+      <div style="display:flex;gap:10px;max-width:600px;">
+        <input type="text" name="q" value="{{ query }}" class="form-control"
+               placeholder="Search packages, products..." style="flex:1;">
+        <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Search</button>
+      </div>
+    </form>
+
+    {% if query %}
+      {% if packages %}
+      <div style="margin-bottom:40px;">
+        <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin-bottom:20px;">
+          Packages ({{ packages.count }})
+        </h2>
+        <div class="packages-grid">
+          {% for pkg in packages %}
+          {% include 'store/partials/package_card.html' with pkg=pkg %}
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      {% if products %}
+      <div>
+        <h2 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin-bottom:20px;">
+          Products ({{ products.count }})
+        </h2>
+        <div class="products-grid">
+          {% for product in products %}
+          <div class="product-card">
+            <div class="product-card-img">
+              {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}">
+              {% else %}<div style="display:flex;align-items:center;justify-content:center;height:100%;"><i class="fas fa-tshirt" style="opacity:0.1;font-size:2rem;"></i></div>{% endif %}
+            </div>
+            <div class="product-card-body">
+              <p class="product-category">{{ product.category.name }}</p>
+              <h3 class="product-name">{{ product.name }}</h3>
+              <p class="product-price">&#x20A6;{{ product.price|floatformat:0 }}</p>
+              <a href="{% url 'product_detail' product.slug %}" class="btn btn-outline-green btn-sm btn-block">View</a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      {% if not packages and not products %}
+      <div style="text-align:center;padding:80px;">
+        <i class="fas fa-search" style="font-size:3rem;opacity:0.1;color:var(--green);margin-bottom:20px;display:block;"></i>
+        <h3 style="color:var(--dark);margin-bottom:8px;">No results for "{{ query }}"</h3>
+        <p style="color:var(--gray);">Try a different search term, or browse our packages below.</p>
+        <a href="{% url 'packages' %}" class="btn btn-primary" style="margin-top:20px;">Browse Packages</a>
+      </div>
+      {% endif %}
+    {% endif %}
+
+  </div>
+</section>
+{% endblock %}
