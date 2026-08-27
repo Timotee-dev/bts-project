@@ -1,55 +1,100 @@
-{% extends 'vendors/base.html' %}
+{% extends 'base.html' %}
 {% block title %}Store Settings — {{ vendor.business_name }}{% endblock %}
-{% block vendor_content %}
-<div style="max-width:680px;">
-  <h1 style="font-size:1.5rem;font-weight:800;color:var(--dark);margin-bottom:24px;">Store Settings</h1>
-  <div class="card">
+
+{% block extra_css %}
+<style>
+.vd-layout { display:flex; min-height:100vh; }
+.vd-sidebar { width:240px; flex-shrink:0; background:var(--green); padding:24px 16px; display:flex; flex-direction:column; }
+.vd-main { flex:1; padding:24px; min-width:0; overflow:hidden; }
+.vd-mobile-nav { display:none; background:var(--green); padding:12px 16px; overflow-x:auto; white-space:nowrap; gap:8px; }
+.vd-mobile-nav a { display:inline-flex; align-items:center; gap:6px; color:rgba(245,237,214,0.8); text-decoration:none; font-size:0.8rem; font-weight:600; padding:6px 12px; border-radius:20px; border:1px solid rgba(245,237,214,0.2); flex-shrink:0; }
+.vd-mobile-nav a.active { background:rgba(245,237,214,0.15); color:var(--cream); }
+@media (max-width:768px) { .vd-sidebar { display:none; } .vd-mobile-nav { display:flex; } .vd-main { padding:16px; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="vd-mobile-nav">
+  <a href="{% url 'vendor_dashboard' %}"><i class="fas fa-chart-line"></i> Dashboard</a>
+  <a href="{% url 'vendor_products' %}"><i class="fas fa-box"></i> Products</a>
+  <a href="{% url 'vendor_packages' %}"><i class="fas fa-boxes"></i> Packages</a>
+  <a href="{% url 'vendor_orders' %}"><i class="fas fa-shopping-bag"></i> Orders</a>
+  <a href="{% url 'vendor_settings' %}" class="active"><i class="fas fa-cog"></i> Settings</a>
+  <a href="{% url 'home' %}"><i class="fas fa-arrow-left"></i> BTS</a>
+</div>
+
+<div class="vd-layout">
+  <aside class="vd-sidebar">
+    <div style="width:48px;height:48px;background:rgba(245,237,214,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:800;color:var(--cream);margin-bottom:10px;">{{ vendor.business_name|first|upper }}</div>
+    <p style="font-weight:700;color:var(--cream);font-size:0.95rem;margin-bottom:4px;">{{ vendor.business_name }}</p>
+    <p style="color:rgba(245,237,214,0.55);font-size:0.75rem;margin-bottom:20px;">Vendor Store</p>
+    <nav style="display:flex;flex-direction:column;gap:4px;">
+      <a href="{% url 'vendor_dashboard' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:rgba(245,237,214,0.75);font-size:0.875rem;font-weight:600;text-decoration:none;"><i class="fas fa-chart-line fa-fw"></i> Dashboard</a>
+      <a href="{% url 'vendor_products' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:rgba(245,237,214,0.75);font-size:0.875rem;font-weight:600;text-decoration:none;"><i class="fas fa-box fa-fw"></i> My Products</a>
+      <a href="{% url 'vendor_packages' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:rgba(245,237,214,0.75);font-size:0.875rem;font-weight:600;text-decoration:none;"><i class="fas fa-boxes fa-fw"></i> My Packages</a>
+      <a href="{% url 'vendor_orders' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:rgba(245,237,214,0.75);font-size:0.875rem;font-weight:600;text-decoration:none;"><i class="fas fa-shopping-bag fa-fw"></i> Orders</a>
+      <a href="{% url 'vendor_settings' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--cream);font-size:0.875rem;font-weight:700;background:rgba(245,237,214,0.12);text-decoration:none;"><i class="fas fa-cog fa-fw"></i> Store Settings</a>
+      <a href="{% url 'home' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:rgba(245,237,214,0.55);font-size:0.875rem;font-weight:600;text-decoration:none;margin-top:8px;"><i class="fas fa-arrow-left fa-fw"></i> Back to BTS</a>
+    </nav>
+  </aside>
+
+  <div class="vd-main">
+    <h1 style="font-size:clamp(1.1rem,4vw,1.3rem);font-weight:800;color:var(--dark);margin-bottom:20px;">Store Settings</h1>
+
+    {% if messages %}
+    {% for msg in messages %}
+    <div class="alert alert-{{ msg.tags }}" style="margin-bottom:16px;">{{ msg }}</div>
+    {% endfor %}
+    {% endif %}
+
     <form method="post" enctype="multipart/form-data">
       {% csrf_token %}
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-        <div class="form-group" style="grid-column:1/-1;">
-          <label class="form-label">Business Name</label>
-          <input type="text" name="business_name" class="form-control" value="{{ vendor.business_name }}" required>
+
+      <div class="card" style="margin-bottom:16px;">
+        <h2 style="font-size:0.95rem;font-weight:800;color:var(--dark);margin-bottom:16px;">Store Information</h2>
+
+        <div class="form-group">
+          <label class="form-label">Business / Store Name *</label>
+          <input type="text" name="business_name" class="form-control" required value="{{ vendor.business_name }}">
         </div>
         <div class="form-group">
-          <label class="form-label">Business Email</label>
-          <input type="email" name="email" class="form-control" value="{{ vendor.email }}" required>
+          <label class="form-label">Business Email *</label>
+          <input type="email" name="email" class="form-control" required value="{{ vendor.email }}">
         </div>
         <div class="form-group">
-          <label class="form-label">Phone</label>
-          <input type="tel" name="phone" class="form-control" value="{{ vendor.phone }}" required>
+          <label class="form-label">Business Phone *</label>
+          <input type="tel" name="phone" class="form-control" required value="{{ vendor.phone }}">
         </div>
-        <div class="form-group" style="grid-column:1/-1;">
-          <label class="form-label">Description</label>
-          <textarea name="description" class="form-control" rows="3">{{ vendor.description }}</textarea>
+        <div class="form-group">
+          <label class="form-label">Store Description</label>
+          <textarea name="description" class="form-control" rows="3" placeholder="Tell customers what you sell...">{{ vendor.description }}</textarea>
         </div>
         <div class="form-group">
           <label class="form-label">Store Logo</label>
+          {% if vendor.logo %}<img src="{{ vendor.logo.url }}" style="height:48px;border-radius:8px;margin-bottom:8px;display:block;">{% endif %}
           <input type="file" name="logo" class="form-control" accept="image/*">
-          {% if vendor.logo %}<img src="{{ vendor.logo.url }}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-top:8px;">{% endif %}
-        </div>
-        <div class="form-group">
-          <label class="form-label">Bank Name</label>
-          <input type="text" name="bank_name" class="form-control" value="{{ vendor.bank_name }}">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Account Number</label>
-          <input type="text" name="account_number" class="form-control" value="{{ vendor.account_number }}">
-        </div>
-        <div class="form-group" style="grid-column:1/-1;">
-          <label class="form-label">Account Name</label>
-          <input type="text" name="account_name" class="form-control" value="{{ vendor.account_name }}">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Instagram</label>
-          <input type="url" name="instagram" class="form-control" value="{{ vendor.instagram }}">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Twitter</label>
-          <input type="url" name="twitter" class="form-control" value="{{ vendor.twitter }}">
         </div>
       </div>
-      <button type="submit" class="btn btn-primary btn-lg" style="margin-top:8px;"><i class="fas fa-save"></i> Save Changes</button>
+
+      <div class="card" style="margin-bottom:16px;">
+        <h2 style="font-size:0.95rem;font-weight:800;color:var(--dark);margin-bottom:16px;">Social Media</h2>
+        <div class="form-group">
+          <label class="form-label">Instagram URL</label>
+          <input type="url" name="instagram" class="form-control" value="{{ vendor.instagram }}" placeholder="https://instagram.com/yourbrand">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Twitter / X URL</label>
+          <input type="url" name="twitter" class="form-control" value="{{ vendor.twitter }}" placeholder="https://twitter.com/yourbrand">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Website</label>
+          <input type="url" name="website" class="form-control" value="{{ vendor.website }}" placeholder="https://yourbrand.com">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg btn-block">
+        <i class="fas fa-save"></i> Save Settings
+      </button>
     </form>
   </div>
 </div>

@@ -286,26 +286,10 @@ def pay_order(request, order_number):
     order       = get_object_or_404(Order, order_number=order_number, customer=request.user)
     amount_kobo = int(order.total * 100)
 
-    # Build Paystack split config for vendor payout
-    split_config = None
-    try:
-        from .paystack_utils import build_payment_split
-        import json
-        first_item = order.items.filter(product__vendor__isnull=False).first()
-        if first_item and hasattr(first_item.product, 'vendor') and first_item.product.vendor:
-            vendor = first_item.product.vendor
-            if vendor.paystack_subaccount_code:
-                split_data = build_payment_split(vendor.paystack_subaccount_code, amount_kobo)
-                if split_data:
-                    split_config = json.dumps(split_data)
-    except Exception as e:
-        print(f'[BTS] Split config error: {e}')
-
     return render(request, 'store/pay.html', {
         'order':               order,
         'amount_kobo':         amount_kobo,
         'paystack_public_key': settings.PAYSTACK_PUBLIC_KEY,
-        'split_config':        split_config,
     })
 
 
