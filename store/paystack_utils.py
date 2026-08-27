@@ -1,12 +1,9 @@
 """
 BTS Project — Paystack Utilities
-Handles subaccount creation and payment split
 """
 import urllib.request
-import urllib.parse
 import json
 from django.conf import settings
-
 
 PAYSTACK_BASE = 'https://api.paystack.co'
 BTS_COMMISSION = 200000  # NGN 2,000 in kobo
@@ -22,49 +19,16 @@ def _paystack_request(method, endpoint, data=None):
     req = urllib.request.Request(url, data=body, headers=headers, method=method)
     try:
         with urllib.request.urlopen(req) as response:
-            return json.loads(response.read())
+            result = json.loads(response.read())
+            print(f'[Paystack] {method} {endpoint} success: {result}')
+            return result
     except urllib.error.HTTPError as e:
         error_body = e.read().decode('utf-8')
-        print(f'[Paystack] {method} {endpoint} failed: {e.code} — {error_body}')
+        print(f'[Paystack] {method} {endpoint} FAILED {e.code}: {error_body}')
         return None
     except Exception as e:
         print(f'[Paystack] Request error: {e}')
         return None
-
-
-def create_vendor_subaccount(vendor):
-    """
-    Create a Paystack subaccount for a vendor.
-    Uses 95% split — vendor gets 95%, BTS keeps 5% (approx ₦2000 on avg order).
-    Falls back to flat fee approach if percentage fails.
-    """
-    if not vendor.bank_name or not vendor.account_number or not vendor.account_name:
-        return None
-
-    bank_code = get_bank_code(vendor.bank_name)
-    if not bank_code:
-        print(f'[Paystack] Could not find bank code for: {vendor.bank_name}')
-        return None
-
-    # First try with percentage_charge matching Nexivo's working subaccounts
-    data = {
-        'business_name': vendor.business_name,
-        'settlement_bank': bank_code,
-        'account_number': vendor.account_number,
-        'percentage_charge': 5,  # BTS takes 5%, vendor gets 95%
-        'description': f'BTS Vendor: {vendor.business_name}',
-        'primary_contact_email': vendor.email,
-        'primary_contact_name': vendor.account_name,
-    }
-
-    result = _paystack_request('POST', '/subaccount', data)
-    if result and result.get('status'):
-        code = result['data']['subaccount_code']
-        print(f'[Paystack] Subaccount created for {vendor.business_name}: {code}')
-        return code
-
-    print(f'[Paystack] Subaccount creation failed for {vendor.business_name}')
-    return None
 
 
 def get_bank_code(bank_name):
@@ -94,19 +58,50 @@ def get_bank_code(bank_name):
         'wema': '035', 'wema bank': '035',
         'zenith': '057', 'zenith bank': '057',
     }
-
     name_lower = bank_name.lower().strip()
     for key, code in BANK_CODES.items():
         if key in name_lower:
             return code
 
-    # Fallback: query Paystack API
+    # Fallback: query Paystack API for bank list
     result = _paystack_request('GET', '/bank?country=nigeria&perPage=100')
     if result and result.get('status'):
         for bank in result.get('data', []):
             if bank_name.lower() in bank['name'].lower():
                 return bank['code']
+    return None
 
+
+def create_vendor_subaccount(vendor):
+    """
+    Create a Paystack subaccount for a vendor.
+    Matches the format used in existing Nexivo subaccounts (95% to vendor).
+    """
+    if not vendor.bank_name or not vendor.account_number or not vendor.account_name:
+        print(f'[Paystack] Skipping subaccount for {vendor.business_name} - missing bank details')
+        return None
+
+    bank_code = get_bank_code(vendor.bank_name)
+    if not bank_code:
+        print(f'[Paystack] No bank code found for: {vendor.bank_name}')
+        return None
+
+    print(f'[Paystack] Creating subaccount for {vendor.business_name} with bank code {bank_code}')
+
+    data = {
+        'business_name': vendor.business_name,
+        'settlement_bank': bank_code,
+        'account_number': str(vendor.account_number).strip(),
+        'percentage_charge': 95,
+    }
+
+    result = _paystack_request('POST', '/subaccount', data)
+    if result and result.get('status'):
+        code = result['data']['subaccount_code']
+        print(f'[Paystack] Subaccount created: {code}')
+        return code
+
+    print(f'[Paystack] Subaccount creation failed for {vendor.business_name}')
     return None
 
 
