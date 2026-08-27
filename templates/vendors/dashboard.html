@@ -1,112 +1,166 @@
 {% extends 'base.html' %}
 {% block title %}My Dashboard — {{ vendor.business_name }}{% endblock %}
 
-{% block content %}
-<div style="display:flex;min-height:100vh;">
+{% block extra_css %}
+<style>
+.vd-layout { display:flex; min-height:100vh; }
+.vd-sidebar {
+  width:240px; flex-shrink:0;
+  background:var(--green);
+  padding:24px 16px;
+  display:flex; flex-direction:column;
+}
+.vd-main { flex:1; padding:24px; min-width:0; overflow:hidden; }
+.vd-mobile-nav {
+  display:none;
+  background:var(--green);
+  padding:12px 16px;
+  overflow-x:auto;
+  white-space:nowrap;
+  gap:8px;
+}
+.vd-mobile-nav a {
+  display:inline-flex; align-items:center; gap:6px;
+  color:rgba(245,237,214,0.8); text-decoration:none;
+  font-size:0.8rem; font-weight:600;
+  padding:6px 12px; border-radius:20px;
+  border:1px solid rgba(245,237,214,0.2);
+  flex-shrink:0;
+}
+.vd-mobile-nav a.active { background:rgba(245,237,214,0.15); color:var(--cream); }
 
-  <!-- Sidebar -->
-  <aside class="vendor-sidebar">
-    <div class="vendor-avatar">{{ vendor.business_name|first|upper }}</div>
-    <p class="vendor-name">{{ vendor.business_name }}</p>
-    <p style="color:rgba(245,237,214,0.6);font-size:0.78rem;margin-bottom:12px;">Vendor Store</p>
+@media (max-width:768px) {
+  .vd-sidebar { display:none; }
+  .vd-mobile-nav { display:flex; }
+  .vd-main { padding:16px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Mobile top nav -->
+<div class="vd-mobile-nav">
+  <a href="{% url 'vendor_dashboard' %}" class="active"><i class="fas fa-chart-line"></i> Dashboard</a>
+  <a href="{% url 'vendor_products' %}"><i class="fas fa-box"></i> Products</a>
+  <a href="{% url 'vendor_packages' %}"><i class="fas fa-boxes"></i> Packages</a>
+  <a href="{% url 'vendor_orders' %}"><i class="fas fa-shopping-bag"></i> Orders</a>
+  <a href="{% url 'vendor_settings' %}"><i class="fas fa-cog"></i> Settings</a>
+  <a href="{% url 'home' %}"><i class="fas fa-arrow-left"></i> BTS</a>
+</div>
+
+<div class="vd-layout">
+
+  <!-- Desktop sidebar -->
+  <aside class="vd-sidebar">
+    <div style="width:48px;height:48px;background:rgba(245,237,214,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:800;color:var(--cream);margin-bottom:10px;">
+      {{ vendor.business_name|first|upper }}
+    </div>
+    <p style="font-weight:700;color:var(--cream);font-size:0.95rem;margin-bottom:4px;">{{ vendor.business_name }}</p>
+    <p style="color:rgba(245,237,214,0.55);font-size:0.75rem;margin-bottom:16px;">Vendor Store</p>
 
     <a href="{% url 'vendor_storefront' vendor.slug %}" target="_blank"
-       style="display:block;background:rgba(245,237,214,0.1);border:1px solid rgba(245,237,214,0.2);border-radius:8px;padding:8px 12px;font-size:0.78rem;color:var(--cream-mid);text-decoration:none;margin-bottom:20px;word-break:break-all;">
-      <i class="fas fa-external-link-alt" style="margin-right:6px;"></i>
-      {{ request.scheme }}://{{ request.get_host }}/vendors/store/{{ vendor.slug }}/
+       style="display:block;background:rgba(245,237,214,0.08);border:1px solid rgba(245,237,214,0.15);border-radius:8px;padding:8px 10px;font-size:0.72rem;color:rgba(245,237,214,0.7);text-decoration:none;margin-bottom:20px;word-break:break-all;line-height:1.5;">
+      <i class="fas fa-external-link-alt" style="margin-right:4px;"></i>Your storefront link
     </a>
 
-    <nav class="vendor-nav">
-      <a href="{% url 'vendor_dashboard' %}" class="active"><i class="fas fa-chart-line fa-fw"></i> Dashboard</a>
-      <a href="{% url 'vendor_products' %}"><i class="fas fa-box fa-fw"></i> My Products</a>
-      <a href="{% url 'vendor_packages' %}"><i class="fas fa-boxes fa-fw"></i> My Packages</a>
-      <a href="{% url 'vendor_orders' %}"><i class="fas fa-shopping-bag fa-fw"></i> Orders</a>
-      <a href="{% url 'vendor_settings' %}"><i class="fas fa-cog fa-fw"></i> Store Settings</a>
-      <a href="{% url 'home' %}"><i class="fas fa-arrow-left fa-fw"></i> Back to BTS</a>
+    <nav style="display:flex;flex-direction:column;gap:4px;">
+      <a href="{% url 'vendor_dashboard' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--cream);font-size:0.875rem;font-weight:700;background:rgba(245,237,214,0.12);text-decoration:none;">
+        <i class="fas fa-chart-line fa-fw"></i> Dashboard
+      </a>
+      <a href="{% url 'vendor_products' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:rgba(245,237,214,0.75);font-size:0.875rem;font-weight:600;text-decoration:none;">
+        <i class="fas fa-box fa-fw"></i> My Products
+      </a>
+      <a href="{% url 'vendor_packages' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:rgba(245,237,214,0.75);font-size:0.875rem;font-weight:600;text-decoration:none;">
+        <i class="fas fa-boxes fa-fw"></i> My Packages
+      </a>
+      <a href="{% url 'vendor_orders' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:rgba(245,237,214,0.75);font-size:0.875rem;font-weight:600;text-decoration:none;">
+        <i class="fas fa-shopping-bag fa-fw"></i> Orders
+      </a>
+      <a href="{% url 'vendor_settings' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:rgba(245,237,214,0.75);font-size:0.875rem;font-weight:600;text-decoration:none;">
+        <i class="fas fa-cog fa-fw"></i> Store Settings
+      </a>
+      <a href="{% url 'home' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:rgba(245,237,214,0.55);font-size:0.875rem;font-weight:600;text-decoration:none;margin-top:8px;">
+        <i class="fas fa-arrow-left fa-fw"></i> Back to BTS
+      </a>
     </nav>
   </aside>
 
-  <!-- Main -->
-  <div style="flex:1;padding:clamp(20px,4vw,40px);">
+  <!-- Main content -->
+  <div class="vd-main">
 
-    <h1 style="font-size:1.4rem;font-weight:800;color:var(--dark);margin-bottom:24px;">
+    <h1 style="font-size:clamp(1.1rem,4vw,1.4rem);font-weight:800;color:var(--dark);margin-bottom:20px;">
       Welcome back, {{ vendor.user.first_name }}
     </h1>
 
-    <!-- Paystack subaccount status -->
+    <!-- Paystack status -->
     {% if vendor.paystack_subaccount_code %}
-    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius-sm);padding:14px 18px;margin-bottom:20px;display:flex;gap:10px;align-items:center;">
-      <i class="fas fa-check-circle" style="color:var(--success);"></i>
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;display:flex;gap:10px;align-items:center;">
+      <i class="fas fa-check-circle" style="color:var(--success);flex-shrink:0;"></i>
       <div>
-        <p style="font-weight:700;color:var(--success);font-size:0.875rem;">Paystack Payments Active</p>
-        <p style="color:var(--gray);font-size:0.78rem;">Your subaccount is set up. You'll receive payments directly when orders come in.</p>
-      </div>
-    </div>
-    {% else %}
-    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius-sm);padding:14px 18px;margin-bottom:20px;display:flex;gap:10px;align-items:flex-start;">
-      <i class="fas fa-exclamation-triangle" style="color:#d97706;margin-top:2px;"></i>
-      <div>
-        <p style="font-weight:700;color:#92400e;font-size:0.875rem;">Bank Details Needed</p>
-        <p style="color:#92400e;font-size:0.78rem;margin-bottom:8px;">Add your bank account details in Store Settings to start receiving payments automatically.</p>
-        <a href="{% url 'vendor_settings' %}" class="btn btn-sm" style="background:#d97706;color:white;font-size:0.78rem;">Add Bank Details</a>
+        <p style="font-weight:700;color:var(--success);font-size:0.85rem;">Paystack Payments Active</p>
+        <p style="color:var(--gray);font-size:0.76rem;">You will receive payments directly when orders come in.</p>
       </div>
     </div>
     {% endif %}
 
-    <!-- Stats grid -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:28px;">
-      <div class="card" style="text-align:center;">
-        <p style="font-size:1.8rem;font-weight:900;color:var(--green);">&#x20A6;{{ vendor.total_sales|floatformat:0 }}</p>
-        <p style="color:var(--gray);font-size:0.78rem;font-weight:600;">Total Revenue</p>
+    <!-- Stats -->
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;">
+      <div class="card" style="text-align:center;padding:16px;">
+        <p style="font-size:clamp(1.2rem,5vw,1.8rem);font-weight:900;color:var(--green);">&#x20A6;{{ vendor.total_sales|floatformat:0 }}</p>
+        <p style="color:var(--gray);font-size:0.72rem;font-weight:600;">Total Revenue</p>
       </div>
-      <div class="card" style="text-align:center;">
-        <p style="font-size:1.8rem;font-weight:900;color:var(--green);">{{ vendor.total_orders }}</p>
-        <p style="color:var(--gray);font-size:0.78rem;font-weight:600;">Total Orders</p>
+      <div class="card" style="text-align:center;padding:16px;">
+        <p style="font-size:clamp(1.2rem,5vw,1.8rem);font-weight:900;color:var(--green);">{{ vendor.total_orders }}</p>
+        <p style="color:var(--gray);font-size:0.72rem;font-weight:600;">Total Orders</p>
       </div>
-      <div class="card" style="text-align:center;">
-        <p style="font-size:1.8rem;font-weight:900;color:var(--green);">{{ vendor.total_products }}</p>
-        <p style="color:var(--gray);font-size:0.78rem;font-weight:600;">Active Products</p>
+      <div class="card" style="text-align:center;padding:16px;">
+        <p style="font-size:clamp(1.2rem,5vw,1.8rem);font-weight:900;color:var(--green);">{{ vendor.total_products }}</p>
+        <p style="color:var(--gray);font-size:0.72rem;font-weight:600;">Active Products</p>
       </div>
-      <div class="card" style="text-align:center;">
-        <p style="font-size:1.8rem;font-weight:900;color:var(--green);">{{ vendor.packages.count }}</p>
-        <p style="color:var(--gray);font-size:0.78rem;font-weight:600;">Packages</p>
+      <div class="card" style="text-align:center;padding:16px;">
+        <p style="font-size:clamp(1.2rem,5vw,1.8rem);font-weight:900;color:var(--green);">{{ vendor.packages.count }}</p>
+        <p style="color:var(--gray);font-size:0.72rem;font-weight:600;">Packages</p>
       </div>
     </div>
 
     <!-- Top products -->
-    <div class="card" style="margin-bottom:20px;">
+    <div class="card" style="margin-bottom:16px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-        <h2 style="font-size:1rem;font-weight:800;color:var(--dark);">Top Selling Products</h2>
-        <a href="{% url 'vendor_products' %}" class="btn btn-outline-green btn-sm">All Products</a>
+        <h2 style="font-size:0.95rem;font-weight:800;color:var(--dark);">Top Products</h2>
+        <a href="{% url 'vendor_products' %}" class="btn btn-outline-green btn-sm">All</a>
       </div>
       {% for product in top_products %}
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:0.85rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.83rem;">
         <div>
           <p style="font-weight:600;color:var(--dark);">{{ product.name }}</p>
-          <p style="color:var(--gray);font-size:0.78rem;">Stock: {{ product.stock }}</p>
+          <p style="color:var(--gray);font-size:0.75rem;">Stock: {{ product.stock }}</p>
         </div>
         <p style="font-weight:700;color:var(--green);">&#x20A6;{{ product.price|floatformat:0 }}</p>
       </div>
       {% empty %}
-      <p style="color:var(--gray);font-size:0.875rem;">No products yet. <a href="{% url 'vendor_product_add' %}" style="color:var(--green);font-weight:600;">Add your first product</a></p>
+      <p style="color:var(--gray);font-size:0.875rem;">
+        No products yet.
+        <a href="{% url 'vendor_product_add' %}" style="color:var(--green);font-weight:600;">Add your first product</a>
+      </p>
       {% endfor %}
     </div>
 
     <!-- Recent orders -->
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-        <h2 style="font-size:1rem;font-weight:800;color:var(--dark);">Recent Orders</h2>
-        <a href="{% url 'vendor_orders' %}" class="btn btn-outline-green btn-sm">All Orders</a>
+        <h2 style="font-size:0.95rem;font-weight:800;color:var(--dark);">Recent Orders</h2>
+        <a href="{% url 'vendor_orders' %}" class="btn btn-outline-green btn-sm">All</a>
       </div>
       {% for order in recent_orders %}
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:0.85rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.83rem;">
         <div>
           <p style="font-weight:600;color:var(--dark);">#{{ order.order_number }}</p>
-          <p style="color:var(--gray);font-size:0.78rem;">{{ order.created_at|date:"d M Y" }}</p>
+          <p style="color:var(--gray);font-size:0.75rem;">{{ order.created_at|date:"d M Y" }}</p>
         </div>
         <div style="text-align:right;">
           <p style="font-weight:700;color:var(--green);">&#x20A6;{{ order.total|floatformat:0 }}</p>
-          <span style="font-size:0.72rem;padding:2px 8px;border-radius:var(--radius-full);background:var(--green-pale);color:var(--green);font-weight:700;">{{ order.get_status_display }}</span>
+          <span style="font-size:0.68rem;padding:2px 8px;border-radius:var(--radius-full);background:var(--green-pale);color:var(--green);font-weight:700;">{{ order.get_status_display }}</span>
         </div>
       </div>
       {% empty %}

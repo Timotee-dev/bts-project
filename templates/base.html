@@ -26,6 +26,10 @@
   <!-- BTS CSS -->
   <link rel="stylesheet" href="{% static 'css/bts.css' %}">
   {% block extra_css %}{% endblock %}
+<style>
+.nav-search-desktop { display:none; }
+@media (min-width:900px) { .nav-search-desktop { display:flex !important; } }
+</style>
 </head>
 <body>
 
@@ -52,11 +56,11 @@
       <a href="{% url 'sell_on_bts' %}" role="menuitem" style="color:var(--gold);font-weight:700;">Sell on BTS</a>
     </div>
 
-    <!-- Search -->
-    <form method="get" action="{% url 'search' %}" class="nav-search" style="display:flex;gap:6px;align-items:center;">
-      <input type="text" name="q" placeholder="Search packages, products..."
-             class="form-control" style="width:200px;height:36px;font-size:0.82rem;padding:0 12px;">
-      <button type="submit" class="btn btn-outline-green btn-sm" style="height:36px;white-space:nowrap;">
+    <!-- Search (desktop only) -->
+    <form method="get" action="{% url 'search' %}" class="nav-search-desktop" style="display:flex;gap:6px;align-items:center;">
+      <input type="text" name="q" placeholder="Search..."
+             class="form-control" style="width:160px;height:36px;font-size:0.82rem;padding:0 12px;">
+      <button type="submit" class="btn btn-outline-green btn-sm" style="height:36px;">
         <i class="fas fa-search"></i>
       </button>
     </form>
@@ -213,7 +217,7 @@
 </footer>
 
 <!-- WhatsApp Float -->
-<a href="https://wa.me/2340000000000?text=Hi%20BTS!%20I%20need%20help." class="whatsapp-float" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
+<a href="https://wa.me/234905 238 4844?text=Hi%20BTS!%20I%20need%20help." class="whatsapp-float" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
   <i class="fab fa-whatsapp" aria-hidden="true"></i>
 </a>
 
