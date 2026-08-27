@@ -41,15 +41,46 @@
               </div>
               <div class="form-group">
                 <label class="form-label">State *</label>
-                <select name="state" class="form-control" required id="stateSelect">
+                <select name="state" class="form-control" required>
                   <option value="">-- Select State --</option>
-                  {% for state_name, fee in states_with_fees %}
-                  <option value="{{ state_name }}" {% if user.state and user.state.lower == state_name %}selected{% endif %}>
-                    {{ state_name|title }} — ₦{{ fee }}
-                  </option>
-                  {% endfor %}
+                  <option value="abia">Abia</option>
+                  <option value="adamawa">Adamawa</option>
+                  <option value="akwa ibom">Akwa Ibom</option>
+                  <option value="anambra">Anambra</option>
+                  <option value="bauchi">Bauchi</option>
+                  <option value="bayelsa">Bayelsa</option>
+                  <option value="benue">Benue</option>
+                  <option value="borno">Borno</option>
+                  <option value="cross river">Cross River</option>
+                  <option value="delta">Delta</option>
+                  <option value="ebonyi">Ebonyi</option>
+                  <option value="edo">Edo</option>
+                  <option value="ekiti">Ekiti</option>
+                  <option value="enugu">Enugu</option>
+                  <option value="abuja">FCT Abuja</option>
+                  <option value="gombe">Gombe</option>
+                  <option value="imo">Imo</option>
+                  <option value="jigawa">Jigawa</option>
+                  <option value="kaduna">Kaduna</option>
+                  <option value="kano">Kano</option>
+                  <option value="katsina">Katsina</option>
+                  <option value="kebbi">Kebbi</option>
+                  <option value="kogi">Kogi</option>
+                  <option value="kwara">Kwara</option>
+                  <option value="lagos">Lagos</option>
+                  <option value="nassarawa">Nassarawa</option>
+                  <option value="niger">Niger</option>
+                  <option value="ogun">Ogun</option>
+                  <option value="ondo">Ondo</option>
+                  <option value="osun">Osun</option>
+                  <option value="oyo">Oyo</option>
+                  <option value="plateau">Plateau</option>
+                  <option value="rivers">Rivers</option>
+                  <option value="sokoto">Sokoto</option>
+                  <option value="taraba">Taraba</option>
+                  <option value="yobe">Yobe</option>
+                  <option value="zamfara">Zamfara</option>
                 </select>
-                <p class="form-help">Delivery fee is calculated based on your state.</p>
               </div>
               <div class="form-group" style="grid-column:1/-1;">
                 <label class="form-label">Order Notes (optional)</label>
@@ -89,12 +120,12 @@
         </div>
         {% endif %}
         <div class="summary-row">
-          <span>Delivery Fee</span>
-          <span id="deliveryFeeDisplay" style="color:var(--gray);">Select state</span>
+          <span>BTS Service Fee</span>
+          <span style="color:var(--dark);">&#x20A6;2,000</span>
         </div>
         <div class="summary-row total">
           <span>Total</span>
-          <span id="grandTotalDisplay" style="color:var(--green);">₦{{ cart.subtotal|floatformat:0 }}</span>
+          <span style="color:var(--green);">&#x20A6;{{ cart.subtotal|add:2000|floatformat:0 }}</span>
         </div>
 
         <div style="margin-top:16px;background:white;border-radius:var(--radius-sm);padding:12px;border:1px solid var(--border);">
@@ -107,21 +138,5 @@
   </div>
 </section>
 
-<script>
-// Delivery fees map
-const fees = {
-  {% for state_name, fee in states_with_fees %}
-  '{{ state_name }}': {{ fee }},
-  {% endfor %}
-};
-const subtotal = {{ cart.subtotal }} + {{ cart.packaging_fee }};
 
-document.getElementById('stateSelect').addEventListener('change', function() {
-  const fee = fees[this.value] || 0;
-  const total = subtotal + fee;
-  document.getElementById('deliveryFeeDisplay').textContent = fee ? '₦' + fee.toLocaleString() : 'Select state';
-  document.getElementById('deliveryFeeDisplay').style.color = fee ? 'var(--dark)' : 'var(--gray)';
-  document.getElementById('grandTotalDisplay').textContent = '₦' + total.toLocaleString();
-});
-</script>
 {% endblock %}

@@ -237,17 +237,17 @@ def checkout(request):
             messages.error(request, 'Please fill in all delivery fields.')
             return render(request, 'store/checkout.html', {'cart': cart})
 
-        from .delivery import get_delivery_fee
-        delivery_fee = get_delivery_fee(state)
-        grand_total  = cart.total + delivery_fee
+        delivery_fee = 0
+        bts_commission = 2000
+        grand_total  = cart.total + bts_commission
 
         order = Order.objects.create(
             customer=request.user,
             order_number=Order.generate_order_number(),
             status='pending',
             subtotal=cart.subtotal,
-            packaging_fee=cart.packaging_fee,
-            delivery_fee=delivery_fee,
+            packaging_fee=0,
+            delivery_fee=0,
             total=grand_total,
             full_name=full_name,
             phone=phone,
@@ -274,11 +274,10 @@ def checkout(request):
         cart.items.all().delete()
         return redirect('pay_order', order_number=order.order_number)
 
-    from .delivery import get_all_states_with_fees
     return render(request, 'store/checkout.html', {
-        'cart':             cart,
-        'user':             request.user,
-        'states_with_fees': get_all_states_with_fees(),
+        'cart':          cart,
+        'user':          request.user,
+        'bts_commission': 2000,
     })
 
 
