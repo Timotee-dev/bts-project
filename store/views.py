@@ -8,6 +8,7 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 import json, hmac, hashlib
+import requests as req_lib
 from .models import (
     Category, PartnerBrand, Product, BTSPackage,
     Cart, CartItem, Order, OrderItem, Wishlist, WishlistItem
@@ -321,17 +322,18 @@ def payment_callback(request):
             return redirect('order_confirmed', order_number=order.order_number)
         return redirect('home')
 
-    # Real Paystack verification
-    import urllib.request
+    # Real Paystack verification using requests library
     try:
-        req = urllib.request.Request(
+        resp = req_lib.get(
             f'https://api.paystack.co/transaction/verify/{reference}',
-            headers={'Authorization': f'Bearer {settings.PAYSTACK_SECRET_KEY}'}
+            headers={
+                'Authorization': f'Bearer {settings.PAYSTACK_SECRET_KEY}',
+                'Content-Type': 'application/json',
+            },
+            timeout=30,
         )
-        with urllib.request.urlopen(req) as response:
-            data = json.loads(response.read())
-
-        print(f'[BTS] Paystack verify response: {data}')
+        data = resp.json()
+        print(f'[BTS] Paystack verify HTTP {resp.status_code}: {data}')
 
         if data.get('data', {}).get('status') == 'success':
             metadata     = data['data'].get('metadata', {})
