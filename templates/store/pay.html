@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}Complete Payment — BTS Project{% endblock %}
-{% block content %}
 
+{% block content %}
 <div class="page-header">
   <h1 class="page-header-title">Complete Your Payment</h1>
   <p class="page-header-sub">Order #{{ order.order_number }} &middot; Secure payment via Paystack</p>
@@ -11,14 +11,12 @@
   <div class="container" style="max-width:540px;">
     <div class="card" style="text-align:center;">
 
-      <!-- Order summary -->
       <div style="background:var(--green-xpale);border-radius:var(--radius-sm);padding:20px;margin-bottom:28px;">
         <p style="font-size:0.8rem;color:var(--gray);margin-bottom:4px;">Order Total</p>
         <p style="font-size:2.8rem;font-weight:900;color:var(--green);">&#x20A6;{{ order.total|floatformat:0 }}</p>
         <p style="font-size:0.85rem;color:var(--gray);">Order #{{ order.order_number }}</p>
       </div>
 
-      <!-- Delivery summary -->
       <div style="text-align:left;margin-bottom:24px;padding:16px;border:1px solid var(--border);border-radius:var(--radius-sm);">
         <p style="font-weight:700;color:var(--dark);margin-bottom:8px;font-size:0.875rem;">Delivering to:</p>
         <p style="color:var(--gray);font-size:0.875rem;">{{ order.full_name }}</p>
@@ -26,20 +24,9 @@
         <p style="color:var(--gray);font-size:0.875rem;">{{ order.phone }}</p>
       </div>
 
-      {% if paystack_public_key and paystack_public_key != 'pk_test_placeholder' %}
-        <button onclick="payWithPaystack()" class="btn btn-primary btn-lg btn-block" style="margin-bottom:16px;">
-          <i class="fas fa-lock"></i> Pay &#x20A6;{{ order.total|floatformat:0 }} Securely
-        </button>
-      {% else %}
-        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius-sm);padding:14px;margin-bottom:16px;text-align:left;">
-          <p style="font-size:0.83rem;color:#92400e;font-weight:600;"><i class="fas fa-info-circle"></i> Development Mode</p>
-          <p style="font-size:0.8rem;color:#92400e;margin-top:4px;">Paystack keys not configured. Use the test button below.</p>
-        </div>
-        <a href="{% url 'payment_callback' %}?reference=TEST_{{ order.order_number }}"
-           class="btn btn-primary btn-lg btn-block" style="margin-bottom:16px;">
-          <i class="fas fa-flask"></i> Simulate Successful Payment (Dev Only)
-        </a>
-      {% endif %}
+      <button onclick="payWithPaystack()" class="btn btn-primary btn-lg btn-block" style="margin-bottom:16px;" id="payBtn">
+        <i class="fas fa-lock"></i> Pay &#x20A6;{{ order.total|floatformat:0 }} Securely
+      </button>
 
       <a href="{% url 'cart' %}" style="color:var(--gray);font-size:0.85rem;text-decoration:none;">
         <i class="fas fa-arrow-left"></i> Go back to cart
@@ -55,36 +42,38 @@
 {% endblock %}
 
 {% block extra_js %}
-{% if paystack_public_key and paystack_public_key != 'pk_test_placeholder' %}
 <script src="https://js.paystack.co/v1/inline.js"></script>
 <script>
 function payWithPaystack() {
-  var config = {
+  document.getElementById('payBtn').disabled = true;
+  document.getElementById('payBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Opening payment...';
+
+  var handler = PaystackPop.setup({
     key: '{{ paystack_public_key }}',
     email: '{{ order.customer.email }}',
     amount: {{ amount_kobo }},
     currency: 'NGN',
-    ref: '{{ order.order_number }}_' + Math.floor(Math.random() * 1000000000),
+    ref: '{{ order.order_number }}_' + Math.floor(Math.random() * 1000000000 + 1),
     metadata: {
       order_number: '{{ order.order_number }}',
       custom_fields: [
-        { display_name: 'Order', variable_name: 'order_number', value: '{{ order.order_number }}' }
+        {
+          display_name: 'Order Number',
+          variable_name: 'order_number',
+          value: '{{ order.order_number }}'
+        }
       ]
     },
     callback: function(response) {
+      // Payment successful - redirect to callback URL
       window.location.href = '/payment/callback/?reference=' + response.reference;
     },
     onClose: function() {
-      showToast('Payment closed. Your order is saved — you can pay later.', 'info');
+      document.getElementById('payBtn').disabled = false;
+      document.getElementById('payBtn').innerHTML = '<i class="fas fa-lock"></i> Pay &#x20A6;{{ order.total|floatformat:0 }} Securely';
     }
-  };
-
-  {% if split_config %}
-  config.split = {{ split_config }};
-  {% endif %}
-
-  PaystackPop.setup(config).openIframe();
+  });
+  handler.openIframe();
 }
 </script>
-{% endif %}
 {% endblock %}
