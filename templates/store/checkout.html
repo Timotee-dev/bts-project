@@ -1,5 +1,33 @@
 {% extends 'base.html' %}
-{% block title %}Checkout — BTS Project{% endblock %}
+{% block title %}Checkout — BTS Project{% block extra_js %}
+<script>
+const subtotal = {{ cart.subtotal }};
+
+document.querySelector('input[name="city"]').addEventListener('input', function() {
+  const city = this.value.toLowerCase().trim();
+  let fee = 0;
+  let feeText = '';
+
+  if (city.length > 1) {
+    if (city.includes('ondo')) {
+      fee = 500;
+      feeText = '&#x20A6;500 (Within Ondo)';
+    } else {
+      fee = 1000;
+      feeText = '&#x20A6;1,000';
+    }
+    document.getElementById('deliveryFeeDisplay').innerHTML = feeText;
+    document.getElementById('deliveryFeeDisplay').style.color = 'var(--dark)';
+    document.getElementById('grandTotalDisplay').textContent = '&#x20A6;' + (subtotal + fee).toLocaleString();
+  } else {
+    document.getElementById('deliveryFeeDisplay').innerHTML = 'Enter city to calculate';
+    document.getElementById('deliveryFeeDisplay').style.color = 'var(--gray)';
+    document.getElementById('grandTotalDisplay').textContent = '&#x20A6;' + subtotal.toLocaleString();
+  }
+});
+</script>
+{% endblock %}
+{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -129,12 +157,12 @@
             <span>&#x20A6;{{ cart.subtotal|floatformat:0 }}</span>
           </div>
           <div class="summary-row">
-            <span>BTS Service Fee</span>
-            <span>&#x20A6;2,000</span>
+            <span>Delivery Fee</span>
+            <span id="deliveryFeeDisplay" style="color:var(--gray);">Enter city to calculate</span>
           </div>
           <div class="summary-row total">
             <span>Total</span>
-            <span style="color:var(--green);">&#x20A6;{{ cart.subtotal|add:2000|floatformat:0 }}</span>
+            <span id="grandTotalDisplay" style="color:var(--green);">&#x20A6;{{ cart.subtotal|floatformat:0 }}</span>
           </div>
 
           <div style="margin-top:14px;background:white;border-radius:var(--radius-sm);padding:12px;border:1px solid var(--border);text-align:center;">

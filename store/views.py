@@ -237,9 +237,13 @@ def checkout(request):
             messages.error(request, 'Please fill in all delivery fields.')
             return render(request, 'store/checkout.html', {'cart': cart})
 
-        delivery_fee = 0
-        bts_commission = 2000
-        grand_total  = cart.total + bts_commission
+        # Delivery fee: ₦500 within Ondo town, ₦1,000 elsewhere
+        city_lower = city.lower().strip()
+        if 'ondo' in city_lower:
+            delivery_fee = 500
+        else:
+            delivery_fee = 1000
+        grand_total = cart.total + delivery_fee
 
         order = Order.objects.create(
             customer=request.user,
@@ -247,7 +251,7 @@ def checkout(request):
             status='pending',
             subtotal=cart.subtotal,
             packaging_fee=0,
-            delivery_fee=0,
+            delivery_fee=delivery_fee,
             total=grand_total,
             full_name=full_name,
             phone=phone,
@@ -327,13 +331,31 @@ def payment_callback(request):
         with urllib.request.urlopen(req) as response:
             data = json.loads(response.read())
 
+        print(f'[BTS] Paystack verify response: {data}')
+
         if data.get('data', {}).get('status') == 'success':
             metadata     = data['data'].get('metadata', {})
             order_number = metadata.get('order_number', '')
+
+            print(f'[BTS] Payment success. Reference: {reference}, Order: {order_number}')
+
+            # Try multiple ways to find the order
+            order = None
             try:
                 order = Order.objects.get(payment_reference=reference)
             except Order.DoesNotExist:
-                order = Order.objects.filter(order_number=order_number, customer=request.user).first()
+                pass
+
+            if not order and order_number:
+                order = Order.objects.filter(order_number=order_number).first()
+
+            if not order:
+                # Last resort: find most recent unpaid order for this customer
+                if request.user.is_authenticated:
+                    order = Order.objects.filter(
+                        customer=request.user,
+                        payment_status='unpaid'
+                    ).order_by('-created_at').first()
 
             if order and order.payment_status != 'paid':
                 order.payment_status    = 'paid'
@@ -341,14 +363,25 @@ def payment_callback(request):
                 order.payment_reference = reference
                 order.paid_at           = timezone.now()
                 order.save()
-                from .emails import send_order_confirmation, send_vendor_order_notification
-                send_order_confirmation(order, request)
-                send_vendor_order_notification(order)
+                _decrement_stock(order)
+                try:
+                    from .emails import send_order_confirmation, send_vendor_order_notification
+                    send_order_confirmation(order, request)
+                    send_vendor_order_notification(order)
+                except Exception as email_err:
+                    print(f'[BTS] Email error: {email_err}')
                 messages.success(request, f'Payment successful! Order #{order.order_number} confirmed.')
                 return redirect('order_confirmed', order_number=order.order_number)
+            elif order and order.payment_status == 'paid':
+                return redirect('order_confirmed', order_number=order.order_number)
+            else:
+                print(f'[BTS] Order not found for reference {reference}, order_number {order_number}')
+                messages.error(request, 'Payment received but order not found. Please contact support with reference: ' + reference)
         else:
+            print(f'[BTS] Paystack verification failed: {data}')
             messages.error(request, 'Payment verification failed. Please contact support.')
     except Exception as e:
+        print(f'[BTS] Payment callback error: {e}')
         messages.error(request, 'Could not verify payment. Please contact support.')
 
     return redirect('home')
