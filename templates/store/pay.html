@@ -53,7 +53,7 @@ function payWithPaystack() {
     email: '{{ order.customer.email }}',
     amount: {{ amount_kobo }},
     currency: 'NGN',
-    ref: '{{ order.order_number }}_' + Math.floor(Math.random() * 1000000000 + 1),
+
     metadata: {
       order_number: '{{ order.order_number }}',
       custom_fields: [
