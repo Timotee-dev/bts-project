@@ -167,7 +167,6 @@ def add_to_cart(request, item_type, item_id):
         cart.cart_type = 'package'
         cart.save()
         messages.success(request, f'"{pkg.name}" added to cart!')
-        # Redirect to addon step after adding a package
         return redirect('checkout_addons')
 
     elif item_type == 'product':
@@ -238,12 +237,13 @@ def checkout(request):
             messages.error(request, 'Please fill in all delivery fields.')
             return render(request, 'store/checkout.html', {'cart': cart})
 
-        # Delivery fee: ₦500 within Ondo town, ₦1,000 elsewhere
-        city_lower = city.lower().strip()
-        if 'ondo' in city_lower:
-            delivery_fee = 500
+        # Pickup or delivery
+        fulfilment = request.POST.get('fulfilment', 'delivery')
+        if fulfilment == 'pickup':
+            delivery_fee = 0
         else:
-            delivery_fee = 1000
+            city_lower = city.lower().strip()
+            delivery_fee = 500 if 'ondo' in city_lower else 1000
         grand_total = cart.total + delivery_fee
 
         order = Order.objects.create(
@@ -260,7 +260,7 @@ def checkout(request):
             city=city,
             state=state,
             shipping_address=f"{street}, {city}, {state}",
-            notes=notes,
+            notes=f'[{fulfilment.upper()}] {notes}'.strip(),
             payment_status='unpaid',
         )
 

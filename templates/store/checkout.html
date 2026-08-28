@@ -1,33 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Checkout — BTS Project{% block extra_js %}
-<script>
-const subtotal = {{ cart.subtotal }};
-
-document.querySelector('input[name="city"]').addEventListener('input', function() {
-  const city = this.value.toLowerCase().trim();
-  let fee = 0;
-  let feeText = '';
-
-  if (city.length > 1) {
-    if (city.includes('ondo')) {
-      fee = 500;
-      feeText = '&#x20A6;500 (Within Ondo)';
-    } else {
-      fee = 1000;
-      feeText = '&#x20A6;1,000';
-    }
-    document.getElementById('deliveryFeeDisplay').innerHTML = feeText;
-    document.getElementById('deliveryFeeDisplay').style.color = 'var(--dark)';
-    document.getElementById('grandTotalDisplay').textContent = '&#x20A6;' + (subtotal + fee).toLocaleString();
-  } else {
-    document.getElementById('deliveryFeeDisplay').innerHTML = 'Enter city to calculate';
-    document.getElementById('deliveryFeeDisplay').style.color = 'var(--gray)';
-    document.getElementById('grandTotalDisplay').textContent = '&#x20A6;' + subtotal.toLocaleString();
-  }
-});
-</script>
-{% endblock %}
-{% endblock %}
+{% block title %}Checkout — BTS Project{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -81,6 +53,21 @@ document.querySelector('input[name="city"]').addEventListener('input', function(
           </div>
 
           <div class="form-group">
+            <label class="form-label">Fulfilment *</label>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;" id="fulfilmentGroup">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:12px 16px;border:2px solid var(--border);border-radius:var(--radius-sm);flex:1;min-width:120px;" id="deliveryLabel">
+                <input type="radio" name="fulfilment" value="delivery" checked onchange="toggleFulfilment(this)">
+                <span><strong>Delivery</strong><br><small style="color:var(--gray);">₦500 (Ondo) / ₦1,000 (Others)</small></span>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:12px 16px;border:2px solid var(--border);border-radius:var(--radius-sm);flex:1;min-width:120px;" id="pickupLabel">
+                <input type="radio" name="fulfilment" value="pickup" onchange="toggleFulfilment(this)">
+                <span><strong>Pickup</strong><br><small style="color:var(--gray);">Free — collect in Ondo</small></span>
+              </label>
+            </div>
+          </div>
+
+          <div id="deliveryFields">
+          <div class="form-group">
             <label class="form-label">State *</label>
             <select name="state" class="form-control" required>
               <option value="">-- Select State --</option>
@@ -124,6 +111,8 @@ document.querySelector('input[name="city"]').addEventListener('input', function(
             </select>
           </div>
 
+          </div><!-- end deliveryFields -->
+
           <div class="form-group">
             <label class="form-label">Order Notes <span style="font-weight:400;color:var(--gray);">(optional)</span></label>
             <textarea name="notes" class="form-control" rows="2"
@@ -157,12 +146,12 @@ document.querySelector('input[name="city"]').addEventListener('input', function(
             <span>&#x20A6;{{ cart.subtotal|floatformat:0 }}</span>
           </div>
           <div class="summary-row">
-            <span>Delivery Fee</span>
-            <span id="deliveryFeeDisplay" style="color:var(--gray);">Enter city to calculate</span>
+            <span>BTS Service Fee</span>
+            <span>&#x20A6;2,000</span>
           </div>
           <div class="summary-row total">
             <span>Total</span>
-            <span id="grandTotalDisplay" style="color:var(--green);">&#x20A6;{{ cart.subtotal|floatformat:0 }}</span>
+            <span style="color:var(--green);">&#x20A6;{{ cart.subtotal|add:2000|floatformat:0 }}</span>
           </div>
 
           <div style="margin-top:14px;background:white;border-radius:var(--radius-sm);padding:12px;border:1px solid var(--border);text-align:center;">
