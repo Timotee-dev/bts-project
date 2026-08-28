@@ -48,15 +48,24 @@ def register(request):
             errors['first_name'] = 'First name is required.'
 
         if not errors:
-            user = Customer.objects.create_user(
-                username=username,
-                email=email,
-                password=password1,
-                first_name=first_name,
-                last_name=last_name,
-                phone=phone,
-                university=university,
-            )
+            try:
+                user = Customer.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=password1,
+                    first_name=first_name,
+                    last_name=last_name,
+                    phone=phone if phone else '',
+                    university=university if university else '',
+                )
+            except Exception as e:
+                print(f'[BTS] Registration error: {e}')
+                errors['general'] = f'Registration failed: {str(e)}'
+                return render(request, 'accounts/register.html', {
+                    'errors': errors,
+                    'account_type': account_type,
+                    'post_data': request.POST,
+                })
 
             if account_type == 'vendor':
                 from vendors.models import Vendor
