@@ -110,15 +110,29 @@ def user_login(request):
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
         password = request.POST.get('password', '')
+
+        # Try authenticating with username first
         user = authenticate(request, username=username, password=password)
+
+        # If that fails, try with email
+        if user is None:
+            from .models import Customer
+            try:
+                customer = Customer.objects.get(email=username)
+                user = authenticate(request, username=customer.username, password=password)
+            except Customer.DoesNotExist:
+                pass
 
         if user is not None:
             login(request, user)
             next_url = request.GET.get('next', '')
             if next_url:
                 return redirect(next_url)
-            if hasattr(user, 'vendor'):
-                return redirect('vendor_dashboard')
+            try:
+                if user.vendor:
+                    return redirect('vendor_dashboard')
+            except Exception:
+                pass
             return redirect('dashboard')
         else:
             messages.error(request, 'Invalid username or password. Please try again.')
