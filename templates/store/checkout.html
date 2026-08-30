@@ -122,6 +122,14 @@
           <button type="submit" class="btn btn-primary btn-lg btn-block" id="placeOrderBtn">
             <i class="fas fa-lock"></i> Place Order & Proceed to Payment
           </button>
+
+          <script>
+          document.getElementById('checkoutForm').addEventListener('submit', function() {
+            const btn = document.getElementById('placeOrderBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+          });
+          </script>
         </form>
       </div>
 
