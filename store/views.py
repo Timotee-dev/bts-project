@@ -226,28 +226,35 @@ def checkout(request):
         return redirect('cart')
 
     if request.method == 'POST':
-        full_name = request.POST.get('full_name', '').strip()
-        phone     = request.POST.get('phone', '').strip()
-        street    = request.POST.get('street', '').strip()
-        city      = request.POST.get('city', '').strip()
-        state     = request.POST.get('state', '').strip()
-        notes     = request.POST.get('notes', '').strip()
-
-        if not all([full_name, phone, street, city, state]):
-            messages.error(request, 'Please fill in all delivery fields.')
-            return render(request, 'store/checkout.html', {'cart': cart})
-
-        # Pickup or delivery
+        full_name  = request.POST.get('full_name', '').strip()
+        phone      = request.POST.get('phone', '').strip()
+        street     = request.POST.get('street', '').strip()
+        city       = request.POST.get('city', '').strip()
+        state      = request.POST.get('state', '').strip()
+        notes      = request.POST.get('notes', '').strip()
         fulfilment = request.POST.get('fulfilment', 'delivery')
+
+        # Validate required fields
+        if not full_name or not phone:
+            messages.error(request, 'Please fill in your name and phone number.')
+            return render(request, 'store/checkout.html', {'cart': cart, 'user': request.user})
+
+        if fulfilment == 'delivery' and not all([street, city, state]):
+            messages.error(request, 'Please fill in your delivery address.')
+            return render(request, 'store/checkout.html', {'cart': cart, 'user': request.user})
+
+        # Delivery fee
         if fulfilment == 'pickup':
             delivery_fee = 0
+            shipping_address = 'PICKUP - BTS Consolidation Point, Ondo'
         else:
             city_lower = city.lower().strip()
             delivery_fee = 950 if 'ondo' in city_lower else 500
+            shipping_address = f"{street}, {city}, {state}"
 
         # 3% BTS Service Fee
-        service_fee = round(cart.subtotal * 0.03)
-        grand_total = cart.total + delivery_fee + service_fee
+        service_fee = int(round(float(cart.subtotal) * 0.03))
+        grand_total = int(cart.total) + delivery_fee + service_fee
 
         order = Order.objects.create(
             customer=request.user,
@@ -262,8 +269,8 @@ def checkout(request):
             street=street,
             city=city,
             state=state,
-            shipping_address=f"{street}, {city}, {state}",
-            notes=f'[{fulfilment.upper()}] {notes}'.strip(),
+            shipping_address=shipping_address,
+            notes=('[PICKUP] ' + notes if fulfilment == 'pickup' else notes).strip(),
             payment_status='unpaid',
         )
 
