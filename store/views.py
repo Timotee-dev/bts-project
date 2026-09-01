@@ -243,15 +243,18 @@ def checkout(request):
             delivery_fee = 0
         else:
             city_lower = city.lower().strip()
-            delivery_fee = 950 if 'ondo' in city_lower else 1000
-        grand_total = cart.total + delivery_fee
+            delivery_fee = 950 if 'ondo' in city_lower else 500
+
+        # 3% BTS Service Fee
+        service_fee = round(cart.subtotal * 0.03)
+        grand_total = cart.total + delivery_fee + service_fee
 
         order = Order.objects.create(
             customer=request.user,
             order_number=Order.generate_order_number(),
             status='pending',
             subtotal=cart.subtotal,
-            packaging_fee=0,
+            packaging_fee=service_fee,
             delivery_fee=delivery_fee,
             total=grand_total,
             full_name=full_name,
