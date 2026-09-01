@@ -145,7 +145,22 @@
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
           });
-          </script>
+          
+const subtotal   = {{ cart.subtotal }};
+const serviceFee = Math.round(subtotal * 0.03);
+
+function updateTotal(deliveryFee) {
+  const total = subtotal + serviceFee + deliveryFee;
+  const sf  = document.getElementById('serviceFeeDisplay');
+  const df  = document.getElementById('deliveryFeeDisplay');
+  const tot = document.getElementById('cartTotal');
+  if (sf)  sf.textContent  = '\u20a6' + serviceFee.toLocaleString();
+  if (df)  df.textContent  = deliveryFee === 0 ? 'Free (Pickup)' : '\u20a6' + deliveryFee.toLocaleString();
+  if (tot) tot.textContent = '\u20a6' + total.toLocaleString();
+}
+
+document.addEventListener('DOMContentLoaded', function() { updateTotal(950); });
+</script>
         </form>
       </div>
 
@@ -170,12 +185,16 @@
             <span>&#x20A6;{{ cart.subtotal|floatformat:0 }}</span>
           </div>
           <div class="summary-row">
-            <span>BTS Service Fee</span>
-            <span>&#x20A6;2,000</span>
+            <span>BTS Service Fee (3%)</span>
+            <span id="serviceFeeDisplay" style="color:var(--dark);">calculating...</span>
+          </div>
+          <div class="summary-row">
+            <span>Delivery Fee</span>
+            <span id="deliveryFeeDisplay" style="color:var(--dark);">calculating...</span>
           </div>
           <div class="summary-row total">
             <span>Total</span>
-            <span style="color:var(--green);">&#x20A6;{{ cart.subtotal|add:2000|floatformat:0 }}</span>
+            <span id="cartTotal" style="color:var(--green);">calculating...</span>
           </div>
 
           <div style="margin-top:14px;background:white;border-radius:var(--radius-sm);padding:12px;border:1px solid var(--border);text-align:center;">
