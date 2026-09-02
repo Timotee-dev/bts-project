@@ -20,11 +20,9 @@
       </p>
       <div class="hero-actions">
         <a href="{% url 'packages' %}" class="btn btn-cream btn-lg">
-          <i class="fas fa-box-open"></i> Shop Packages
+          Shop Packages
         </a>
-        <a href="{% url 'build_your_own' %}" class="btn btn-outline-cream btn-lg">
-          <i class="fas fa-plus"></i> Build Your Own
-        </a>
+
       </div>
     </div>
 
@@ -147,7 +145,7 @@
         <p class="section-eyebrow" style="text-align:left;">Individual Items</p>
         <h2 class="section-title" style="text-align:left;margin-bottom:0;">Featured Products</h2>
       </div>
-      <a href="{% url 'build_your_own' %}" class="btn btn-outline-green">View All Products</a>
+      
     </div>
     <div class="products-grid">
       {% for product in featured_products %}
