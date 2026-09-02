@@ -8,23 +8,20 @@
   <div class="breadcrumb"><a href="{% url 'home' %}">Home</a><span class="sep">/</span><span>Packages</span></div>
 </div>
 
-<!-- Tier explanation bar -->
-<div style="background:var(--cream);padding:28px var(--px);">
-  <div style="max-width:var(--max-w);margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;text-align:center;">
+<!-- Tier + Gender explanation -->
+<div style="background:var(--cream);padding:24px var(--px);">
+  <div style="max-width:var(--max-w);margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;text-align:center;">
     <div>
-      <div style="font-size:1.8rem;margin-bottom:6px;"></div>
-      <p style="font-weight:800;color:var(--green);font-size:1rem;">Essential Set</p>
-      <p style="color:var(--gray);font-size:0.82rem;">The basics covered — notebook, stationery, body spray, earring, 1 top, 1 bottom + more.</p>
+      <p style="font-weight:800;color:var(--green);font-size:0.95rem;">Essential Set</p>
+      <p style="color:var(--gray);font-size:0.8rem;">The basics — notebooks, stationery, clothing essentials.</p>
     </div>
     <div>
-      <div style="font-size:1.8rem;margin-bottom:6px;"></div>
-      <p style="font-weight:800;color:var(--green);font-size:1rem;">Glow Set</p>
-      <p style="color:var(--gray);font-size:0.82rem;">Everything in Essential + perfume, more clothing, and lifestyle upgrades.</p>
+      <p style="font-weight:800;color:var(--green);font-size:0.95rem;">Glow Set</p>
+      <p style="color:var(--gray);font-size:0.8rem;">Everything in Essential plus perfume, skincare and lifestyle upgrades.</p>
     </div>
     <div>
-      <div style="font-size:1.8rem;margin-bottom:6px;"></div>
-      <p style="font-weight:800;color:var(--green);font-size:1rem;">Complete Set</p>
-      <p style="color:var(--gray);font-size:0.82rem;">Almost everything on the BTS checklist — the fullest back-to-school experience.</p>
+      <p style="font-weight:800;color:var(--green);font-size:0.95rem;">Complete Set</p>
+      <p style="color:var(--gray);font-size:0.8rem;">The fullest back-to-school experience. Almost everything on the list.</p>
     </div>
   </div>
 </div>
@@ -33,100 +30,82 @@
   <div class="container">
 
     <!-- Filter tabs -->
-    <div class="filter-tabs">
-      <a href="{% url 'packages' %}" class="filter-tab {% if not active_tier %}active{% endif %}">All Packages</a>
-      <a href="?tier=essential" class="filter-tab {% if active_tier == 'essential' %}active{% endif %}"> Essential Set</a>
-      <a href="?tier=glow"      class="filter-tab {% if active_tier == 'glow' %}active{% endif %}"> Glow Set</a>
-      <a href="?tier=complete"  class="filter-tab {% if active_tier == 'complete' %}active{% endif %}"> Complete Set</a>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;overflow-x:auto;padding-bottom:4px;">
+      <!-- Tier filters -->
+      <a href="{% url 'packages' %}" class="filter-tab {% if not active_tier and not active_gender %}active{% endif %}">All</a>
+      <a href="?tier=essential{% if active_gender %}&gender={{ active_gender }}{% endif %}" class="filter-tab {% if active_tier == 'essential' %}active{% endif %}">Essential Set</a>
+      <a href="?tier=glow{% if active_gender %}&gender={{ active_gender }}{% endif %}" class="filter-tab {% if active_tier == 'glow' %}active{% endif %}">Glow Set</a>
+      <a href="?tier=complete{% if active_gender %}&gender={{ active_gender }}{% endif %}" class="filter-tab {% if active_tier == 'complete' %}active{% endif %}">Complete Set</a>
+
+      <span style="width:1px;background:var(--border);margin:0 4px;"></span>
+
+      <!-- Gender filters -->
+      <a href="?{% if active_tier %}tier={{ active_tier }}&{% endif %}gender=female"
+         class="filter-tab {% if active_gender == 'female' %}active{% endif %}"
+         style="{% if active_gender == 'female' %}background:#fce7f3;border-color:#f9a8d4;color:#be185d;{% endif %}">
+        Female
+      </a>
+      <a href="?{% if active_tier %}tier={{ active_tier }}&{% endif %}gender=male"
+         class="filter-tab {% if active_gender == 'male' %}active{% endif %}"
+         style="{% if active_gender == 'male' %}background:#dbeafe;border-color:#93c5fd;color:#1d4ed8;{% endif %}">
+        Male
+      </a>
+      {% if active_gender or active_tier %}
+      <a href="{% url 'packages' %}" class="filter-tab" style="color:var(--error);">Clear filters</a>
+      {% endif %}
     </div>
 
-    {% if not active_tier %}
-      <!-- Show all tiers grouped -->
-
-      <!-- Essential Set -->
-      {% with essential_pkgs=packages|dictsort:"price" %}
-      <div style="margin-bottom:56px;">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
-          <span style="font-size:1.8rem;"></span>
-          <div>
-            <h2 style="font-size:1.3rem;font-weight:800;color:var(--dark);">Essential Set</h2>
-            <p style="color:var(--gray);font-size:0.85rem;">The basics covered — great for first-years on a budget.</p>
+    <!-- Package grid -->
+    <div class="packages-grid">
+      {% for pkg in packages %}
+      <div class="package-card">
+        <div class="package-card-img">
+          {% if pkg.cover_image %}
+            <img src="{{ pkg.cover_image.url }}" alt="{{ pkg.name }}">
+          {% else %}
+            <div style="display:flex;align-items:center;justify-content:center;height:100%;background:var(--green-xpale);">
+              <i class="fas fa-box-open" style="font-size:2.5rem;opacity:0.2;color:var(--green);"></i>
+            </div>
+          {% endif %}
+          <span class="pkg-badge pkg-badge-tier">{{ pkg.get_budget_tier_display }}</span>
+          <span class="pkg-badge" style="top:auto;bottom:10px;right:10px;background:{% if pkg.gender == 'female' %}#fce7f3;color:#be185d{% elif pkg.gender == 'male' %}#dbeafe;color:#1d4ed8{% else %}var(--green-pale);color:var(--green){% endif %};">
+            {% if pkg.gender == 'female' %}Female{% elif pkg.gender == 'male' %}Male{% else %}Unisex{% endif %}
+          </span>
+        </div>
+        <div class="package-card-body">
+          <h3 class="package-name">{{ pkg.name }}</h3>
+          <p class="package-desc">{{ pkg.description|truncatechars:80 }}</p>
+          <div class="package-items-preview">
+            {% for pi in pkg.package_items.all|slice:":4" %}
+              <span class="item-pill">{{ pi.product.name }}</span>
+            {% endfor %}
+            {% if pkg.package_items.count > 4 %}
+              <span class="item-pill">+{{ pkg.package_items.count|add:"-4" }} more</span>
+            {% endif %}
           </div>
-          <a href="?tier=essential" style="margin-left:auto;color:var(--green);font-size:0.85rem;font-weight:600;text-decoration:none;">View All →</a>
-        </div>
-        <div class="packages-grid">
-          {% for pkg in packages %}{% if pkg.budget_tier == 'essential' %}
-          {% include 'store/partials/package_card.html' with pkg=pkg %}
-          {% endif %}{% endfor %}
-        </div>
-      </div>
-      {% endwith %}
-
-      <!-- Glow Set -->
-      <div style="margin-bottom:56px;">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
-          <span style="font-size:1.8rem;"></span>
-          <div>
-            <h2 style="font-size:1.3rem;font-weight:800;color:var(--dark);">Glow Set</h2>
-            <p style="color:var(--gray);font-size:0.85rem;">A step up — more clothing, lifestyle, and personal care.</p>
+          <div class="package-price-row">
+            <span class="package-price">&#x20A6;{{ pkg.price|floatformat:0 }}</span>
+            {% if pkg.original_price and pkg.original_price > pkg.price %}
+            <span class="package-orig">&#x20A6;{{ pkg.original_price|floatformat:0 }}</span>
+            {% endif %}
           </div>
-          <a href="?tier=glow" style="margin-left:auto;color:var(--green);font-size:0.85rem;font-weight:600;text-decoration:none;">View All →</a>
-        </div>
-        <div class="packages-grid">
-          {% for pkg in packages %}{% if pkg.budget_tier == 'glow' %}
-          {% include 'store/partials/package_card.html' with pkg=pkg %}
-          {% endif %}{% endfor %}
-        </div>
-      </div>
-
-      <!-- Complete Set -->
-      <div style="margin-bottom:56px;">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
-          <span style="font-size:1.8rem;"></span>
-          <div>
-            <h2 style="font-size:1.3rem;font-weight:800;color:var(--dark);">Complete Set</h2>
-            <p style="color:var(--gray);font-size:0.85rem;">The full experience — almost everything on the BTS checklist.</p>
+          <div class="pkg-cta-row">
+            <a href="{% url 'package_detail' pkg.slug %}" class="btn btn-primary btn-block">
+              Get This Package
+            </a>
           </div>
-          <a href="?tier=complete" style="margin-left:auto;color:var(--green);font-size:0.85rem;font-weight:600;text-decoration:none;">View All →</a>
-        </div>
-        <div class="packages-grid">
-          {% for pkg in packages %}{% if pkg.budget_tier == 'complete' %}
-          {% include 'store/partials/package_card.html' with pkg=pkg %}
-          {% endif %}{% endfor %}
         </div>
       </div>
-
-    {% else %}
-      <!-- Single tier filtered view -->
-      <div class="packages-grid">
-        {% for pkg in packages %}
-        {% include 'store/partials/package_card.html' with pkg=pkg %}
-        {% empty %}
-        <div style="grid-column:1/-1;text-align:center;padding:80px;color:var(--gray);">
-          <div style="font-size:4rem;margin-bottom:20px;"></div>
-          <h3 style="margin-bottom:8px;">No packages in this set yet</h3>
-          <p>Check back soon or browse another set.</p>
-        </div>
-        {% endfor %}
+      {% empty %}
+      <div style="grid-column:1/-1;text-align:center;padding:80px 24px;color:var(--gray);">
+        <i class="fas fa-box-open" style="font-size:3rem;opacity:0.1;display:block;margin-bottom:20px;"></i>
+        <h3 style="margin-bottom:8px;">No packages found</h3>
+        <p>Try a different filter or check back soon.</p>
+        <a href="{% url 'packages' %}" class="btn btn-outline-green" style="margin-top:16px;">View All Packages</a>
       </div>
-    {% endif %}
+      {% endfor %}
+    </div>
 
   </div>
 </section>
-
-<!-- Build your own CTA -->
-<section style="background:var(--green-xpale);padding:40px var(--px);text-align:center;">
-  <div class="container" style="max-width:600px;">
-    <p style="font-size:1.1rem;font-weight:700;color:var(--dark);margin-bottom:8px;">
-      Can't find exactly what you need?
-    </p>
-    <p style="color:var(--gray);margin-bottom:20px;font-size:0.9rem;">
-      Pick any package and add extra items at checkout — or build a completely custom package from scratch.
-    </p>
-    <a href="{% url 'build_your_own' %}" class="btn btn-primary">
-      <i class="fas fa-plus"></i> Build Your Own
-    </a>
-  </div>
-</section>
-
 {% endblock %}

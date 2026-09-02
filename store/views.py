@@ -44,26 +44,17 @@ def home(request):
 
 
 def packages(request):
-    tier = request.GET.get('tier', '')
-    pkgs = BTSPackage.objects.filter(is_active=True)
+    tier   = request.GET.get('tier', '')
+    gender = request.GET.get('gender', '')
+    pkgs   = BTSPackage.objects.filter(is_active=True)
     if tier:
         pkgs = pkgs.filter(budget_tier=tier)
-
-    tiers = [
-        ('essential', 'Essential Set', ''),
-        ('glow',      'Glow Set',      ''),
-        ('complete',  'Complete Set',  ''),
-    ]
-    tier_descriptions = {
-        'essential': 'The basics covered — great for first-years on a budget.',
-        'glow':      'A step up — more clothing, lifestyle, and personal care.',
-        'complete':  'The full experience — almost everything on the BTS checklist.',
-    }
+    if gender:
+        pkgs = pkgs.filter(gender__in=[gender, 'both'])
     return render(request, 'store/packages.html', {
-        'packages':         pkgs,
-        'active_tier':      tier,
-        'tiers':            tiers,
-        'tier_descriptions': tier_descriptions,
+        'packages':      pkgs,
+        'active_tier':   tier,
+        'active_gender': gender,
     })
 
 

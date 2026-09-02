@@ -163,7 +163,8 @@ def vendor_package_add(request):
         if form.is_valid():
             with transaction.atomic():
                 pkg = form.save(commit=False)
-                pkg.vendor = vendor
+                pkg.vendor  = vendor
+                pkg.gender  = request.POST.get('gender', 'female')
                 pkg.save()
                 for pid in product_ids:
                     try:
@@ -195,6 +196,7 @@ def vendor_package_edit(request, pk):
         product_ids = request.POST.getlist('package_products')
         if form.is_valid():
             with transaction.atomic():
+                pkg.gender = request.POST.get('gender', pkg.gender)
                 form.save()
                 pkg.package_items.all().delete()
                 for pid in product_ids:
