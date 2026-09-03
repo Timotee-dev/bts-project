@@ -119,6 +119,7 @@ class BTSPackage(models.Model):
     original_price = models.DecimalField(max_digits=10, decimal_places=2)
     budget_tier = models.CharField(max_length=20, choices=BUDGET_CHOICES, default='essential')
     gender      = models.CharField(max_length=10, choices=GENDER_CHOICES, default='female')
+    items_list  = models.TextField(blank=True, help_text="One item per line")
     products = models.ManyToManyField(Product, through='PackageItem')
 
     # Vendor who created this package (null = platform package)

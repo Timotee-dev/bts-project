@@ -10,16 +10,12 @@
 .vd-mobile-nav a { display:inline-flex; align-items:center; gap:6px; color:rgba(245,237,214,0.8); text-decoration:none; font-size:0.8rem; font-weight:600; padding:6px 12px; border-radius:20px; border:1px solid rgba(245,237,214,0.2); flex-shrink:0; }
 .vd-mobile-nav a.active { background:rgba(245,237,214,0.15); color:var(--cream); }
 @media (max-width:768px) { .vd-sidebar { display:none; } .vd-mobile-nav { display:flex; } .vd-main { padding:16px; } }
-.product-checkbox { display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer; transition:all 0.2s; }
-.product-checkbox:hover { border-color:var(--green); background:var(--green-xpale); }
-.product-checkbox input:checked + span { color:var(--green); font-weight:700; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="vd-mobile-nav">
   <a href="{% url 'vendor_dashboard' %}"><i class="fas fa-chart-line"></i> Dashboard</a>
-  <a href="{% url 'vendor_products' %}"><i class="fas fa-box"></i> Products</a>
   <a href="{% url 'vendor_packages' %}" class="active"><i class="fas fa-boxes"></i> Packages</a>
   <a href="{% url 'vendor_orders' %}"><i class="fas fa-shopping-bag"></i> Orders</a>
   <a href="{% url 'vendor_settings' %}"><i class="fas fa-cog"></i> Settings</a>
@@ -33,7 +29,6 @@
     <p style="color:rgba(245,237,214,0.55);font-size:0.75rem;margin-bottom:20px;">Vendor Store</p>
     <nav style="display:flex;flex-direction:column;gap:4px;">
       <a href="{% url 'vendor_dashboard' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:rgba(245,237,214,0.75);font-size:0.875rem;font-weight:600;text-decoration:none;"><i class="fas fa-chart-line fa-fw"></i> Dashboard</a>
-      <a href="{% url 'vendor_products' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:rgba(245,237,214,0.75);font-size:0.875rem;font-weight:600;text-decoration:none;"><i class="fas fa-box fa-fw"></i> My Products</a>
       <a href="{% url 'vendor_packages' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--cream);font-size:0.875rem;font-weight:700;background:rgba(245,237,214,0.12);text-decoration:none;"><i class="fas fa-boxes fa-fw"></i> My Packages</a>
       <a href="{% url 'vendor_orders' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:rgba(245,237,214,0.75);font-size:0.875rem;font-weight:600;text-decoration:none;"><i class="fas fa-shopping-bag fa-fw"></i> Orders</a>
       <a href="{% url 'vendor_settings' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:rgba(245,237,214,0.75);font-size:0.875rem;font-weight:600;text-decoration:none;"><i class="fas fa-cog fa-fw"></i> Store Settings</a>
@@ -60,13 +55,14 @@
         <div class="form-group">
           <label class="form-label">Package Name *</label>
           <input type="text" name="name" class="form-control" required
-                 value="{{ package.name|default:'' }}" placeholder="e.g. Essential Study Package (Female)">
+                 value="{{ package.name|default:'' }}"
+                 placeholder="e.g. Essential Study Package (Female)">
         </div>
 
         <div class="form-group">
           <label class="form-label">Package Tier *</label>
           <select name="budget_tier" class="form-control" required>
-            <option value="essential" {% if package.budget_tier == 'essential' %}selected{% endif %}>Essential Set</option>
+            <option value="essential" {% if package.budget_tier == 'essential' or not package %}selected{% endif %}>Essential Set</option>
             <option value="glow"      {% if package.budget_tier == 'glow' %}selected{% endif %}>Glow Set</option>
             <option value="complete"  {% if package.budget_tier == 'complete' %}selected{% endif %}>Complete Set</option>
           </select>
@@ -82,9 +78,16 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Description</label>
-          <textarea name="description" class="form-control" rows="3"
-                    placeholder="Describe what's in this package...">{{ package.description|default:'' }}</textarea>
+          <label class="form-label">What's Included * <small style="color:var(--gray);font-weight:400;">— list each item on a new line</small></label>
+          <textarea name="items_list" class="form-control" rows="10" required
+                    placeholder="4 Notebooks&#10;Sticky Notes&#10;Ballpoint Pen&#10;Study Tracker Journal&#10;LED Study Lamp&#10;500ml Water Bottle&#10;Body Spray">{{ package.items_list|default:'' }}</textarea>
+          <p style="font-size:0.78rem;color:var(--gray);margin-top:6px;">Add one item per line. Be as specific as possible — customers will see exactly this list.</p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Package Description <small style="color:var(--gray);font-weight:400;">(optional — shown as a tagline)</small></label>
+          <textarea name="description" class="form-control" rows="2"
+                    placeholder="e.g. Everything a female student needs to start the semester right.">{{ package.description|default:'' }}</textarea>
         </div>
 
         <div class="form-group">
@@ -94,42 +97,18 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Original Price (NGN) <small style="color:var(--gray);font-weight:400;">— for showing savings</small></label>
+          <label class="form-label">Original Price (NGN) <small style="color:var(--gray);font-weight:400;">— for showing savings (optional)</small></label>
           <input type="number" name="original_price" class="form-control" min="0"
                  value="{{ package.original_price|default:'' }}" placeholder="e.g. 20000">
         </div>
 
         <div class="form-group">
           <label class="form-label">Cover Image</label>
-          {% if package.cover_image %}<img src="{{ package.cover_image.url }}" style="height:60px;border-radius:8px;margin-bottom:8px;display:block;">{% endif %}
+          {% if package.cover_image %}
+            <img src="{{ package.cover_image.url }}" style="height:80px;border-radius:8px;margin-bottom:8px;display:block;">
+          {% endif %}
           <input type="file" name="cover_image" class="form-control" accept="image/*">
         </div>
-      </div>
-
-      <!-- Products selection -->
-      <div class="card" style="margin-bottom:16px;">
-        <h2 style="font-size:0.95rem;font-weight:800;color:var(--dark);margin-bottom:6px;">Select Products *</h2>
-        <p style="color:var(--gray);font-size:0.82rem;margin-bottom:16px;">Choose the products that make up this package. Only your active products are shown.</p>
-
-        {% if vendor_products %}
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));gap:10px;">
-          {% for product in vendor_products %}
-          <label class="product-checkbox">
-            <input type="checkbox" name="package_products" value="{{ product.id }}"
-                   {% if product.id in selected_ids %}checked{% endif %}>
-            <span style="font-size:0.875rem;color:var(--dark);">
-              {{ product.name }}
-              <small style="display:block;color:var(--gray);">&#x20A6;{{ product.price|floatformat:0 }}</small>
-            </span>
-          </label>
-          {% endfor %}
-        </div>
-        {% else %}
-        <div style="text-align:center;padding:32px;color:var(--gray);">
-          <p>You have no active products yet.</p>
-          <a href="{% url 'vendor_product_add' %}" class="btn btn-outline-green btn-sm" style="margin-top:12px;">Add Products First</a>
-        </div>
-        {% endif %}
       </div>
 
       <div style="display:flex;gap:12px;flex-wrap:wrap;">
