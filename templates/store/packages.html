@@ -1,59 +1,83 @@
 {% extends 'base.html' %}
 {% block title %}BTS Packages — Back to School Project{% endblock %}
+
+{% block extra_css %}
+<style>
+.gender-btn {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:12px; padding:32px 24px; border-radius:var(--radius); cursor:pointer;
+  border:3px solid var(--border); background:white; transition:all 0.25s;
+  text-decoration:none; color:var(--dark); flex:1; min-width:140px;
+}
+.gender-btn:hover { transform:translateY(-2px); box-shadow:var(--shadow-lg); }
+.gender-btn.female-active { border-color:#f9a8d4; background:#fdf2f8; }
+.gender-btn.male-active   { border-color:#93c5fd; background:#eff6ff; }
+.gender-icon { font-size:2.5rem; }
+.gender-label { font-size:1.1rem; font-weight:800; }
+</style>
+{% endblock %}
+
 {% block content %}
 
 <div class="page-header">
   <h1 class="page-header-title">BTS Packages</h1>
-  <p class="page-header-sub">Pick the set that matches your vibe and budget. Add extras at checkout.</p>
+  <p class="page-header-sub">Pick your set and add extras at checkout.</p>
   <div class="breadcrumb"><a href="{% url 'home' %}">Home</a><span class="sep">/</span><span>Packages</span></div>
-</div>
-
-<!-- Tier + Gender explanation -->
-<div style="background:var(--cream);padding:24px var(--px);">
-  <div style="max-width:var(--max-w);margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;text-align:center;">
-    <div>
-      <p style="font-weight:800;color:var(--green);font-size:0.95rem;">Essential Set</p>
-      <p style="color:var(--gray);font-size:0.8rem;">The basics — notebooks, stationery, clothing essentials.</p>
-    </div>
-    <div>
-      <p style="font-weight:800;color:var(--green);font-size:0.95rem;">Glow Set</p>
-      <p style="color:var(--gray);font-size:0.8rem;">Everything in Essential plus perfume, skincare and lifestyle upgrades.</p>
-    </div>
-    <div>
-      <p style="font-weight:800;color:var(--green);font-size:0.95rem;">Complete Set</p>
-      <p style="color:var(--gray);font-size:0.8rem;">The fullest back-to-school experience. Almost everything on the list.</p>
-    </div>
-  </div>
 </div>
 
 <section class="section">
   <div class="container">
 
-    <!-- Filter tabs -->
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;overflow-x:auto;padding-bottom:4px;">
-      <!-- Tier filters -->
-      <a href="{% url 'packages' %}" class="filter-tab {% if not active_tier and not active_gender %}active{% endif %}">All</a>
-      <a href="?tier=essential{% if active_gender %}&gender={{ active_gender }}{% endif %}" class="filter-tab {% if active_tier == 'essential' %}active{% endif %}">Essential Set</a>
-      <a href="?tier=glow{% if active_gender %}&gender={{ active_gender }}{% endif %}" class="filter-tab {% if active_tier == 'glow' %}active{% endif %}">Glow Set</a>
-      <a href="?tier=complete{% if active_gender %}&gender={{ active_gender }}{% endif %}" class="filter-tab {% if active_tier == 'complete' %}active{% endif %}">Complete Set</a>
-
-      <span style="width:1px;background:var(--border);margin:0 4px;"></span>
-
-      <!-- Gender filters -->
-      <a href="?{% if active_tier %}tier={{ active_tier }}&{% endif %}gender=female"
-         class="filter-tab {% if active_gender == 'female' %}active{% endif %}"
-         style="{% if active_gender == 'female' %}background:#fce7f3;border-color:#f9a8d4;color:#be185d;{% endif %}">
-        Female
-      </a>
-      <a href="?{% if active_tier %}tier={{ active_tier }}&{% endif %}gender=male"
-         class="filter-tab {% if active_gender == 'male' %}active{% endif %}"
-         style="{% if active_gender == 'male' %}background:#dbeafe;border-color:#93c5fd;color:#1d4ed8;{% endif %}">
-        Male
-      </a>
-      {% if active_gender or active_tier %}
-      <a href="{% url 'packages' %}" class="filter-tab" style="color:var(--error);">Clear filters</a>
-      {% endif %}
+    {% if not active_gender %}
+    <!-- Step 1: Gender selection -->
+    <div style="text-align:center;margin-bottom:40px;">
+      <p style="font-size:1rem;font-weight:700;color:var(--dark);margin-bottom:8px;">Who are you shopping for?</p>
+      <p style="color:var(--gray);font-size:0.875rem;">Select to see packages tailored for you</p>
     </div>
+
+    <div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:40px;">
+      <a href="?gender=female" class="gender-btn">
+        <span class="gender-icon">&#9792;</span>
+        <span class="gender-label">Female</span>
+        <small style="color:var(--gray);font-size:0.78rem;">Tops, skirts, jewellery, skincare & more</small>
+      </a>
+      <a href="?gender=male" class="gender-btn">
+        <span class="gender-icon">&#9794;</span>
+        <span class="gender-label">Male</span>
+        <small style="color:var(--gray);font-size:0.78rem;">Shirts, trousers, ties, grooming & more</small>
+      </a>
+    </div>
+
+    <!-- Show all packages below gender selection -->
+    <div style="text-align:center;margin-bottom:24px;">
+      <p style="color:var(--gray);font-size:0.85rem;">Or browse all packages</p>
+    </div>
+    {% endif %}
+
+    {% if active_gender %}
+    <!-- Gender selected - show tier filter -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
+      <div style="display:flex;gap:8px;">
+        <a href="?gender=female" class="gender-btn {% if active_gender == 'female' %}female-active{% endif %}"
+           style="padding:12px 20px;flex-direction:row;min-width:auto;gap:8px;">
+          <span>&#9792;</span> <span style="font-weight:700;">Female</span>
+        </a>
+        <a href="?gender=male" class="gender-btn {% if active_gender == 'male' %}male-active{% endif %}"
+           style="padding:12px 20px;flex-direction:row;min-width:auto;gap:8px;">
+          <span>&#9794;</span> <span style="font-weight:700;">Male</span>
+        </a>
+      </div>
+      <a href="{% url 'packages' %}" style="color:var(--gray);font-size:0.82rem;text-decoration:none;">Clear</a>
+    </div>
+
+    <!-- Tier filter -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;">
+      <a href="?gender={{ active_gender }}" class="filter-tab {% if not active_tier %}active{% endif %}">All Sets</a>
+      <a href="?gender={{ active_gender }}&tier=essential" class="filter-tab {% if active_tier == 'essential' %}active{% endif %}">Essential Set</a>
+      <a href="?gender={{ active_gender }}&tier=glow"      class="filter-tab {% if active_tier == 'glow' %}active{% endif %}">Glow Set</a>
+      <a href="?gender={{ active_gender }}&tier=complete"  class="filter-tab {% if active_tier == 'complete' %}active{% endif %}">Complete Set</a>
+    </div>
+    {% endif %}
 
     <!-- Package grid -->
     <div class="packages-grid">
@@ -68,39 +92,33 @@
             </div>
           {% endif %}
           <span class="pkg-badge pkg-badge-tier">{{ pkg.get_budget_tier_display }}</span>
-          <span class="pkg-badge" style="top:auto;bottom:10px;right:10px;background:{% if pkg.gender == 'female' %}#fce7f3;color:#be185d{% elif pkg.gender == 'male' %}#dbeafe;color:#1d4ed8{% else %}var(--green-pale);color:var(--green){% endif %};">
-            {% if pkg.gender == 'female' %}Female{% elif pkg.gender == 'male' %}Male{% else %}Unisex{% endif %}
-          </span>
         </div>
         <div class="package-card-body">
           <h3 class="package-name">{{ pkg.name }}</h3>
           <p class="package-desc">{{ pkg.description|truncatechars:80 }}</p>
+          {% if pkg.items_list %}
           <div class="package-items-preview">
-            {% for pi in pkg.package_items.all|slice:":4" %}
-              <span class="item-pill">{{ pi.product.name }}</span>
+            {% for item in pkg.items_list.splitlines|slice:":4" %}
+            {% if item.strip %}<span class="item-pill">{{ item.strip }}</span>{% endif %}
             {% endfor %}
-            {% if pkg.package_items.count > 4 %}
-              <span class="item-pill">+{{ pkg.package_items.count|add:"-4" }} more</span>
-            {% endif %}
           </div>
+          {% endif %}
           <div class="package-price-row">
             <span class="package-price">&#x20A6;{{ pkg.price|floatformat:0 }}</span>
             {% if pkg.original_price and pkg.original_price > pkg.price %}
             <span class="package-orig">&#x20A6;{{ pkg.original_price|floatformat:0 }}</span>
             {% endif %}
           </div>
-          <div class="pkg-cta-row">
-            <a href="{% url 'package_detail' pkg.slug %}" class="btn btn-primary btn-block">
-              Get This Package
-            </a>
-          </div>
+          <a href="{% url 'package_detail' pkg.slug %}" class="btn btn-primary btn-block">
+            Get This Package
+          </a>
         </div>
       </div>
       {% empty %}
       <div style="grid-column:1/-1;text-align:center;padding:80px 24px;color:var(--gray);">
         <i class="fas fa-box-open" style="font-size:3rem;opacity:0.1;display:block;margin-bottom:20px;"></i>
         <h3 style="margin-bottom:8px;">No packages found</h3>
-        <p>Try a different filter or check back soon.</p>
+        <p>Check back soon — vendors are adding packages now.</p>
         <a href="{% url 'packages' %}" class="btn btn-outline-green" style="margin-top:16px;">View All Packages</a>
       </div>
       {% endfor %}

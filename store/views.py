@@ -239,8 +239,14 @@ def checkout(request):
             delivery_fee = 0
             shipping_address = 'PICKUP - BTS Consolidation Point, Ondo'
         else:
-            city_lower = city.lower().strip()
-            delivery_fee = 950 if 'ondo' in city_lower else 500
+            delivery_zone = request.POST.get('delivery_zone', 'ondo_near')
+            zone_fees = {
+                'ondo_near':    950,
+                'ondo_park':    1100,
+                'ondo_far':     2200,
+                'outside_ondo': 0,
+            }
+            delivery_fee = zone_fees.get(delivery_zone, 950)
             shipping_address = f"{street}, {city}, {state}"
 
         # 3% BTS Service Fee
