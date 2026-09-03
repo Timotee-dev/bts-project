@@ -58,12 +58,46 @@ def packages(request):
     })
 
 
+def _parse_items_list(items_list_text):
+    """
+    Parse items list text into structured items with colors and sizes.
+    Format: Item Name [colors: Red, Blue] [sizes: S, M, L]
+    """
+    import re
+    items = []
+    for line in items_list_text.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+
+        item = {'name': line, 'colors': [], 'sizes': []}
+
+        # Extract colors
+        colors_match = re.search(r'\[colors:\s*([^\]]+)\]', line, re.IGNORECASE)
+        if colors_match:
+            item['colors'] = [c.strip() for c in colors_match.group(1).split(',')]
+            line = re.sub(r'\[colors:[^\]]+\]', '', line, flags=re.IGNORECASE).strip()
+
+        # Extract sizes
+        sizes_match = re.search(r'\[sizes:\s*([^\]]+)\]', line, re.IGNORECASE)
+        if sizes_match:
+            item['sizes'] = [s.strip() for s in sizes_match.group(1).split(',')]
+            line = re.sub(r'\[sizes:[^\]]+\]', '', line, flags=re.IGNORECASE).strip()
+
+        item['name'] = line.strip()
+        items.append(item)
+
+    return items
+
+
 def package_detail(request, slug):
     pkg     = get_object_or_404(BTSPackage, slug=slug, is_active=True)
     reviews = pkg.reviews.all().order_by('-created_at')
+    parsed_items = _parse_items_list(pkg.items_list) if pkg.items_list else []
     return render(request, 'store/package_detail.html', {
-        'package': pkg,
-        'reviews': reviews,
+        'package':      pkg,
+        'reviews':      reviews,
+        'parsed_items': parsed_items,
     })
 
 
@@ -154,7 +188,14 @@ def add_to_cart(request, item_type, item_id):
 
     if item_type == 'package':
         pkg = get_object_or_404(BTSPackage, id=item_id)
-        CartItem.objects.get_or_create(cart=cart, package=pkg, defaults={'quantity': 1})
+        selections = request.POST.get('selections', '')
+        cart_item, created = CartItem.objects.get_or_create(
+            cart=cart, package=pkg,
+            defaults={'quantity': 1, 'selected_size': selections[:500] if selections else ''}
+        )
+        if not created and selections:
+            cart_item.selected_size = selections[:500]
+            cart_item.save()
         cart.cart_type = 'package'
         cart.save()
         messages.success(request, f'"{pkg.name}" added to cart!')

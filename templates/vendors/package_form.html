@@ -78,14 +78,22 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">What's Included * <small style="color:var(--gray);font-weight:400;">— list each item on a new line</small></label>
-          <textarea name="items_list" class="form-control" rows="10" required
-                    placeholder="4 Notebooks&#10;Sticky Notes&#10;Ballpoint Pen&#10;Study Tracker Journal&#10;LED Study Lamp&#10;500ml Water Bottle&#10;Body Spray">{{ package.items_list|default:'' }}</textarea>
-          <p style="font-size:0.78rem;color:var(--gray);margin-top:6px;">Add one item per line. Be as specific as possible — customers will see exactly this list.</p>
+          <label class="form-label">What's Included *</label>
+          <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:10px;font-size:0.8rem;color:#92400e;line-height:1.8;">
+            <strong>Format guide — one item per line:</strong><br>
+            Simple item: <code>4 Notebooks</code><br>
+            With colors: <code>1 Top [colors: Black, White, Navy Blue]</code><br>
+            With sizes: <code>1 Pant [sizes: S, M, L, XL]</code><br>
+            With both: <code>1 Shirt [colors: White, Blue] [sizes: S, M, L, XL, XXL]</code><br>
+            Shoes: <code>1 Pair of Shoes [colors: Black, Brown] [sizes: 38, 39, 40, 41, 42, 43, 44]</code>
+          </div>
+          <textarea name="items_list" class="form-control" rows="14" required
+                    placeholder="4 Notebooks&#10;Sticky Notes&#10;Ballpoint Pen&#10;Study Tracker&#10;Study Lamp&#10;1 Top [colors: Black, White, Cream] [sizes: S, M, L, XL]&#10;1 Pant [colors: Black, Navy Blue] [sizes: S, M, L, XL]&#10;1 Tote Bag [colors: Black, Brown, Cream]&#10;Body Spray&#10;Water Bottle">{{ package.items_list|default:'' }}</textarea>
+          <p style="font-size:0.78rem;color:var(--gray);margin-top:6px;">Customers will see each item and can select their color and size before adding to cart.</p>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Package Description <small style="color:var(--gray);font-weight:400;">(optional — shown as a tagline)</small></label>
+          <label class="form-label">Package Description <small style="color:var(--gray);font-weight:400;">(optional)</small></label>
           <textarea name="description" class="form-control" rows="2"
                     placeholder="e.g. Everything a female student needs to start the semester right.">{{ package.description|default:'' }}</textarea>
         </div>
@@ -97,7 +105,7 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Original Price (NGN) <small style="color:var(--gray);font-weight:400;">— for showing savings (optional)</small></label>
+          <label class="form-label">Original Price (NGN) <small style="color:var(--gray);font-weight:400;">(optional — for showing savings)</small></label>
           <input type="number" name="original_price" class="form-control" min="0"
                  value="{{ package.original_price|default:'' }}" placeholder="e.g. 20000">
         </div>

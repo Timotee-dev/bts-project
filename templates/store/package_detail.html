@@ -9,6 +9,11 @@
   .pkg-grid { display:grid; grid-template-columns:1fr 1fr; gap:clamp(32px,5vw,56px); align-items:start; }
   .pkg-sticky { position:sticky; top:calc(var(--nav-h) + 16px); }
 }
+.item-row { padding:12px 0; border-bottom:1px solid var(--border); }
+.item-row:last-child { border-bottom:none; }
+.item-name { font-weight:600; color:var(--dark); font-size:0.9rem; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+.item-selects { display:flex; gap:10px; flex-wrap:wrap; }
+.item-selects select { flex:1; min-width:120px; font-size:0.82rem; padding:6px 10px; border:1px solid var(--border); border-radius:var(--radius-sm); background:white; color:var(--dark); }
 </style>
 {% endblock %}
 
@@ -27,7 +32,7 @@
   <div class="container">
     <div class="pkg-grid">
 
-      <!-- Image + items -->
+      <!-- LEFT: Image + items -->
       <div>
         <div style="background:var(--green-xpale);border-radius:var(--radius);aspect-ratio:4/3;overflow:hidden;margin-bottom:24px;display:flex;align-items:center;justify-content:center;">
           {% if package.cover_image %}
@@ -37,50 +42,76 @@
           {% endif %}
         </div>
 
-        <!-- What's included -->
-        <h3 style="font-size:1rem;font-weight:800;color:var(--dark);margin-bottom:14px;">What's Included</h3>
+        <h3 style="font-size:1rem;font-weight:800;color:var(--dark);margin-bottom:4px;">What's Included</h3>
+        <p style="font-size:0.78rem;color:var(--gray);margin-bottom:14px;">Select your preferred color and size for each item where applicable.</p>
 
-        {% if package.items_list %}
-        <div style="background:var(--surface);border-radius:var(--radius-sm);padding:16px;border:1px solid var(--border);">
-          {% for item in package.items_list.splitlines %}
-          {% if item.strip %}
-          <div style="display:flex;align-items:center;gap:10px;padding:8px 0;{% if not forloop.last %}border-bottom:1px solid var(--border);{% endif %}">
-            <i class="fas fa-check-circle" style="color:var(--success);font-size:0.85rem;flex-shrink:0;"></i>
-            <span style="color:var(--dark);font-size:0.9rem;">{{ item.strip }}</span>
+        <div id="itemsList">
+          {% for item in parsed_items %}
+          <div class="item-row">
+            <div class="item-name">
+              <i class="fas fa-check-circle" style="color:var(--success);font-size:0.85rem;flex-shrink:0;"></i>
+              {{ item.name }}
+            </div>
+            {% if item.colors or item.sizes %}
+            <div class="item-selects">
+              {% if item.colors %}
+              <select name="color_{{ forloop.counter0 }}" data-item="{{ item.name }}">
+                <option value="">Select Color</option>
+                {% for color in item.colors %}
+                <option value="{{ color }}">{{ color }}</option>
+                {% endfor %}
+              </select>
+              {% endif %}
+              {% if item.sizes %}
+              <select name="size_{{ forloop.counter0 }}" data-item="{{ item.name }}">
+                <option value="">Select Size</option>
+                {% for size in item.sizes %}
+                <option value="{{ size }}">{{ size }}</option>
+                {% endfor %}
+              </select>
+              {% endif %}
+            </div>
+            {% endif %}
+          </div>
+          {% empty %}
+          {% if package.items_list %}
+          {% for line in package.items_list.splitlines %}
+          {% if line.strip %}
+          <div class="item-row">
+            <div class="item-name">
+              <i class="fas fa-check-circle" style="color:var(--success);font-size:0.85rem;flex-shrink:0;"></i>
+              {{ line.strip }}
+            </div>
           </div>
           {% endif %}
           {% endfor %}
+          {% endif %}
+          {% endfor %}
         </div>
-        {% else %}
-        {% for pi in package.package_items.all %}
-        <div style="display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
-          <i class="fas fa-check-circle" style="color:var(--success);flex-shrink:0;"></i>
-          <p style="font-weight:600;color:var(--dark);font-size:0.88rem;">{{ pi.product.name }}</p>
-        </div>
-        {% endfor %}
-        {% endif %}
       </div>
 
-      <!-- Price + CTA -->
+      <!-- RIGHT: Price + CTA -->
       <div class="pkg-sticky">
         <div class="card">
           {% if package.original_price and package.original_price > package.price %}
           <div style="display:inline-block;background:var(--gold);color:var(--dark);font-size:0.75rem;font-weight:800;padding:4px 14px;border-radius:var(--radius-full);margin-bottom:14px;">
-            Save {{ package.savings_percent }}% vs buying separately
+            Save {{ package.savings_percent }}%
           </div>
           {% endif %}
 
           <p style="font-size:clamp(2rem,7vw,2.8rem);font-weight:900;color:var(--green);margin-bottom:4px;">&#x20A6;{{ package.price|floatformat:0 }}</p>
-
           {% if package.original_price and package.original_price > package.price %}
           <p style="color:var(--gray);text-decoration:line-through;font-size:0.9rem;margin-bottom:4px;">&#x20A6;{{ package.original_price|floatformat:0 }}</p>
           {% endif %}
 
+          {% if package.description %}
           <p style="color:var(--gray);font-size:0.875rem;line-height:1.7;margin-bottom:20px;">{{ package.description }}</p>
+          {% endif %}
 
-          <form method="post" action="{% url 'add_to_cart' 'package' package.id %}">
+          <form method="post" action="{% url 'add_to_cart' 'package' package.id %}" id="packageForm">
             {% csrf_token %}
-            <button type="submit" class="btn btn-primary btn-lg btn-block" style="margin-bottom:10px;">
+            <input type="hidden" name="selections" id="selectionsInput">
+            <button type="submit" class="btn btn-primary btn-lg btn-block" style="margin-bottom:10px;" onclick="collectSelections(event)">
               <i class="fas fa-shopping-bag"></i> Add to Cart
             </button>
           </form>
@@ -93,6 +124,7 @@
           </div>
         </div>
       </div>
+
     </div>
 
     <!-- Reviews -->
@@ -144,6 +176,22 @@
       </div>
     </div>
     {% endif %}
+
   </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function collectSelections(e) {
+  const selects = document.querySelectorAll('#itemsList select');
+  const selections = [];
+  selects.forEach(sel => {
+    if (sel.value) {
+      selections.push(sel.dataset.item + ': ' + sel.value);
+    }
+  });
+  document.getElementById('selectionsInput').value = selections.join(' | ');
+}
+</script>
 {% endblock %}
