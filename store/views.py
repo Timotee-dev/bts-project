@@ -28,18 +28,9 @@ def _get_or_create_cart(request):
 
 
 def home(request):
-    featured_packages = BTSPackage.objects.filter(is_active=True, is_featured=True)[:3]
-    all_packages      = BTSPackage.objects.filter(is_active=True)[:6]
-    categories        = Category.objects.all()
-    featured_products = Product.objects.filter(is_active=True, is_featured=True)[:8]
-    partner_brands    = PartnerBrand.objects.filter(is_featured=True)[:6]
+    all_packages = BTSPackage.objects.filter(is_active=True)[:6]
     return render(request, 'store/home.html', {
-        'featured_packages': featured_packages,
-        'all_packages':      all_packages,
-        'categories':        categories,
-        'featured_products': featured_products,
-        'partner_brands':    partner_brands,
-        'min_custom_items':  settings.BTS_MIN_CUSTOM_ITEMS,
+        'all_packages': all_packages,
     })
 
 
