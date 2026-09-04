@@ -137,25 +137,7 @@
 
 
 <!--  FEATURED PRODUCTS  -->
-{% if featured_products %}
-<section class="section" style="background:var(--surface);">
-  <div class="container">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:clamp(24px,4vw,40px);flex-wrap:wrap;gap:12px;">
-      <div>
-        <p class="section-eyebrow" style="text-align:left;">Individual Items</p>
-        <h2 class="section-title" style="text-align:left;margin-bottom:0;">Featured Products</h2>
-      </div>
-      
-    </div>
-    <div class="products-grid">
-      {% for product in featured_products %}
-      <div class="product-card">
-        <div class="product-card-img">
-          {% if product.image %}
-            <img src="{{ product.image.url }}" alt="{{ product.name }}">
-          {% else %}
-            <div style="font-size:2.5rem;opacity:0.15;"><i class="fas fa-tshirt"></i></div>
-          {% endif %}
+
           <button class="product-wishlist-btn wishlist-toggle" aria-label="Add to wishlist">
             <i class="far fa-heart"></i>
           </button>
@@ -175,26 +157,7 @@
 
 
 <!--  PARTNER BRANDS  -->
-{% if partner_brands %}
-<section class="section">
-  <div class="container">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:clamp(24px,4vw,40px);flex-wrap:wrap;gap:12px;">
-      <div>
-        <p class="section-eyebrow" style="text-align:left;">Trusted Quality</p>
-        <h2 class="section-title" style="text-align:left;margin-bottom:0;">Partner Brands</h2>
-      </div>
-      <a href="{% url 'partner_brands' %}" class="btn btn-outline-green">All Brands</a>
-    </div>
-    <div class="brands-grid">
-      {% for brand in partner_brands %}
-      <div class="brand-card">
-        {% if brand.logo %}
-          <img src="{{ brand.logo.url }}" alt="{{ brand.name }}" class="brand-logo">
-        {% else %}
-          <div class="brand-logo-placeholder">
-            <i class="fas fa-store" style="font-size:1.5rem;color:var(--green);"></i>
-          </div>
-        {% endif %}
+
         <h3 class="brand-name">{{ brand.name }}</h3>
         <p class="brand-desc">{{ brand.description|truncatechars:80 }}</p>
         <a href="{% url 'brand_detail' brand.slug %}" class="btn btn-outline-green btn-sm">View Brand</a>
