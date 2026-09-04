@@ -136,37 +136,7 @@
 </section>
 
 
-<!--  FEATURED PRODUCTS  -->
 
-          <button class="product-wishlist-btn wishlist-toggle" aria-label="Add to wishlist">
-            <i class="far fa-heart"></i>
-          </button>
-        </div>
-        <div class="product-card-body">
-          <p class="product-category">{{ product.category.name }}</p>
-          <h3 class="product-name">{{ product.name }}</h3>
-          <p class="product-price">&#x20A6;{{ product.price|floatformat:0 }}</p>
-          <a href="{% url 'packages' %}" class="btn btn-outline-green btn-sm btn-block">View Details</a>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-{% endif %}
-
-
-<!--  PARTNER BRANDS  -->
-
-        <h3 class="brand-name">{{ brand.name }}</h3>
-        <p class="brand-desc">{{ brand.description|truncatechars:80 }}</p>
-        <a href="{% url 'packages' %}" class="btn btn-outline-green btn-sm">View Brand</a>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-{% endif %}
 
 
 <!--  FINAL CTA  -->
