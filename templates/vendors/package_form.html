@@ -10,6 +10,10 @@
 .vd-mobile-nav a { display:inline-flex; align-items:center; gap:6px; color:rgba(245,237,214,0.8); text-decoration:none; font-size:0.8rem; font-weight:600; padding:6px 12px; border-radius:20px; border:1px solid rgba(245,237,214,0.2); flex-shrink:0; }
 .vd-mobile-nav a.active { background:rgba(245,237,214,0.15); color:var(--cream); }
 @media (max-width:768px) { .vd-sidebar { display:none; } .vd-mobile-nav { display:flex; } .vd-main { padding:16px; } }
+.product-check { display:flex; align-items:flex-start; gap:12px; padding:12px; border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer; transition:all 0.2s; }
+.product-check:hover { border-color:var(--green); background:var(--green-xpale); }
+.product-check input[type=checkbox]:checked ~ .product-check-info { color:var(--green); }
+.product-check input[type=checkbox] { margin-top:2px; flex-shrink:0; width:16px; height:16px; accent-color:var(--green); }
 </style>
 {% endblock %}
 
@@ -29,6 +33,7 @@
     <p style="color:rgba(245,237,214,0.55);font-size:0.75rem;margin-bottom:20px;">Vendor Store</p>
     <nav style="display:flex;flex-direction:column;gap:4px;">
       <a href="{% url 'vendor_dashboard' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:rgba(245,237,214,0.75);font-size:0.875rem;font-weight:600;text-decoration:none;"><i class="fas fa-chart-line fa-fw"></i> Dashboard</a>
+      <a href="{% url 'vendor_products' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:rgba(245,237,214,0.75);font-size:0.875rem;font-weight:600;text-decoration:none;"><i class="fas fa-box fa-fw"></i> My Products</a>
       <a href="{% url 'vendor_packages' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--cream);font-size:0.875rem;font-weight:700;background:rgba(245,237,214,0.12);text-decoration:none;"><i class="fas fa-boxes fa-fw"></i> My Packages</a>
       <a href="{% url 'vendor_orders' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:rgba(245,237,214,0.75);font-size:0.875rem;font-weight:600;text-decoration:none;"><i class="fas fa-shopping-bag fa-fw"></i> Orders</a>
       <a href="{% url 'vendor_settings' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:rgba(245,237,214,0.75);font-size:0.875rem;font-weight:600;text-decoration:none;"><i class="fas fa-cog fa-fw"></i> Store Settings</a>
@@ -78,22 +83,7 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">What's Included *</label>
-          <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:10px;font-size:0.8rem;color:#92400e;line-height:1.8;">
-            <strong>Format guide — one item per line:</strong><br>
-            Simple item: <code>4 Notebooks</code><br>
-            With colors: <code>1 Top [colors: Black, White, Navy Blue]</code><br>
-            With sizes: <code>1 Pant [sizes: S, M, L, XL]</code><br>
-            With both: <code>1 Shirt [colors: White, Blue] [sizes: S, M, L, XL, XXL]</code><br>
-            Shoes: <code>1 Pair of Shoes [colors: Black, Brown] [sizes: 38, 39, 40, 41, 42, 43, 44]</code>
-          </div>
-          <textarea name="items_list" class="form-control" rows="14" required
-                    placeholder="4 Notebooks&#10;Sticky Notes&#10;Ballpoint Pen&#10;Study Tracker&#10;Study Lamp&#10;1 Top [colors: Black, White, Cream] [sizes: S, M, L, XL]&#10;1 Pant [colors: Black, Navy Blue] [sizes: S, M, L, XL]&#10;1 Tote Bag [colors: Black, Brown, Cream]&#10;Body Spray&#10;Water Bottle">{{ package.items_list|default:'' }}</textarea>
-          <p style="font-size:0.78rem;color:var(--gray);margin-top:6px;">Customers will see each item and can select their color and size before adding to cart.</p>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Package Description <small style="color:var(--gray);font-weight:400;">(optional)</small></label>
+          <label class="form-label">Description <small style="color:var(--gray);font-weight:400;">(optional)</small></label>
           <textarea name="description" class="form-control" rows="2"
                     placeholder="e.g. Everything a female student needs to start the semester right.">{{ package.description|default:'' }}</textarea>
         </div>
@@ -105,7 +95,7 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Original Price (NGN) <small style="color:var(--gray);font-weight:400;">(optional — for showing savings)</small></label>
+          <label class="form-label">Original Price (NGN) <small style="color:var(--gray);font-weight:400;">(optional — shows savings)</small></label>
           <input type="number" name="original_price" class="form-control" min="0"
                  value="{{ package.original_price|default:'' }}" placeholder="e.g. 20000">
         </div>
@@ -117,6 +107,39 @@
           {% endif %}
           <input type="file" name="cover_image" class="form-control" accept="image/*">
         </div>
+      </div>
+
+      <!-- Product selection -->
+      <div class="card" style="margin-bottom:16px;">
+        <h2 style="font-size:0.95rem;font-weight:800;color:var(--dark);margin-bottom:6px;">Select Products *</h2>
+        <p style="color:var(--gray);font-size:0.82rem;margin-bottom:16px;">
+          Select all the products that make up this package. Customers will see each product's name, photo, color and size options.
+          <a href="{% url 'vendor_product_add' %}" style="color:var(--green);font-weight:600;">+ Add new product</a>
+        </p>
+
+        {% if vendor_products %}
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:10px;">
+          {% for product in vendor_products %}
+          <label class="product-check" style="{% if product.id in selected_ids %}border-color:var(--green);background:var(--green-xpale);{% endif %}">
+            <input type="checkbox" name="package_products" value="{{ product.id }}"
+                   {% if product.id in selected_ids %}checked{% endif %}>
+            <div class="product-check-info">
+              <p style="font-weight:600;color:var(--dark);font-size:0.875rem;margin-bottom:2px;">{{ product.name }}</p>
+              <p style="color:var(--gray);font-size:0.78rem;">&#x20A6;{{ product.price|floatformat:0 }} &middot; {{ product.category.name }}</p>
+              {% if product.sizes %}<p style="color:var(--gray);font-size:0.72rem;">Sizes: {{ product.sizes }}</p>{% endif %}
+              {% if product.colors %}<p style="color:var(--gray);font-size:0.72rem;">Colors: {{ product.colors }}</p>{% endif %}
+            </div>
+          </label>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align:center;padding:32px;color:var(--gray);">
+          <p style="margin-bottom:12px;">You have no products yet. Add products first, then create a package.</p>
+          <a href="{% url 'vendor_product_add' %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus"></i> Add Your First Product
+          </a>
+        </div>
+        {% endif %}
       </div>
 
       <div style="display:flex;gap:12px;flex-wrap:wrap;">

@@ -157,24 +157,24 @@ def vendor_package_add(request):
     if not vendor:
         return redirect('vendor_register')
     vendor_products = vendor.products.filter(is_active=True)
+    vendor_products = vendor.products.filter(is_active=True)
+
     if request.method == 'POST':
         name           = request.POST.get('name', '').strip()
         budget_tier    = request.POST.get('budget_tier', 'essential')
         gender         = request.POST.get('gender', 'female')
         description    = request.POST.get('description', '').strip()
-        items_list     = request.POST.get('items_list', '').strip()
         price          = request.POST.get('price', 0)
         original_price = request.POST.get('original_price', 0) or 0
+        product_ids    = request.POST.getlist('package_products')
 
-        if not name or not items_list or not price:
+        if not name or not price:
             messages.error(request, 'Please fill in all required fields.')
         else:
             from django.utils.text import slugify
-            import uuid
             base_slug = slugify(name)
             slug = base_slug
             counter = 1
-            from store.models import BTSPackage
             while BTSPackage.objects.filter(slug=slug).exists():
                 slug = f"{base_slug}-{counter}"
                 counter += 1
@@ -183,7 +183,6 @@ def vendor_package_add(request):
                 name=name,
                 slug=slug,
                 description=description,
-                items_list=items_list,
                 price=price,
                 original_price=original_price or price,
                 budget_tier=budget_tier,
@@ -194,11 +193,23 @@ def vendor_package_add(request):
             if 'cover_image' in request.FILES:
                 pkg.cover_image = request.FILES['cover_image']
                 pkg.save()
+
+            for pid in product_ids:
+                try:
+                    p = Product.objects.get(pk=pid, vendor=vendor)
+                    PackageItem.objects.create(package=pkg, product=p, quantity=1)
+                except Product.DoesNotExist:
+                    pass
+
             messages.success(request, f'Package "{pkg.name}" created!')
             return redirect('vendor_packages')
 
     return render(request, 'vendors/package_form.html', {
-        'vendor': vendor, 'action': 'Create', 'package': None
+        'vendor':          vendor,
+        'vendor_products': vendor_products,
+        'selected_ids':    [],
+        'action':          'Create',
+        'package':         None,
     })
 
 
@@ -210,22 +221,38 @@ def vendor_package_edit(request, pk):
     pkg = get_object_or_404(BTSPackage, pk=pk, vendor=vendor)
     vendor_products = vendor.products.filter(is_active=True)
     selected_ids = list(pkg.package_items.values_list('product_id', flat=True))
+    vendor_products = vendor.products.filter(is_active=True)
+    selected_ids    = list(pkg.package_items.values_list('product_id', flat=True))
+
     if request.method == 'POST':
         pkg.name           = request.POST.get('name', pkg.name).strip()
         pkg.budget_tier    = request.POST.get('budget_tier', pkg.budget_tier)
         pkg.gender         = request.POST.get('gender', pkg.gender)
         pkg.description    = request.POST.get('description', pkg.description).strip()
-        pkg.items_list     = request.POST.get('items_list', pkg.items_list).strip()
         pkg.price          = request.POST.get('price', pkg.price)
         pkg.original_price = request.POST.get('original_price', pkg.original_price) or pkg.price
         if 'cover_image' in request.FILES:
             pkg.cover_image = request.FILES['cover_image']
         pkg.save()
+
+        product_ids = request.POST.getlist('package_products')
+        pkg.package_items.all().delete()
+        for pid in product_ids:
+            try:
+                p = Product.objects.get(pk=pid, vendor=vendor)
+                PackageItem.objects.create(package=pkg, product=p, quantity=1)
+            except Product.DoesNotExist:
+                pass
+
         messages.success(request, f'Package "{pkg.name}" updated!')
         return redirect('vendor_packages')
 
     return render(request, 'vendors/package_form.html', {
-        'vendor': vendor, 'package': pkg, 'action': 'Edit'
+        'vendor':          vendor,
+        'package':         pkg,
+        'vendor_products': vendor_products,
+        'selected_ids':    selected_ids,
+        'action':          'Edit',
     })
 
 
