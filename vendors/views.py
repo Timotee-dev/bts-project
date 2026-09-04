@@ -157,7 +157,7 @@ def vendor_package_add(request):
     if not vendor:
         return redirect('vendor_register')
     vendor_products = vendor.products.filter(is_active=True)
-    vendor_products = vendor.products.filter(is_active=True)
+    all_products = Product.objects.filter(is_active=True).order_by('category', 'name')
 
     if request.method == 'POST':
         name           = request.POST.get('name', '').strip()
@@ -196,7 +196,7 @@ def vendor_package_add(request):
 
             for pid in product_ids:
                 try:
-                    p = Product.objects.get(pk=pid, vendor=vendor)
+                    p = Product.objects.get(pk=pid)
                     PackageItem.objects.create(package=pkg, product=p, quantity=1)
                 except Product.DoesNotExist:
                     pass
@@ -206,7 +206,7 @@ def vendor_package_add(request):
 
     return render(request, 'vendors/package_form.html', {
         'vendor':          vendor,
-        'vendor_products': vendor_products,
+        'vendor_products': all_products,
         'selected_ids':    [],
         'action':          'Create',
         'package':         None,
@@ -221,8 +221,8 @@ def vendor_package_edit(request, pk):
     pkg = get_object_or_404(BTSPackage, pk=pk, vendor=vendor)
     vendor_products = vendor.products.filter(is_active=True)
     selected_ids = list(pkg.package_items.values_list('product_id', flat=True))
-    vendor_products = vendor.products.filter(is_active=True)
-    selected_ids    = list(pkg.package_items.values_list('product_id', flat=True))
+    all_products = Product.objects.filter(is_active=True).order_by('category', 'name')
+    selected_ids = list(pkg.package_items.values_list('product_id', flat=True))
 
     if request.method == 'POST':
         pkg.name           = request.POST.get('name', pkg.name).strip()
@@ -239,7 +239,7 @@ def vendor_package_edit(request, pk):
         pkg.package_items.all().delete()
         for pid in product_ids:
             try:
-                p = Product.objects.get(pk=pid, vendor=vendor)
+                p = Product.objects.get(pk=pid)
                 PackageItem.objects.create(package=pkg, product=p, quantity=1)
             except Product.DoesNotExist:
                 pass
@@ -250,7 +250,7 @@ def vendor_package_edit(request, pk):
     return render(request, 'vendors/package_form.html', {
         'vendor':          vendor,
         'package':         pkg,
-        'vendor_products': vendor_products,
+        'vendor_products': all_products,
         'selected_ids':    selected_ids,
         'action':          'Edit',
     })
