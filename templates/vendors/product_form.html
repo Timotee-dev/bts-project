@@ -37,6 +37,14 @@
                     placeholder="Describe your product — material, colour, style...">{% if product %}{{ product.description }}{% endif %}</textarea>
         </div>
         <div class="form-group">
+          <label class="form-label">Available Colors</label>
+          <input type="text" name="available_colors" class="form-control"
+                 value="{% if product %}{{ product.available_colors }}{% endif %}"
+                 placeholder="Black, White, Navy Blue, Red, Cream">
+          <p class="form-help">Comma-separated. Leave blank if no color options.</p>
+        </div>
+
+        <div class="form-group">
           <label class="form-label">Available Sizes</label>
           <input type="text" name="available_sizes" class="form-control"
                  value="{% if product %}{{ product.available_sizes }}{% endif %}"

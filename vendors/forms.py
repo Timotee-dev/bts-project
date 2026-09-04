@@ -18,10 +18,11 @@ class VendorProductForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = ['name', 'category', 'description', 'price', 'image',
-                  'image2', 'image3', 'available_sizes', 'stock', 'is_active', 'is_featured']
+                  'image2', 'image3', 'available_colors', 'available_sizes', 'stock', 'is_active', 'is_featured']
         widgets = {
-            'description': forms.Textarea(attrs={'rows': 4}),
-            'available_sizes': forms.TextInput(attrs={'placeholder': 'e.g. S,M,L,XL or 36,37,38,39'}),
+            'description':    forms.Textarea(attrs={'rows': 4}),
+            'available_colors': forms.TextInput(attrs={'placeholder': 'e.g. Black, White, Navy Blue, Red'}),
+            'available_sizes':  forms.TextInput(attrs={'placeholder': 'e.g. S,M,L,XL or 36,37,38,39'}),
         }
 
     def __init__(self, *args, **kwargs):
