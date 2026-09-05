@@ -67,12 +67,10 @@
                 <p style="color:var(--gray);font-size:0.8rem;margin-bottom:8px;line-height:1.5;">{{ pi.product.description|truncatechars:100 }}</p>
                 {% endif %}
                 <!-- Color and size selects -->
-                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
                   {% if pi.product.available_colors %}
                   <select name="color_{{ forloop.counter0 }}" data-item="{{ pi.product.name }}" style="flex:1;min-width:120px;font-size:0.82rem;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:white;color:var(--dark);">
                     <option value="">Select Color</option>
-                    {% for color in pi.product.available_colors.split|join:"," %}
-                    {% endfor %}
                     {% for color in pi.product.available_colors.split %}
                     <option value="{{ color|cut:',' }}">{{ color|cut:',' }}</option>
                     {% endfor %}
@@ -86,6 +84,13 @@
                     {% endfor %}
                   </select>
                   {% endif %}
+                  <div style="display:flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">
+                    <button type="button" onclick="changeQty(this,-1)" style="padding:6px 10px;background:var(--surface);border:none;cursor:pointer;font-size:1rem;font-weight:700;color:var(--dark);">-</button>
+                    <input type="number" name="qty_{{ forloop.counter0 }}" data-item="{{ pi.product.name }}"
+                           value="1" min="1" max="10"
+                           style="width:40px;text-align:center;border:none;font-size:0.9rem;font-weight:700;color:var(--dark);">
+                    <button type="button" onclick="changeQty(this,1)" style="padding:6px 10px;background:var(--surface);border:none;cursor:pointer;font-size:1rem;font-weight:700;color:var(--dark);">+</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -194,12 +199,24 @@
 
 {% block extra_js %}
 <script>
+function changeQty(btn, delta) {
+  const input = btn.parentElement.querySelector('input[type=number]');
+  const newVal = Math.max(1, Math.min(10, parseInt(input.value) + delta));
+  input.value = newVal;
+}
+
 function collectSelections(e) {
   const selects = document.querySelectorAll('#itemsList select');
   const selections = [];
   selects.forEach(sel => {
     if (sel.value) {
       selections.push(sel.dataset.item + ': ' + sel.value);
+    }
+  });
+  // Include quantities
+  document.querySelectorAll('#itemsList input[type=number]').forEach(inp => {
+    if (inp.value && parseInt(inp.value) > 1) {
+      selections.push(inp.dataset.item + ' qty: ' + inp.value);
     }
   });
   document.getElementById('selectionsInput').value = selections.join(' | ');
