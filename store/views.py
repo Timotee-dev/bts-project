@@ -283,7 +283,23 @@ def checkout(request):
 
         # 3% BTS Service Fee
         service_fee = int(round(float(cart.subtotal) * 0.03))
-        grand_total = int(cart.total) + delivery_fee + service_fee
+
+        # Promo code discount
+        promo_code  = request.POST.get('promo_code', '').strip().upper()
+        promo_discount = 0
+        applied_promo  = None
+        if promo_code:
+            try:
+                from .models import PromoCode
+                promo = PromoCode.objects.get(code=promo_code)
+                if promo.is_valid:
+                    if not (request.user.is_authenticated and promo.used_by.filter(pk=request.user.pk).exists()):
+                        promo_discount = promo.calculate_discount(int(cart.subtotal))
+                        applied_promo  = promo
+            except Exception:
+                pass
+
+        grand_total = int(cart.total) + delivery_fee + service_fee - promo_discount
 
         order = Order.objects.create(
             customer=request.user,
@@ -499,6 +515,40 @@ def _decrement_stock(order):
         if item.product and item.product.stock > 0:
             item.product.stock = max(0, item.product.stock - item.quantity)
             item.product.save(update_fields=['stock'])
+
+
+def validate_promo(request):
+    """AJAX endpoint to validate a promo code and return discount amount."""
+    import json
+    if request.method != 'POST':
+        return JsonResponse({'valid': False, 'message': 'Invalid request'})
+
+    try:
+        data       = json.loads(request.body)
+        code       = data.get('code', '').strip().upper()
+        subtotal   = float(data.get('subtotal', 0))
+    except Exception:
+        return JsonResponse({'valid': False, 'message': 'Invalid request'})
+
+    try:
+        from .models import PromoCode
+        promo = PromoCode.objects.get(code=code)
+    except PromoCode.DoesNotExist:
+        return JsonResponse({'valid': False, 'message': 'Invalid promo code'})
+
+    if not promo.is_valid:
+        return JsonResponse({'valid': False, 'message': 'This promo code has expired or reached its usage limit'})
+
+    if request.user.is_authenticated and promo.used_by.filter(pk=request.user.pk).exists():
+        return JsonResponse({'valid': False, 'message': 'You have already used this promo code'})
+
+    discount = promo.calculate_discount(subtotal)
+    return JsonResponse({
+        'valid':    True,
+        'discount': discount,
+        'message':  f'Promo code applied! You save ₦{discount:,}',
+        'promo_id': promo.id,
+    })
 
 
 def search(request):

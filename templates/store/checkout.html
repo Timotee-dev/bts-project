@@ -147,6 +147,19 @@
             </div>
           </div>
 
+          <!-- Promo Code -->
+          <div class="form-group" style="margin-bottom:16px;">
+            <label class="form-label">Promo Code <small style="color:var(--gray);font-weight:400;">(optional)</small></label>
+            <div style="display:flex;gap:8px;">
+              <input type="text" id="promoInput" name="promo_code" class="form-control"
+                     placeholder="Enter promo code" style="flex:1;text-transform:uppercase;">
+              <button type="button" onclick="applyPromo()" class="btn btn-outline-green" style="white-space:nowrap;">
+                Apply
+              </button>
+            </div>
+            <p id="promoMessage" style="font-size:0.8rem;margin-top:6px;display:none;"></p>
+          </div>
+
           <button type="submit" class="btn btn-primary btn-lg btn-block" id="placeOrderBtn">
             <i class="fas fa-lock"></i> Place Order & Proceed to Payment
           </button>
@@ -203,6 +216,10 @@ document.addEventListener('DOMContentLoaded', function() { updateTotal(950); });
           <div class="summary-row">
             <span>Delivery Fee</span>
             <span id="deliveryFeeDisplay" style="color:var(--dark);">calculating...</span>
+          </div>
+          <div class="summary-row" id="promoRow" style="display:none;color:var(--success);">
+            <span>Promo Discount</span>
+            <span id="promoDiscountDisplay" style="color:var(--success);">-&#x20A6;0</span>
           </div>
           <div class="summary-row total">
             <span>Total</span>

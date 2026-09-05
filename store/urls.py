@@ -25,6 +25,7 @@ urlpatterns = [
     path('order/<str:order_number>/confirmed/', views.order_confirmed, name='order_confirmed'),
     path('wishlist/', views.wishlist, name='wishlist'),
     path('sell/', views.sell_on_bts, name='sell_on_bts'),
+    path('validate-promo/', views.validate_promo, name='validate_promo'),
     path('search/', views.search, name='search'),
     path('order/<str:order_number>/track/', views.order_tracking, name='order_tracking'),
     path('bts-admin/', views.admin_dashboard, name='admin_dashboard'),

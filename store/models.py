@@ -245,6 +245,39 @@ class CartItem(models.Model):
         return self.unit_price * self.quantity
 
 
+class PromoCode(models.Model):
+    code            = models.CharField(max_length=50, unique=True)
+    discount_type   = models.CharField(max_length=10, choices=[('percent','Percentage'),('fixed','Fixed Amount')], default='percent')
+    discount_value  = models.DecimalField(max_digits=10, decimal_places=2, help_text='Percentage (0-100) or fixed NGN amount')
+    max_uses        = models.PositiveIntegerField(default=10)
+    used_count      = models.PositiveIntegerField(default=0)
+    is_active       = models.BooleanField(default=True)
+    valid_from      = models.DateTimeField(auto_now_add=True)
+    valid_until     = models.DateTimeField(null=True, blank=True)
+    applies_to_pkg  = models.ForeignKey('BTSPackage', null=True, blank=True, on_delete=models.SET_NULL, help_text='Leave blank to apply to any package')
+    used_by         = models.ManyToManyField('accounts.Customer', blank=True, related_name='used_promos')
+
+    def __str__(self):
+        return f"{self.code} ({self.discount_value}{'%' if self.discount_type == 'percent' else 'NGN'})"
+
+    @property
+    def is_valid(self):
+        from django.utils import timezone
+        if not self.is_active:
+            return False
+        if self.used_count >= self.max_uses:
+            return False
+        if self.valid_until and timezone.now() > self.valid_until:
+            return False
+        return True
+
+    def calculate_discount(self, subtotal):
+        if self.discount_type == 'percent':
+            return int(round(float(subtotal) * float(self.discount_value) / 100))
+        else:
+            return min(int(self.discount_value), int(subtotal))
+
+
 class Order(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending Payment'),
