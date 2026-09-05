@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import (
     Category, PartnerBrand, Product, BTSPackage,
     PackageItem, Review, Cart, CartItem, Order, OrderItem,
-    Wishlist, WishlistItem
+    Wishlist, WishlistItem, PromoCode
 )
 
 
@@ -56,3 +56,12 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = ['order_number', 'customer', 'status', 'total', 'created_at']
     list_filter = ['status']
     inlines = [OrderItemInline]
+
+
+@admin.register(PromoCode)
+class PromoCodeAdmin(admin.ModelAdmin):
+    list_display   = ['code', 'discount_type', 'discount_value', 'max_uses', 'used_count', 'is_active', 'valid_until']
+    list_editable  = ['is_active']
+    search_fields  = ['code']
+    list_filter    = ['discount_type', 'is_active']
+    readonly_fields = ['used_count', 'used_by']
