@@ -1,5 +1,95 @@
 {% extends 'vendors/base.html' %}
-{% block title %}My Products — {{ vendor.business_name }}{% endblock %}
+{% block title %}My Products — {{ vendor.business_name }}
+<!-- Promo Modal -->
+<div id="promoModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:var(--radius);padding:28px;width:min(480px,95vw);max-height:90vh;overflow-y:auto;position:relative;">
+    <button onclick="closePromo()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--gray);">&times;</button>
+    <h2 style="font-size:1rem;font-weight:800;color:var(--dark);margin-bottom:4px;">Add Promo</h2>
+    <p id="promoTargetName" style="color:var(--gray);font-size:0.85rem;margin-bottom:20px;"></p>
+
+    <form method="post" action="{% url 'vendor_create_promo' %}">
+      {% csrf_token %}
+      <input type="hidden" name="target_type" id="promoTargetType">
+      <input type="hidden" name="target_id" id="promoTargetId">
+
+      <div class="form-group">
+        <label class="form-label">Promo Code</label>
+        <div style="display:flex;gap:8px;">
+          <input type="text" name="code" id="promoCode" class="form-control" required
+                 placeholder="e.g. BTSFREE2026" style="flex:1;text-transform:uppercase;">
+          <button type="button" onclick="generateCode()" class="btn btn-outline-green">Auto</button>
+        </div>
+        <p style="font-size:0.75rem;color:var(--gray);margin-top:4px;">Customers will enter this code at checkout.</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Discount Type</label>
+        <select name="discount_type" class="form-control" onchange="toggleDiscountValue(this.value)">
+          <option value="percent">Percentage off (e.g. 50% off)</option>
+          <option value="fixed">Fixed amount off (e.g. ₦2,000 off)</option>
+          <option value="free">Completely Free (100% off)</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="discountValueGroup">
+        <label class="form-label" id="discountValueLabel">Discount Percentage *</label>
+        <input type="number" name="discount_value" class="form-control" min="1" max="100"
+               placeholder="e.g. 50" id="discountValueInput" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Number of People</label>
+        <input type="number" name="max_uses" class="form-control" required min="1" value="10"
+               placeholder="How many people can use this promo?">
+        <p style="font-size:0.75rem;color:var(--gray);margin-top:4px;">Promo deactivates automatically after this many uses.</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Expiry Date <small style="color:var(--gray);font-weight:400;">(optional)</small></label>
+        <input type="datetime-local" name="valid_until" class="form-control">
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg btn-block">
+        <i class="fas fa-tag"></i> Create Promo
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+function openPromo(type, id, name) {
+  document.getElementById('promoModal').style.display = 'flex';
+  document.getElementById('promoTargetType').value = type;
+  document.getElementById('promoTargetId').value = id;
+  document.getElementById('promoTargetName').textContent = 'For: ' + name;
+  generateCode();
+}
+function closePromo() {
+  document.getElementById('promoModal').style.display = 'none';
+}
+function generateCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = 'BTS';
+  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  document.getElementById('promoCode').value = code;
+}
+function toggleDiscountValue(type) {
+  const group = document.getElementById('discountValueGroup');
+  const label = document.getElementById('discountValueLabel');
+  const input = document.getElementById('discountValueInput');
+  if (type === 'free') {
+    group.style.display = 'none';
+    input.removeAttribute('required');
+  } else {
+    group.style.display = 'block';
+    input.setAttribute('required', '');
+    label.textContent = type === 'percent' ? 'Discount Percentage *' : 'Discount Amount (NGN) *';
+    input.placeholder = type === 'percent' ? 'e.g. 50' : 'e.g. 2000';
+    input.max = type === 'percent' ? '100' : '9999999';
+  }
+}
+</script>
+{% endblock %}
 
 {% block vendor_content %}
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">

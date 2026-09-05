@@ -15,5 +15,6 @@ urlpatterns = [
     path('orders/<str:order_number>/', views.vendor_order_detail, name='vendor_order_detail'),
     path('orders/<str:order_number>/status/', views.vendor_update_order_status, name='vendor_update_order_status'),
     path('settings/', views.vendor_settings, name='vendor_settings'),
+    path('promo/create/', views.vendor_create_promo, name='vendor_create_promo'),
     path('store/<slug:slug>/', views.vendor_storefront, name='vendor_storefront'),
 ]

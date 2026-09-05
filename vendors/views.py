@@ -327,6 +327,67 @@ def vendor_update_order_status(request, order_number):
 
 
 @login_required
+def vendor_create_promo(request):
+    vendor = _get_vendor(request)
+    if not vendor:
+        return redirect('vendor_register')
+
+    if request.method == 'POST':
+        from store.models import PromoCode, BTSPackage, Product
+        import random, string
+
+        code          = request.POST.get('code', '').strip().upper()
+        discount_type = request.POST.get('discount_type', 'percent')
+        max_uses      = int(request.POST.get('max_uses', 10))
+        valid_until   = request.POST.get('valid_until', '') or None
+        target_type   = request.POST.get('target_type', '')
+        target_id     = request.POST.get('target_id', '')
+
+        # Handle discount value
+        if discount_type == 'free':
+            discount_value = 100
+            discount_type  = 'percent'
+        else:
+            discount_value = float(request.POST.get('discount_value', 0))
+
+        # Parse valid_until
+        valid_until_dt = None
+        if valid_until:
+            from django.utils.dateparse import parse_datetime
+            from django.utils import timezone
+            valid_until_dt = parse_datetime(valid_until)
+
+        # Link to package or product
+        applies_to_pkg = None
+        if target_type == 'package' and target_id:
+            try:
+                applies_to_pkg = BTSPackage.objects.get(pk=target_id, vendor=vendor)
+            except BTSPackage.DoesNotExist:
+                pass
+
+        # Create promo
+        try:
+            PromoCode.objects.create(
+                code           = code,
+                discount_type  = discount_type,
+                discount_value = discount_value,
+                max_uses       = max_uses,
+                valid_until    = valid_until_dt,
+                applies_to_pkg = applies_to_pkg,
+                is_active      = True,
+            )
+            messages.success(request, f'Promo code "{code}" created successfully!')
+        except Exception as e:
+            messages.error(request, f'Error creating promo: {str(e)}')
+
+        if target_type == 'package':
+            return redirect('vendor_packages')
+        return redirect('vendor_products')
+
+    return redirect('vendor_packages')
+
+
+@login_required
 def vendor_settings(request):
     vendor = _get_vendor(request)
     if not vendor:
