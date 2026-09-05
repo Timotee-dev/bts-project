@@ -91,7 +91,10 @@
         <div class="form-group">
           <label class="form-label">Price (NGN) *</label>
           <input type="number" name="price" class="form-control" required min="0"
-                 value="{{ package.price|default:'' }}" placeholder="e.g. 15000">
+                 value="{{ package.price|default:'' }}" placeholder="Select products to auto-calculate">
+          <p id="priceSum" style="font-size:0.78rem;color:var(--green);margin-top:6px;">
+            Select products to auto-calculate price
+          </p>
         </div>
 
         <div class="form-group">
@@ -122,12 +125,14 @@
           {% for product in vendor_products %}
           <label class="product-check" style="{% if product.id in selected_ids %}border-color:var(--green);background:var(--green-xpale);{% endif %}">
             <input type="checkbox" name="package_products" value="{{ product.id }}"
+                   data-price="{{ product.price }}"
+                   onchange="recalcPrice()"
                    {% if product.id in selected_ids %}checked{% endif %}>
             <div class="product-check-info">
               <p style="font-weight:600;color:var(--dark);font-size:0.875rem;margin-bottom:2px;">{{ product.name }}</p>
               <p style="color:var(--gray);font-size:0.78rem;">&#x20A6;{{ product.price|floatformat:0 }} &middot; {{ product.category.name }}</p>
-              {% if product.sizes %}<p style="color:var(--gray);font-size:0.72rem;">Sizes: {{ product.sizes }}</p>{% endif %}
-              {% if product.colors %}<p style="color:var(--gray);font-size:0.72rem;">Colors: {{ product.colors }}</p>{% endif %}
+              {% if product.available_sizes %}<p style="color:var(--gray);font-size:0.72rem;">Sizes: {{ product.available_sizes }}</p>{% endif %}
+              {% if product.available_colors %}<p style="color:var(--gray);font-size:0.72rem;">Colors: {{ product.available_colors }}</p>{% endif %}
             </div>
           </label>
           {% endfor %}
@@ -149,6 +154,29 @@
         <a href="{% url 'vendor_packages' %}" class="btn btn-outline-green btn-lg">Cancel</a>
       </div>
     </form>
+
+    <script>
+    function recalcPrice() {
+      const checkboxes = document.querySelectorAll('input[name="package_products"]:checked');
+      let total = 0;
+      checkboxes.forEach(cb => {
+        total += parseFloat(cb.dataset.price || 0);
+      });
+      const priceInput = document.querySelector('input[name="price"]');
+      if (priceInput) {
+        priceInput.value = Math.round(total);
+      }
+      const summary = document.getElementById('priceSum');
+      if (summary) {
+        summary.textContent = total > 0
+          ? 'Auto-calculated: ₦' + Math.round(total).toLocaleString() + ' — edit if needed'
+          : 'Select products to auto-calculate price';
+      }
+    }
+
+    // Run on page load for edit mode
+    document.addEventListener('DOMContentLoaded', recalcPrice);
+    </script>
   </div>
 </div>
 {% endblock %}
