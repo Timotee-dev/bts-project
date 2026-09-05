@@ -110,7 +110,6 @@ function toggleDiscountValue(type) {
     </div>
     <div style="text-align:right;">
       <p style="font-weight:800;color:var(--green);">₦{{ pkg.price|floatformat:0 }}</p>
-      <p style="font-size:0.78rem;color:var(--success);">Save {{ pkg.savings_percent }}%</p>
     </div>
     <a href="{% url 'vendor_package_edit' pkg.pk %}" class="btn btn-sm btn-outline-green"><i class="fas fa-edit"></i> Edit</a>
   </div>
