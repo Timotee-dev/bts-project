@@ -50,9 +50,13 @@
           <div class="item-row" style="padding:14px 0;border-bottom:1px solid var(--border);">
             <div style="display:flex;gap:14px;align-items:flex-start;">
               <!-- Product image -->
-              <div style="width:72px;height:72px;border-radius:var(--radius-sm);overflow:hidden;flex-shrink:0;background:var(--green-xpale);display:flex;align-items:center;justify-content:center;">
+              <div style="width:72px;height:72px;border-radius:var(--radius-sm);overflow:hidden;flex-shrink:0;background:var(--green-xpale);display:flex;align-items:center;justify-content:center;cursor:pointer;"
+                   {% if pi.product.image %}onclick="openLightbox('{{ pi.product.image.url }}', '{{ pi.product.name|escapejs }}')"{% endif %}>
                 {% if pi.product.image %}
                   <img src="{{ pi.product.image.url }}" alt="{{ pi.product.name }}" style="width:100%;height:100%;object-fit:cover;">
+                  <div style="position:absolute;bottom:0;right:0;background:rgba(0,0,0,0.4);border-radius:4px 0 0 0;padding:2px 4px;display:none;" class="zoom-hint">
+                    <i class="fas fa-search-plus" style="color:white;font-size:0.6rem;"></i>
+                  </div>
                 {% else %}
                   <i class="fas fa-box" style="opacity:0.2;color:var(--green);font-size:1.4rem;"></i>
                 {% endif %}
@@ -198,7 +202,28 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- Lightbox -->
+<div id="lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;align-items:center;justify-content:center;padding:20px;" onclick="closeLightbox()">
+  <button onclick="closeLightbox()" style="position:absolute;top:20px;right:24px;background:none;border:none;color:white;font-size:2rem;cursor:pointer;line-height:1;">&times;</button>
+  <div style="max-width:90vw;max-height:90vh;text-align:center;" onclick="event.stopPropagation()">
+    <img id="lightboxImg" src="" alt="" style="max-width:100%;max-height:80vh;border-radius:8px;object-fit:contain;">
+    <p id="lightboxCaption" style="color:white;margin-top:12px;font-size:0.9rem;font-weight:600;"></p>
+  </div>
+</div>
 <script>
+function openLightbox(url, name) {
+  document.getElementById('lightboxImg').src = url;
+  document.getElementById('lightboxCaption').textContent = name;
+  document.getElementById('lightbox').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').style.display = 'none';
+  document.body.style.overflow = '';
+}
+// Close on escape key
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
 function changeQty(btn, delta) {
   const input = btn.parentElement.querySelector('input[type=number]');
   const newVal = Math.max(1, Math.min(10, parseInt(input.value) + delta));
