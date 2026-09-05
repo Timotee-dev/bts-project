@@ -46,41 +46,58 @@
         <p style="font-size:0.78rem;color:var(--gray);margin-bottom:14px;">Select your preferred color and size for each item where applicable.</p>
 
         <div id="itemsList">
-          {% for item in parsed_items %}
-          <div class="item-row">
-            <div class="item-name">
-              <i class="fas fa-check-circle" style="color:var(--success);font-size:0.85rem;flex-shrink:0;"></i>
-              {{ item.name }}
+          {% for pi in package.package_items.all %}
+          <div class="item-row" style="padding:14px 0;border-bottom:1px solid var(--border);">
+            <div style="display:flex;gap:14px;align-items:flex-start;">
+              <!-- Product image -->
+              <div style="width:72px;height:72px;border-radius:var(--radius-sm);overflow:hidden;flex-shrink:0;background:var(--green-xpale);display:flex;align-items:center;justify-content:center;">
+                {% if pi.product.image %}
+                  <img src="{{ pi.product.image.url }}" alt="{{ pi.product.name }}" style="width:100%;height:100%;object-fit:cover;">
+                {% else %}
+                  <i class="fas fa-box" style="opacity:0.2;color:var(--green);font-size:1.4rem;"></i>
+                {% endif %}
+              </div>
+              <!-- Product info -->
+              <div style="flex:1;min-width:0;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                  <i class="fas fa-check-circle" style="color:var(--success);font-size:0.85rem;flex-shrink:0;"></i>
+                  <p style="font-weight:700;color:var(--dark);font-size:0.9rem;">{{ pi.product.name }}</p>
+                </div>
+                {% if pi.product.description %}
+                <p style="color:var(--gray);font-size:0.8rem;margin-bottom:8px;line-height:1.5;">{{ pi.product.description|truncatechars:100 }}</p>
+                {% endif %}
+                <!-- Color and size selects -->
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                  {% if pi.product.available_colors %}
+                  <select name="color_{{ forloop.counter0 }}" data-item="{{ pi.product.name }}" style="flex:1;min-width:120px;font-size:0.82rem;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:white;color:var(--dark);">
+                    <option value="">Select Color</option>
+                    {% for color in pi.product.available_colors.split|join:"," %}
+                    {% endfor %}
+                    {% for color in pi.product.available_colors.split %}
+                    <option value="{{ color|cut:',' }}">{{ color|cut:',' }}</option>
+                    {% endfor %}
+                  </select>
+                  {% endif %}
+                  {% if pi.product.available_sizes %}
+                  <select name="size_{{ forloop.counter0 }}" data-item="{{ pi.product.name }}" style="flex:1;min-width:120px;font-size:0.82rem;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:white;color:var(--dark);">
+                    <option value="">Select Size</option>
+                    {% for size in pi.product.available_sizes.split %}
+                    <option value="{{ size|cut:',' }}">{{ size|cut:',' }}</option>
+                    {% endfor %}
+                  </select>
+                  {% endif %}
+                </div>
+              </div>
             </div>
-            {% if item.colors or item.sizes %}
-            <div class="item-selects">
-              {% if item.colors %}
-              <select name="color_{{ forloop.counter0 }}" data-item="{{ item.name }}">
-                <option value="">Select Color</option>
-                {% for color in item.colors %}
-                <option value="{{ color }}">{{ color }}</option>
-                {% endfor %}
-              </select>
-              {% endif %}
-              {% if item.sizes %}
-              <select name="size_{{ forloop.counter0 }}" data-item="{{ item.name }}">
-                <option value="">Select Size</option>
-                {% for size in item.sizes %}
-                <option value="{{ size }}">{{ size }}</option>
-                {% endfor %}
-              </select>
-              {% endif %}
-            </div>
-            {% endif %}
           </div>
           {% empty %}
           {% if package.items_list %}
           {% for line in package.items_list.splitlines %}
           {% if line.strip %}
-          <div class="item-row">
-            <div class="item-name">
+          <div class="item-row" style="padding:10px 0;border-bottom:1px solid var(--border);">
+            <div style="display:flex;align-items:center;gap:8px;">
               <i class="fas fa-check-circle" style="color:var(--success);font-size:0.85rem;flex-shrink:0;"></i>
-              {{ line.strip }}
+              <span style="color:var(--dark);font-size:0.9rem;">{{ line.strip }}</span>
             </div>
           </div>
           {% endif %}
