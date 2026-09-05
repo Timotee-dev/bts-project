@@ -179,14 +179,20 @@ def add_to_cart(request, item_type, item_id):
 
     if item_type == 'package':
         pkg = get_object_or_404(BTSPackage, id=item_id)
-        selections = request.POST.get('selections', '')
-        cart_item, created = CartItem.objects.get_or_create(
-            cart=cart, package=pkg,
-            defaults={'quantity': 1, 'selected_size': selections[:500] if selections else ''}
-        )
-        if not created and selections:
-            cart_item.selected_size = selections[:500]
-            cart_item.save()
+        selections = request.POST.get('selections', '')[:500]
+        try:
+            cart_item, created = CartItem.objects.get_or_create(
+                cart=cart, package=pkg,
+                defaults={'quantity': 1}
+            )
+            if selections:
+                cart_item.selected_size = selections
+                cart_item.save()
+        except Exception as e:
+            print(f'[BTS] Cart error: {e}')
+            cart_item = CartItem.objects.filter(cart=cart, package=pkg).first()
+            if not cart_item:
+                cart_item = CartItem.objects.create(cart=cart, package=pkg, quantity=1)
         cart.cart_type = 'package'
         cart.save()
         messages.success(request, f'"{pkg.name}" added to cart!')
