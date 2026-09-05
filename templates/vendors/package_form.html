@@ -97,20 +97,7 @@
           </p>
         </div>
 
-        <div class="form-group">
-          <label class="form-label">Original Price (NGN) <small style="color:var(--gray);font-weight:400;">(optional — shows savings)</small></label>
-          <input type="number" name="original_price" class="form-control" min="0"
-                 value="{{ package.original_price|default:'' }}" placeholder="e.g. 20000">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Cover Image</label>
-          {% if package.cover_image %}
-            <img src="{{ package.cover_image.url }}" style="height:80px;border-radius:8px;margin-bottom:8px;display:block;">
-          {% endif %}
-          <input type="file" name="cover_image" class="form-control" accept="image/*">
-        </div>
-      </div>
+        
 
       <!-- Product selection -->
       <div class="card" style="margin-bottom:16px;">
