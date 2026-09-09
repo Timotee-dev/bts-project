@@ -1,138 +1,254 @@
 {% extends 'base.html' %}
 {% block title %}Build Your Own Package — BTS Project{% endblock %}
-{% block content %}
 
+{% block extra_css %}
+<style>
+.byo-product-card {
+  border:2px solid var(--border);
+  border-radius:var(--radius-sm);
+  overflow:hidden;
+  cursor:pointer;
+  transition:all 0.2s;
+  position:relative;
+}
+.byo-product-card:hover { border-color:var(--green); box-shadow:var(--shadow); }
+.byo-product-card.selected { border-color:var(--green); background:var(--green-xpale); }
+.byo-check {
+  display:none;
+  position:absolute;top:8px;right:8px;
+  width:24px;height:24px;border-radius:50%;
+  background:var(--green);color:white;
+  align-items:center;justify-content:center;
+  font-size:0.75rem;
+}
+.byo-product-card.selected .byo-check { display:flex; }
+.byo-basket { position:sticky;top:calc(var(--nav-h) + 16px); }
+.qty-ctrl { display:flex;align-items:center;gap:4px;margin-top:6px; }
+.qty-btn { width:24px;height:24px;border:1px solid var(--border);border-radius:4px;background:white;cursor:pointer;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:0.9rem; }
+</style>
+{% endblock %}
+
+{% block content %}
 <div class="page-header">
   <h1 class="page-header-title">Build Your Own Package</h1>
-  <p class="page-header-sub">Select {{ min_items }}+ items to unlock checkout and create your custom BTS package.</p>
-  <div class="breadcrumb"><a href="{% url 'home' %}">Home</a><span class="sep">/</span><span>Build Your Own</span></div>
+  <p class="page-header-sub">Pick the products you want. We'll package it just for you.</p>
+  <div class="breadcrumb">
+    <a href="{% url 'home' %}">Home</a><span class="sep">/</span>
+    <span>Build Your Own</span>
+  </div>
 </div>
 
 <section class="section">
   <div class="container">
-    <div style="display:grid;grid-template-columns:1fr 320px;gap:32px;align-items:start;">
+    <div style="display:grid;grid-template-columns:1fr;gap:24px;" class="byo-grid">
 
-      <!-- Products -->
+      <!-- Left: Product picker -->
       <div>
-        <!-- Filters -->
-        <div style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;align-items:center;">
-          <form class="search-bar" style="flex:1;" method="get">
-            <input type="text" name="q" placeholder="Search products..." value="{{ request.GET.q }}" class="form-control">
-            <button type="submit"><i class="fas fa-search"></i></button>
-          </form>
-        </div>
 
-        <div class="filter-tabs" style="margin-bottom:24px;">
-          <a href="{% url 'build_your_own' %}" class="filter-tab {% if not active_category %}active{% endif %}">All</a>
+        <!-- Category filter -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;overflow-x:auto;padding-bottom:4px;">
+          <a href="{% url 'build_your_own' %}" class="filter-tab {% if not request.GET.category %}active{% endif %}">All</a>
           {% for cat in categories %}
-          <a href="?category={{ cat.slug }}" class="filter-tab {% if active_category == cat.slug %}active{% endif %}">
-            {% if cat.icon %}<i class="{{ cat.icon }}"></i> {% endif %}{{ cat.name }}
-          </a>
+          <a href="?category={{ cat.slug }}" class="filter-tab {% if request.GET.category == cat.slug %}active{% endif %}">{{ cat.name }}</a>
           {% endfor %}
         </div>
 
-        <div class="products-grid">
+        <!-- Search -->
+        <form method="get" style="margin-bottom:20px;display:flex;gap:8px;">
+          {% if request.GET.category %}<input type="hidden" name="category" value="{{ request.GET.category }}">{% endif %}
+          <input type="text" name="q" value="{{ request.GET.q }}" class="form-control" placeholder="Search products...">
+          <button type="submit" class="btn btn-outline-green"><i class="fas fa-search"></i></button>
+        </form>
+
+        <!-- Products grid -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,160px),1fr));gap:12px;" id="productGrid">
           {% for product in products %}
-          <div class="product-card">
-            <div class="product-card-img">
+          <div class="byo-product-card" id="card-{{ product.pk }}" onclick="toggleProduct({{ product.pk }}, '{{ product.name|escapejs }}', {{ product.price }}, '{{ product.image.url if product.image else '' }}')">
+            <div class="byo-check"><i class="fas fa-check"></i></div>
+
+            <!-- Image -->
+            <div style="aspect-ratio:1;overflow:hidden;background:var(--green-xpale);">
               {% if product.image %}
-                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+              <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width:100%;height:100%;object-fit:cover;">
               {% else %}
-                <div style="font-size:3rem;opacity:0.2;">👕</div>
+              <div style="display:flex;align-items:center;justify-content:center;height:100%;"><i class="fas fa-box" style="opacity:0.2;font-size:1.8rem;color:var(--green);"></i></div>
               {% endif %}
-              <button class="product-wishlist-btn wishlist-toggle"><i class="far fa-heart"></i></button>
             </div>
-            <div class="product-card-body">
-              <p class="product-category">{{ product.category.name }}</p>
-              <h3 class="product-name">{{ product.name }}</h3>
-              <p class="product-price">₦{{ product.price|floatformat:0 }}</p>
-              {% if product.sizes_list %}
-              <div class="size-group" style="margin-bottom:12px;">
-                <p style="font-size:0.75rem;color:var(--gray);margin-bottom:6px;font-weight:600;">SIZE</p>
-                <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                  {% for size in product.sizes_list %}
-                  <button class="size-btn" data-size="{{ size }}"
-                    style="padding:4px 10px;border:1.5px solid #e0e0e8;border-radius:6px;background:white;font-size:0.75rem;font-weight:600;cursor:pointer;transition:all 0.2s;">
-                    {{ size }}
-                  </button>
-                  {% endfor %}
-                  <input type="hidden" data-size-select="{{ product.id }}" value="">
-                </div>
+
+            <!-- Info -->
+            <div style="padding:10px;">
+              <p style="font-weight:700;color:var(--dark);font-size:0.82rem;margin-bottom:4px;line-height:1.3;">{{ product.name }}</p>
+              <p style="font-weight:800;color:var(--green);font-size:0.9rem;">&#x20A6;{{ product.price|floatformat:0 }}</p>
+              {% if product.available_colors %}
+              <select name="color_{{ product.pk }}" onclick="event.stopPropagation()" onchange="updateSelection({{ product.pk }})"
+                      class="form-control" style="font-size:0.72rem;padding:4px 6px;margin-top:6px;display:none;" id="colorSel-{{ product.pk }}">
+                <option value="">Color</option>
+                {% for c in product.available_colors.split %}
+                <option value="{{ c|cut:',' }}">{{ c|cut:',' }}</option>
+                {% endfor %}
+              </select>
+              {% endif %}
+              {% if product.available_sizes %}
+              <select name="size_{{ product.pk }}" onclick="event.stopPropagation()" onchange="updateSelection({{ product.pk }})"
+                      class="form-control" style="font-size:0.72rem;padding:4px 6px;margin-top:4px;display:none;" id="sizeSel-{{ product.pk }}">
+                <option value="">Size</option>
+                {% for s in product.available_sizes.split %}
+                <option value="{{ s|cut:',' }}">{{ s|cut:',' }}</option>
+                {% endfor %}
+              </select>
+              {% endif %}
+              <div class="qty-ctrl" id="qty-{{ product.pk }}" style="display:none;" onclick="event.stopPropagation()">
+                <button class="qty-btn" onclick="changeQty({{ product.pk }}, -1)">-</button>
+                <input type="number" id="qtyInput-{{ product.pk }}" value="1" min="1" max="20"
+                       style="width:36px;text-align:center;border:1px solid var(--border);border-radius:4px;font-weight:700;font-size:0.85rem;"
+                       onchange="updateSelection({{ product.pk }})">
+                <button class="qty-btn" onclick="changeQty({{ product.pk }}, 1)">+</button>
               </div>
-              {% endif %}
-              <form method="post" action="{% url 'add_to_cart' 'product' product.id %}">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="{{ request.path }}">
-                {% if product.sizes_list %}
-                  <input type="hidden" name="size" data-size-hidden="{{ product.id }}">
-                {% endif %}
-                <button type="submit" class="btn btn-primary btn-sm btn-block">
-                  <i class="fas fa-plus"></i> Add to Package
-                </button>
-              </form>
             </div>
-          </div>
-          {% empty %}
-          <div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--gray);">
-            <div style="font-size:3rem;margin-bottom:16px;">🔍</div>
-            <p>No products found. Try a different category or search term.</p>
           </div>
           {% endfor %}
         </div>
       </div>
 
-      <!-- Tracker Sidebar -->
-      <div class="build-tracker" id="build-tracker" data-min="{{ min_items }}">
-        <p class="build-tracker-title">🛍️ Your Custom Package</p>
-        <div class="build-progress-bar">
-          <div class="build-progress-fill" id="build-progress-fill" style="width:0%;"></div>
-        </div>
-        <p>
-          <span class="build-count" id="build-count">0</span>
-          <span style="color:rgba(255,255,255,0.7);font-size:1rem;"> / {{ min_items }} items</span>
-        </p>
-        <p class="build-needed">Add {{ min_items }} or more items to unlock checkout</p>
+      <!-- Right: Basket -->
+      <div class="byo-basket">
+        <div class="card" id="basketCard">
+          <h2 style="font-size:1rem;font-weight:800;color:var(--dark);margin-bottom:4px;">Your Package</h2>
+          <p style="color:var(--gray);font-size:0.8rem;margin-bottom:16px;">Items you've selected</p>
 
-        <div id="checkout-lock-msg" class="alert alert-warning" style="margin-bottom:16px;display:block;">
-          <i class="fas fa-lock"></i> Add {{ min_items }}+ items to checkout
-        </div>
-
-        <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:12px;margin-bottom:16px;font-size:0.8rem;">
-          <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,0.8);margin-bottom:4px;">
-            <span>Custom Packaging Fee</span>
-            <span>₦{{ packaging_fee }}</span>
+          <div id="basketItems" style="min-height:60px;">
+            <p id="emptyMsg" style="color:var(--gray);font-size:0.85rem;text-align:center;padding:20px 0;">
+              <i class="fas fa-shopping-basket" style="display:block;font-size:2rem;opacity:0.1;margin-bottom:8px;"></i>
+              Tap products to add them
+            </p>
           </div>
-          <p style="color:rgba(255,255,255,0.5);font-size:0.75rem;">Applied at checkout for custom builds</p>
-        </div>
 
-        <a href="{% url 'cart' %}" class="btn btn-gold btn-block" id="checkout-btn">
-          <i class="fas fa-shopping-bag"></i> View Cart
-        </a>
-        <a href="{% url 'packages' %}" class="btn btn-outline btn-block btn-sm" style="margin-top:10px;">
-          Or Buy a Pre-made Package
-        </a>
+          <div id="basketSummary" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.85rem;">
+              <span style="color:var(--gray);">Subtotal</span>
+              <span id="basketTotal" style="font-weight:800;color:var(--green);">₦0</span>
+            </div>
+            <p style="font-size:0.72rem;color:var(--gray);margin-bottom:12px;">+ 3% service fee + delivery at checkout</p>
+            <form method="post" action="{% url 'add_custom_to_cart' %}" id="byoForm">
+              {% csrf_token %}
+              <input type="hidden" name="selections" id="byoSelections">
+              <button type="submit" class="btn btn-primary btn-block btn-lg" onclick="prepareForm(event)">
+                <i class="fas fa-shopping-bag"></i> Add to Cart
+              </button>
+            </form>
+          </div>
+        </div>
       </div>
+
     </div>
   </div>
 </section>
+
+<style>
+@media (min-width:900px) {
+  .byo-grid { grid-template-columns: 1fr 300px !important; }
+}
+</style>
 {% endblock %}
+
 {% block extra_js %}
 <script>
-  // Sync size selection to form hidden input
-  document.querySelectorAll('.size-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const group = this.closest('.size-group');
-      group.querySelectorAll('.size-btn').forEach(b => {
-        b.style.borderColor = '#e0e0e8'; b.style.background = 'white'; b.style.color = '';
-      });
-      this.style.borderColor = 'var(--green)';
-      this.style.background = 'var(--green)';
-      this.style.color = 'white';
-      // Update hidden input in form
-      const productId = group.querySelector('[data-size-select]')?.dataset.sizeSelect;
-      const formHidden = document.querySelector(`[data-size-hidden="${productId}"]`);
-      if (formHidden) formHidden.value = this.dataset.size;
-    });
+const selected = {};
+
+function toggleProduct(id, name, price, img) {
+  const card = document.getElementById('card-' + id);
+  const colorSel = document.getElementById('colorSel-' + id);
+  const sizeSel = document.getElementById('sizeSel-' + id);
+  const qtyDiv = document.getElementById('qty-' + id);
+
+  if (selected[id]) {
+    delete selected[id];
+    card.classList.remove('selected');
+    if (colorSel) colorSel.style.display = 'none';
+    if (sizeSel) sizeSel.style.display = 'none';
+    if (qtyDiv) qtyDiv.style.display = 'none';
+  } else {
+    selected[id] = { name, price, qty: 1, color: '', size: '', img };
+    card.classList.add('selected');
+    if (colorSel) colorSel.style.display = 'block';
+    if (sizeSel) sizeSel.style.display = 'block';
+    if (qtyDiv) qtyDiv.style.display = 'flex';
+  }
+  renderBasket();
+}
+
+function changeQty(id, delta) {
+  const input = document.getElementById('qtyInput-' + id);
+  const newVal = Math.max(1, Math.min(20, parseInt(input.value || 1) + delta));
+  input.value = newVal;
+  if (selected[id]) { selected[id].qty = newVal; }
+  renderBasket();
+}
+
+function updateSelection(id) {
+  if (!selected[id]) return;
+  const colorSel = document.getElementById('colorSel-' + id);
+  const sizeSel  = document.getElementById('sizeSel-' + id);
+  const qtyInput = document.getElementById('qtyInput-' + id);
+  if (colorSel) selected[id].color = colorSel.value;
+  if (sizeSel)  selected[id].size  = sizeSel.value;
+  if (qtyInput) selected[id].qty   = parseInt(qtyInput.value) || 1;
+  renderBasket();
+}
+
+function renderBasket() {
+  const items = Object.entries(selected);
+  const basketItems = document.getElementById('basketItems');
+  const emptyMsg    = document.getElementById('emptyMsg');
+  const summary     = document.getElementById('basketSummary');
+  const totalEl     = document.getElementById('basketTotal');
+
+  if (items.length === 0) {
+    basketItems.innerHTML = '';
+    basketItems.appendChild(emptyMsg);
+    emptyMsg.style.display = 'block';
+    summary.style.display  = 'none';
+    return;
+  }
+
+  emptyMsg.style.display = 'none';
+  summary.style.display  = 'block';
+  let total = 0;
+  let html = '';
+
+  items.forEach(([id, item]) => {
+    const lineTotal = item.price * item.qty;
+    total += lineTotal;
+    html += `<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border);font-size:0.82rem;gap:8px;">
+      <div style="flex:1;min-width:0;">
+        <p style="font-weight:600;color:var(--dark);margin-bottom:1px;">${item.name}</p>
+        ${item.color ? `<span style="color:var(--gray);font-size:0.72rem;">${item.color}</span>` : ''}
+        ${item.size  ? `<span style="color:var(--gray);font-size:0.72rem;"> · ${item.size}</span>` : ''}
+        <span style="color:var(--gray);font-size:0.72rem;"> × ${item.qty}</span>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <p style="font-weight:700;color:var(--green);">₦${lineTotal.toLocaleString()}</p>
+        <button onclick="toggleProduct(${id},'','','')" style="background:none;border:none;color:var(--error);font-size:0.72rem;cursor:pointer;padding:0;">Remove</button>
+      </div>
+    </div>`;
   });
+
+  basketItems.innerHTML = html;
+  totalEl.textContent = '₦' + total.toLocaleString();
+}
+
+function prepareForm(e) {
+  const items = Object.entries(selected);
+  if (items.length === 0) {
+    e.preventDefault();
+    alert('Please select at least one product.');
+    return;
+  }
+  const data = items.map(([id, item]) => ({
+    id, name: item.name, price: item.price,
+    qty: item.qty, color: item.color, size: item.size
+  }));
+  document.getElementById('byoSelections').value = JSON.stringify(data);
+}
 </script>
 {% endblock %}
