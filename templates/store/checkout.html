@@ -1,5 +1,22 @@
 {% extends 'base.html' %}
-{% block title %}Checkout — BTS Project{% endblock %}
+{% block title %}Checkout — BTS Project
+<script>
+function updateDeliveryFee(zone) {
+  const fees = {'ondo_near': 950, 'ondo_park': 1100, 'outside_ondo': 2200};
+  const fee = fees[zone] || 950;
+  const sf = document.getElementById('serviceFeeDisplay');
+  const df = document.getElementById('deliveryFeeDisplay');
+  const tot = document.getElementById('cartTotal');
+  const subtotal = {{ cart.subtotal }};
+  const serviceFee = Math.round(subtotal * 0.03);
+  const promoDiscount = window.promoDiscount || 0;
+  if (sf) sf.textContent = '\u20a6' + serviceFee.toLocaleString();
+  if (df) df.textContent = '\u20a6' + fee.toLocaleString();
+  if (tot) tot.textContent = '\u20a6' + Math.max(0, subtotal + serviceFee + fee - promoDiscount).toLocaleString();
+}
+document.addEventListener('DOMContentLoaded', function() { updateDeliveryFee('ondo_near'); });
+</script>
+{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -117,10 +134,10 @@
 
           <div class="form-group">
             <label class="form-label">Delivery Zone *</label>
-            <select name="delivery_zone" class="form-control" id="deliveryZone" onchange="updateDeliveryFee(this.value)">
+            <select name="delivery_zone" class="form-control" id="deliveryZone" onchange="updateDeliveryFee(this.value)" id="deliveryZoneSelect">
               <option value="ondo_near">Within Ondo (nearby areas) — ₦950</option>
               <option value="ondo_park">Within Ondo (park/further areas) — ₦1,100</option>
-              <option value="ondo_far">Within Ondo (far areas) — ₦2,200</option>
+              <option value="outside_ondo">Outside Ondo State — ₦2,200</option>
             </select>
             <p style="font-size:0.78rem;color:var(--gray);margin-top:6px;">
               <i class="fas fa-info-circle"></i> Delivery fee covers transport from BTS consolidation point to your nearest park. You arrange delivery from the park to your location.
