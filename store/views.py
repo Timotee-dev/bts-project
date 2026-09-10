@@ -556,6 +556,46 @@ def validate_promo(request):
     })
 
 
+def add_custom_to_cart(request):
+    if request.method != 'POST':
+        return redirect('build_your_own')
+
+    import json
+    cart = _get_or_create_cart(request)
+
+    try:
+        selections = json.loads(request.POST.get('selections', '[]'))
+    except Exception:
+        messages.error(request, 'Invalid selection.')
+        return redirect('build_your_own')
+
+    if not selections:
+        messages.error(request, 'Please select at least one product.')
+        return redirect('build_your_own')
+
+    total = sum(float(item['price']) * int(item.get('qty', 1)) for item in selections)
+
+    desc = []
+    for item in selections:
+        line = f"{item['name']} x{item.get('qty', 1)}"
+        if item.get('color'): line += f" ({item['color']})"
+        if item.get('size'):  line += f" size {item['size']}"
+        desc.append(line)
+
+    CartItem.objects.create(
+        cart=cart,
+        custom_name='My Custom Package',
+        custom_price=total,
+        selected_size='; '.join(desc)[:500],
+        quantity=1,
+    )
+    cart.cart_type = 'custom'
+    cart.save()
+
+    messages.success(request, 'Custom package added to cart!')
+    return redirect('checkout_addons')
+
+
 def search(request):
     query    = request.GET.get('q', '').strip()
     packages = BTSPackage.objects.none()
