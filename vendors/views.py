@@ -9,10 +9,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 import json, hmac, hashlib
 import requests as req_lib
-from .models import (
+from store.models import (
     Category, PartnerBrand, Product, BTSPackage,
     Cart, CartItem, Order, OrderItem, Wishlist, WishlistItem
 )
+from .models import Vendor
 
 
 def _get_or_create_cart(request):
