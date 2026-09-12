@@ -213,7 +213,7 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('promoTargetType').value = this.dataset.promoType;
       document.getElementById('promoTargetId').value   = this.dataset.promoId;
       document.getElementById('promoTargetName').textContent = (this.dataset.promoType === 'package' ? 'Package: ' : 'Product: ') + this.dataset.promoName;
-      generateCode();
+      document.getElementById('promoCode').value = '';
     });
   });
   document.getElementById('promoModalClose').addEventListener('click', function() {
