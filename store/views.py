@@ -593,7 +593,7 @@ def add_custom_to_cart(request):
     cart.save()
 
     messages.success(request, 'Custom package added to cart!')
-    return redirect('checkout_addons')
+    return redirect('checkout')
 
 
 def search(request):
