@@ -1,5 +1,41 @@
 {% extends 'vendors/base.html' %}
-{% block title %}{{ action }} Product — {{ vendor.business_name }}{% endblock %}
+{% block title %}{{ action }} Product — {{ vendor.business_name }}
+<script>
+function togglePromoForm() {
+  const section = document.getElementById('promoFormSection');
+  const btn = document.getElementById('promoToggleBtn');
+  if (section.style.display === 'none') {
+    section.style.display = 'block';
+    btn.textContent = '- Hide Promo';
+    generatePromoCode( generatePromoCode('promoCodeProd');
+  } else {
+    section.style.display = 'none';
+    btn.textContent = '+ Add Promo';
+  }
+}
+function generatePromoCode(id) {
+  const el = document.getElementById(id);
+  if (!el) return false;
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = 'BTS';
+  for (let i = 0; i < 5; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  el.value = code;
+  return true;
+}
+function togglePromoValue(sel, groupId) {
+  const group = document.getElementById(groupId);
+  const label = group.previousElementSibling;
+  if (sel.value === 'free') {
+    group.style.display = 'none';
+    group.querySelector('input').removeAttribute('required');
+  } else {
+    group.style.display = 'block';
+    group.querySelector('input').setAttribute('required', '');
+    group.querySelector('input').placeholder = sel.value === 'percent' ? 'e.g. 50' : 'e.g. 2000';
+  }
+}
+</script>
+{% endblock %}
 
 {% block vendor_content %}
 <div style="max-width:720px;">
