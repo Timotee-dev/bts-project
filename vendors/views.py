@@ -393,11 +393,18 @@ def vendor_create_promo(request):
             from django.utils.dateparse import parse_datetime
             valid_until_dt = parse_datetime(valid_until)
 
-        applies_to_pkg = None
+        applies_to_pkg     = None
+        applies_to_product = None
+
         if target_type == 'package' and target_id:
             try:
                 applies_to_pkg = BTSPackage.objects.get(pk=target_id)
             except BTSPackage.DoesNotExist:
+                pass
+        elif target_type == 'product' and target_id:
+            try:
+                applies_to_product = Product.objects.get(pk=target_id)
+            except Product.DoesNotExist:
                 pass
 
         try:
@@ -408,6 +415,7 @@ def vendor_create_promo(request):
                 max_uses=max_uses,
                 valid_until=valid_until_dt,
                 applies_to_pkg=applies_to_pkg,
+                applies_to_product=applies_to_product,
                 is_active=True,
             )
             messages.success(request, f'Promo code "{code}" created successfully!')

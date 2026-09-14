@@ -254,7 +254,8 @@ class PromoCode(models.Model):
     is_active       = models.BooleanField(default=True)
     valid_from      = models.DateTimeField(auto_now_add=True)
     valid_until     = models.DateTimeField(null=True, blank=True)
-    applies_to_pkg  = models.ForeignKey('BTSPackage', null=True, blank=True, on_delete=models.SET_NULL, help_text='Leave blank to apply to any package')
+    applies_to_pkg     = models.ForeignKey('BTSPackage', null=True, blank=True, on_delete=models.SET_NULL, help_text='Leave blank to apply to any package')
+    applies_to_product = models.ForeignKey('Product', null=True, blank=True, on_delete=models.SET_NULL, help_text='Set this to limit discount to one specific product only')
     used_by         = models.ManyToManyField('accounts.Customer', blank=True, related_name='used_promos')
 
     def __str__(self):
@@ -271,11 +272,20 @@ class PromoCode(models.Model):
             return False
         return True
 
+    def get_discount_base(self):
+        """Return the price the discount should apply to."""
+        if self.applies_to_product:
+            return float(self.applies_to_product.price)
+        if self.applies_to_pkg:
+            return float(self.applies_to_pkg.price)
+        return None  # Apply to full subtotal
+
     def calculate_discount(self, subtotal):
+        base = self.get_discount_base() or subtotal
         if self.discount_type == 'percent':
-            return int(round(float(subtotal) * float(self.discount_value) / 100))
+            return int(round(float(base) * float(self.discount_value) / 100))
         else:
-            return min(int(self.discount_value), int(subtotal))
+            return min(int(self.discount_value), int(base))
 
 
 class Order(models.Model):
