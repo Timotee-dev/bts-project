@@ -63,7 +63,7 @@
         <!-- Products grid -->
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,160px),1fr));gap:12px;" id="productGrid">
           {% for product in products %}
-          <div class="byo-product-card" id="card-{{ product.pk }}" onclick="toggleProduct({{ product.pk }}, '{{ product.name|escapejs }}', {{ product.price }}, '{{ product.image.url if product.image else '' }}')">
+          <div class="byo-product-card" id="card-{{ product.pk }}" onclick="toggleProduct({{ product.pk }}, '{{ product.name|escapejs }}', {{ product.price }}, '{% if product.image %}{{ product.image.url }}{% endif %}')">
             <div class="byo-check"><i class="fas fa-check"></i></div>
 
             <!-- Image -->
