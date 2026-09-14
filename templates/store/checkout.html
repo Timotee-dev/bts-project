@@ -2,8 +2,6 @@
 {% block title %}Checkout — BTS Project
 <script>
 function updateDeliveryFee(zone) {
-  const note = document.getElementById('deliveryNote');
-  if (note) note.style.display = zone === 'outside_ondo' ? 'block' : 'none';
   const fees = {'ondo_near': 950, 'ondo_park': 1100, 'outside_ondo': 2200};
   const fee = fees[zone] || 950;
   const sf = document.getElementById('serviceFeeDisplay');
@@ -118,9 +116,7 @@ document.addEventListener('DOMContentLoaded', function() { updateDeliveryFee('on
             </select>
           </div>
 
-          <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:16px;font-size:0.82rem;color:#92400e;line-height:1.6;" id="deliveryNote">
-            <i class="fas fa-info-circle"></i> <strong>Note:</strong> The delivery fee covers transport from our BTS consolidation point to your nearest motor park. You will arrange and pay for delivery from the park to your location separately.
-          </div>
+          
 
           <div class="form-group">
             <label class="form-label">Delivery Zone *</label>
