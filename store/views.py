@@ -261,30 +261,20 @@ def checkout(request):
         city       = request.POST.get('city', '').strip()
         state      = request.POST.get('state', '').strip()
         notes      = request.POST.get('notes', '').strip()
-        fulfilment = request.POST.get('fulfilment', 'delivery')
-
         # Validate required fields
         if not full_name or not phone:
             messages.error(request, 'Please fill in your name and phone number.')
             return render(request, 'store/checkout.html', {'cart': cart, 'user': request.user})
 
-        if fulfilment == 'delivery' and not all([street, city, state]):
+        if not all([street, city, state]):
             messages.error(request, 'Please fill in your delivery address.')
             return render(request, 'store/checkout.html', {'cart': cart, 'user': request.user})
 
-        # Delivery fee
-        if fulfilment == 'pickup':
-            delivery_fee = 0
-            shipping_address = 'PICKUP - BTS Consolidation Point, Ondo'
-        else:
-            delivery_zone = request.POST.get('delivery_zone', 'ondo_near')
-            zone_fees = {
-                'ondo_near':    950,
-                'ondo_far':     2200,
-                'outside_ondo': 1100,
-            }
-            delivery_fee = zone_fees.get(delivery_zone, 950)
-            shipping_address = f"{street}, {city}, {state}"
+        # Delivery zone fee
+        delivery_zone    = request.POST.get('delivery_zone', 'ondo_near')
+        zone_fees        = {'ondo_near': 950, 'ondo_far': 2200, 'outside_ondo': 1100}
+        delivery_fee     = zone_fees.get(delivery_zone, 950)
+        shipping_address = f"{street}, {city}, {state}"
 
         # 3% BTS Service Fee
         service_fee = int(round(float(cart.subtotal) * 0.03))
@@ -320,7 +310,7 @@ def checkout(request):
             city=city,
             state=state,
             shipping_address=shipping_address,
-            notes=('[PICKUP] ' + notes if fulfilment == 'pickup' else notes).strip(),
+            notes=notes,
             payment_status='unpaid',
         )
 

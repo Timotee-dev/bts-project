@@ -71,21 +71,9 @@ document.addEventListener('DOMContentLoaded', function() { updateDeliveryFee('on
             <input type="text" name="city" class="form-control" required placeholder="e.g. Ibadan">
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Fulfilment *</label>
-            <div style="display:flex;gap:12px;flex-wrap:wrap;" id="fulfilmentGroup">
-              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:12px 16px;border:2px solid var(--border);border-radius:var(--radius-sm);flex:1;min-width:120px;" id="deliveryLabel">
-                <input type="radio" name="fulfilment" value="delivery" checked onchange="toggleFulfilment(this)">
-                <span><strong>Delivery</strong><br><small style="color:var(--gray);">₦950 (Ondo) / ₦1,000 (Others)</small></span>
-              </label>
-              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:12px 16px;border:2px solid var(--border);border-radius:var(--radius-sm);flex:1;min-width:120px;" id="pickupLabel">
-                <input type="radio" name="fulfilment" value="pickup" onchange="toggleFulfilment(this)">
-                <span><strong>Pickup</strong><br><small style="color:var(--gray);">Free — collect in Ondo</small></span>
-              </label>
-            </div>
-          </div>
+          
 
-          <div id="deliveryFields">
+          
           <div class="form-group">
             <label class="form-label">State *</label>
             <select name="state" class="form-control" required>
@@ -146,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() { updateDeliveryFee('on
             </p>
           </div>
 
-          </div><!-- end deliveryFields -->
+          
 
           <div class="form-group">
             <label class="form-label">Order Notes <span style="font-weight:400;color:var(--gray);">(optional)</span></label>
