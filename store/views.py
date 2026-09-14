@@ -280,8 +280,8 @@ def checkout(request):
             delivery_zone = request.POST.get('delivery_zone', 'ondo_near')
             zone_fees = {
                 'ondo_near':    950,
-                'ondo_park':    1100,
-                'outside_ondo': 2200,
+                'ondo_far':     2200,
+                'outside_ondo': 1100,
             }
             delivery_fee = zone_fees.get(delivery_zone, 950)
             shipping_address = f"{street}, {city}, {state}"

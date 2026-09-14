@@ -2,6 +2,8 @@
 {% block title %}Checkout — BTS Project
 <script>
 function updateDeliveryFee(zone) {
+  const note = document.getElementById('deliveryNote');
+  if (note) note.style.display = zone === 'outside_ondo' ? 'block' : 'none';
   const fees = {'ondo_near': 950, 'ondo_park': 1100, 'outside_ondo': 2200};
   const fee = fees[zone] || 950;
   const sf = document.getElementById('serviceFeeDisplay');
@@ -135,9 +137,9 @@ document.addEventListener('DOMContentLoaded', function() { updateDeliveryFee('on
           <div class="form-group">
             <label class="form-label">Delivery Zone *</label>
             <select name="delivery_zone" class="form-control" id="deliveryZone" onchange="updateDeliveryFee(this.value)" id="deliveryZoneSelect">
-              <option value="ondo_near">Within Ondo (nearby areas) — ₦950</option>
-              <option value="ondo_park">Within Ondo (park/further areas) — ₦1,100</option>
-              <option value="outside_ondo">Outside Ondo State — ₦2,200</option>
+              <option value="ondo_near">Within Ondo — ₦950</option>
+              <option value="ondo_far">Within Ondo (farther places) — ₦2,200</option>
+              <option value="outside_ondo">Outside Ondo (BTS point to park) — ₦1,100</option>
             </select>
             <p style="font-size:0.78rem;color:var(--gray);margin-top:6px;">
               <i class="fas fa-info-circle"></i> Delivery fee covers transport from BTS consolidation point to your nearest park. You arrange delivery from the park to your location.
