@@ -228,7 +228,7 @@ class CartItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True)
     package = models.ForeignKey(BTSPackage, on_delete=models.CASCADE, null=True, blank=True)
     quantity = models.PositiveIntegerField(default=1)
-    selected_size = models.CharField(max_length=20, blank=True)
+    selected_size = models.TextField(blank=True)
 
     def __str__(self):
         item = self.package or self.product
@@ -345,7 +345,7 @@ class OrderItem(models.Model):
     product_name = models.CharField(max_length=200)
     quantity = models.PositiveIntegerField()
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
-    selected_size = models.CharField(max_length=20, blank=True)
+    selected_size = models.TextField(blank=True)
 
     @property
     def line_total(self):
