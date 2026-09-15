@@ -315,7 +315,12 @@ def checkout(request):
         )
 
         for ci in cart.items.all():
-            name = ci.package.name if ci.package else ci.product.name
+            if ci.package:
+                name = ci.package.name
+            elif ci.product:
+                name = ci.product.name
+            else:
+                name = (ci.selected_size or '').split('|')[-1][:50] or 'Custom Package'
             OrderItem.objects.create(
                 order=order,
                 product=ci.product,
