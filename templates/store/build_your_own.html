@@ -80,7 +80,7 @@
               <p style="font-weight:700;color:var(--dark);font-size:0.82rem;margin-bottom:4px;line-height:1.3;">{{ product.name }}</p>
               <p style="font-weight:800;color:var(--green);font-size:0.9rem;">&#x20A6;{{ product.price|floatformat:0 }}</p>
               {% if product.available_colors %}
-              <select name="color_{{ product.pk }}" onclick="event.stopPropagation()" onchange="updateSelection({{ product.pk }})"
+              <select name="color_{{ product.pk }}" onclick="event.stopPropagation();" onchange="updateSelection({{ product.pk }}); event.stopPropagation();"
                       class="form-control" style="font-size:0.72rem;padding:4px 6px;margin-top:6px;display:none;" id="colorSel-{{ product.pk }}">
                 <option value="">Color</option>
                 {% for c in product.available_colors.split %}
@@ -89,7 +89,7 @@
               </select>
               {% endif %}
               {% if product.available_sizes %}
-              <select name="size_{{ product.pk }}" onclick="event.stopPropagation()" onchange="updateSelection({{ product.pk }})"
+              <select name="size_{{ product.pk }}" onclick="event.stopPropagation();" onchange="updateSelection({{ product.pk }}); event.stopPropagation();"
                       class="form-control" style="font-size:0.72rem;padding:4px 6px;margin-top:4px;display:none;" id="sizeSel-{{ product.pk }}">
                 <option value="">Size</option>
                 {% for s in product.available_sizes.split %}
@@ -98,11 +98,12 @@
               </select>
               {% endif %}
               <div class="qty-ctrl" id="qty-{{ product.pk }}" style="display:none;" onclick="event.stopPropagation()">
-                <button class="qty-btn" onclick="changeQty({{ product.pk }}, -1)">-</button>
+                <button class="qty-btn" onclick="event.stopPropagation(); changeQty({{ product.pk }}, -1)">-</button>
                 <input type="number" id="qtyInput-{{ product.pk }}" value="1" min="1" max="20"
                        style="width:36px;text-align:center;border:1px solid var(--border);border-radius:4px;font-weight:700;font-size:0.85rem;"
-                       onchange="updateSelection({{ product.pk }})">
-                <button class="qty-btn" onclick="changeQty({{ product.pk }}, 1)">+</button>
+                       onclick="event.stopPropagation();"
+                       onchange="updateSelection({{ product.pk }}); event.stopPropagation();">
+                <button class="qty-btn" onclick="event.stopPropagation(); changeQty({{ product.pk }}, 1)">+</button>
               </div>
             </div>
           </div>
