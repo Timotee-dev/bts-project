@@ -315,7 +315,7 @@ def checkout(request):
         )
 
         for ci in cart.items.all():
-            name = ci.package.name if ci.package else (ci.product.name if ci.product else ci.selected_size.replace('Custom Package: ', '')[:50] if ci.selected_size else 'Custom Package')
+            name = ci.package.name if ci.package else ci.product.name
             OrderItem.objects.create(
                 order=order,
                 product=ci.product,
@@ -572,11 +572,11 @@ def add_custom_to_cart(request):
         if item.get('size'):  line += f" size {item['size']}"
         desc.append(line)
 
+    selections_text = '; '.join(desc)
+    selected_size_val = ('byo_total:' + str(int(total)) + '|' + selections_text)[:500]
     CartItem.objects.create(
         cart=cart,
-        custom_name='My Custom Package',
-        custom_price=total,
-        selected_size='; '.join(desc)[:500],
+        selected_size=selected_size_val,
         quantity=1,
     )
     cart.cart_type = 'custom'

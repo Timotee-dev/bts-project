@@ -238,7 +238,15 @@ class CartItem(models.Model):
     def unit_price(self):
         if self.package:
             return self.package.price
-        return self.product.price if self.product else 0
+        if self.product:
+            return self.product.price
+        # Custom BYO item - price stored in selected_size as JSON total
+        if self.selected_size and self.selected_size.startswith('byo_total:'):
+            try:
+                return float(self.selected_size.split('byo_total:')[1].split('|')[0])
+            except Exception:
+                return 0
+        return 0
 
     @property
     def line_total(self):
