@@ -63,7 +63,7 @@
         <!-- Products grid -->
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,160px),1fr));gap:12px;" id="productGrid">
           {% for product in products %}
-          <div class="byo-product-card" id="card-{{ product.pk }}" onclick="toggleProduct({{ product.pk }}, '{{ product.name|escapejs }}', {{ product.price }}, '{% if product.image %}{{ product.image.url }}{% endif %}')">
+          <div class="byo-product-card" id="card-{{ product.pk }}" >
             <div class="byo-check"><i class="fas fa-check"></i></div>
 
             <!-- Image -->
@@ -104,6 +104,11 @@
                        onchange="updateSelection({{ product.pk }})">
                 <button class="qty-btn" onclick="changeQty({{ product.pk }}, 1)">+</button>
               </div>
+            <button onclick="toggleProduct({{ product.pk }}, '{{ product.name|escapejs }}', {{ product.price }}, '{% if product.image %}{{ product.image.url }}{% endif %}')"
+                    id="selectBtn-{{ product.pk }}"
+                    style="width:100%;padding:6px;margin:6px 0 0;border:2px solid var(--green);border-radius:4px;background:white;color:var(--green);font-weight:700;font-size:0.78rem;cursor:pointer;">
+              + Select
+            </button>
             </div>
           </div>
           {% endfor %}
@@ -236,7 +241,7 @@ function renderBasket() {
     html += '</div>';
     html += '<div style="text-align:right;flex-shrink:0;">';
     html += '<p style="font-weight:700;color:var(--green);">₦' + lineTotal.toLocaleString() + '</p>';
-    html += '<button onclick="toggleProduct(' + id + ','',0,'')" style="background:none;border:none;color:red;font-size:0.72rem;cursor:pointer;padding:0;">Remove</button>';
+    html += '<button  style="background:none;border:none;color:red;font-size:0.72rem;cursor:pointer;padding:0;">Remove</button>';
     html += '</div></div>';
   });
 
