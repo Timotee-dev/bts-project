@@ -129,10 +129,10 @@
               <span id="basketTotal" style="font-weight:800;color:var(--green);">₦0</span>
             </div>
             <p style="font-size:0.72rem;color:var(--gray);margin-bottom:12px;">+ 3% service fee + delivery at checkout</p>
-            <form method="post" action="{% url 'add_custom_to_cart' %}" id="byoForm">
+            <form method="post" action="{% url 'add_custom_to_cart' %}" id="byoForm" onsubmit="return prepareForm(event)">
               {% csrf_token %}
               <input type="hidden" name="selections" id="byoSelections">
-              <button type="submit" class="btn btn-primary btn-block btn-lg" onclick="prepareForm(event)">
+              <button type="submit" class="btn btn-primary btn-block btn-lg">
                 <i class="fas fa-shopping-bag"></i> Add to Cart
               </button>
             </form>
@@ -259,15 +259,15 @@ function renderBasket() {
 function prepareForm(e) {
   var keys = Object.keys(selected);
   if (keys.length === 0) {
-    e.preventDefault();
-    alert('Please select at least one product.');
-    return;
+    alert('Please select at least one product first.');
+    return false;
   }
   var data = keys.map(function(id) {
     var item = selected[id];
     return { id: id, name: item.name, price: item.price, qty: item.qty, color: item.color, size: item.size };
   });
   document.getElementById('byoSelections').value = JSON.stringify(data);
+  return true;
 }
 </script>
 {% endblock %}
