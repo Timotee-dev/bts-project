@@ -153,33 +153,36 @@
 
 {% block extra_js %}
 <script>
-const selected = {};
+var selected = {};
 
 function toggleProduct(id, name, price, img) {
-  const card = document.getElementById('card-' + id);
-  const colorSel = document.getElementById('colorSel-' + id);
-  const sizeSel = document.getElementById('sizeSel-' + id);
-  const qtyDiv = document.getElementById('qty-' + id);
+  var btn = document.getElementById('selectBtn-' + id);
+  var card = document.getElementById('card-' + id);
+  var colorSel = document.getElementById('colorSel-' + id);
+  var sizeSel = document.getElementById('sizeSel-' + id);
+  var qtyDiv = document.getElementById('qty-' + id);
 
   if (selected[id]) {
     delete selected[id];
-    card.classList.remove('selected');
+    if (card) card.classList.remove('selected');
     if (colorSel) colorSel.style.display = 'none';
     if (sizeSel) sizeSel.style.display = 'none';
     if (qtyDiv) qtyDiv.style.display = 'none';
+    if (btn) { btn.textContent = '+ Select'; btn.style.background = 'white'; btn.style.color = 'var(--green)'; }
   } else {
-    selected[id] = { name, price, qty: 1, color: '', size: '', img };
-    card.classList.add('selected');
+    selected[id] = { name: name, price: parseFloat(price), qty: 1, color: '', size: '', img: img };
+    if (card) card.classList.add('selected');
     if (colorSel) colorSel.style.display = 'block';
     if (sizeSel) sizeSel.style.display = 'block';
     if (qtyDiv) qtyDiv.style.display = 'flex';
+    if (btn) { btn.textContent = '✓ Added'; btn.style.background = 'var(--green)'; btn.style.color = 'white'; }
   }
   renderBasket();
 }
 
 function changeQty(id, delta) {
-  const input = document.getElementById('qtyInput-' + id);
-  const newVal = Math.max(1, Math.min(20, parseInt(input.value || 1) + delta));
+  var input = document.getElementById('qtyInput-' + id);
+  var newVal = Math.max(1, Math.min(20, parseInt(input.value || 1) + delta));
   input.value = newVal;
   if (selected[id]) { selected[id].qty = newVal; }
   renderBasket();
@@ -187,75 +190,83 @@ function changeQty(id, delta) {
 
 function updateSelection(id) {
   if (!selected[id]) return;
-  const colorSel = document.getElementById('colorSel-' + id);
-  const sizeSel  = document.getElementById('sizeSel-' + id);
-  const qtyInput = document.getElementById('qtyInput-' + id);
+  var colorSel = document.getElementById('colorSel-' + id);
+  var sizeSel = document.getElementById('sizeSel-' + id);
+  var qtyInput = document.getElementById('qtyInput-' + id);
   if (colorSel) selected[id].color = colorSel.value;
-  if (sizeSel)  selected[id].size  = sizeSel.value;
-  if (qtyInput) selected[id].qty   = parseInt(qtyInput.value) || 1;
+  if (sizeSel) selected[id].size = sizeSel.value;
+  if (qtyInput) selected[id].qty = parseInt(qtyInput.value) || 1;
   renderBasket();
 }
 
 function renderBasket() {
-  const items = Object.entries(selected);
-  const basketItems = document.getElementById('basketItems');
-  const emptyMsg    = document.getElementById('emptyMsg');
-  const summary     = document.getElementById('basketSummary');
-  const totalEl     = document.getElementById('basketTotal');
+  var keys = Object.keys(selected);
+  var basketItems = document.getElementById('basketItems');
+  var emptyMsg = document.getElementById('emptyMsg');
+  var summary = document.getElementById('basketSummary');
+  var totalEl = document.getElementById('basketTotal');
 
-  if (items.length === 0) {
+  if (!basketItems) return;
+
+  if (keys.length === 0) {
     if (emptyMsg) emptyMsg.style.display = 'block';
-    if (summary) summary.style.display  = 'none';
-    // Clear only dynamic content
-    Array.from(basketItems.children).forEach(child => {
-      if (child.id !== 'emptyMsg') child.remove();
+    if (summary) summary.style.display = 'none';
+    var children = Array.prototype.slice.call(basketItems.children);
+    children.forEach(function(child) {
+      if (child.id !== 'emptyMsg') child.parentNode.removeChild(child);
     });
     return;
   }
 
   if (emptyMsg) emptyMsg.style.display = 'none';
-  if (summary) summary.style.display  = 'block';
-  let total = 0;
-  let html = '';
+  if (summary) summary.style.display = 'block';
 
-  items.forEach(([id, item]) => {
-    const lineTotal = item.price * item.qty;
+  var total = 0;
+  var html = '';
+  keys.forEach(function(id) {
+    var item = selected[id];
+    var lineTotal = item.price * item.qty;
     total += lineTotal;
-    html += `<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border);font-size:0.82rem;gap:8px;">
-      <div style="flex:1;min-width:0;">
-        <p style="font-weight:600;color:var(--dark);margin-bottom:1px;">${item.name}</p>
-        ${item.color ? `<span style="color:var(--gray);font-size:0.72rem;">${item.color}</span>` : ''}
-        ${item.size  ? `<span style="color:var(--gray);font-size:0.72rem;"> · ${item.size}</span>` : ''}
-        <span style="color:var(--gray);font-size:0.72rem;"> × ${item.qty}</span>
-      </div>
-      <div style="text-align:right;flex-shrink:0;">
-        <p style="font-weight:700;color:var(--green);">₦${lineTotal.toLocaleString()}</p>
-        <button onclick="toggleProduct(${id},'','','')" style="background:none;border:none;color:var(--error);font-size:0.72rem;cursor:pointer;padding:0;">Remove</button>
-      </div>
-    </div>`;
+    html += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:0.82rem;gap:8px;">';
+    html += '<div style="flex:1;min-width:0;">';
+    html += '<p style="font-weight:600;color:var(--dark);margin-bottom:1px;">' + item.name + '</p>';
+    if (item.color) html += '<span style="color:var(--gray);font-size:0.72rem;">' + item.color + '</span>';
+    if (item.size) html += '<span style="color:var(--gray);font-size:0.72rem;"> · ' + item.size + '</span>';
+    html += '<span style="color:var(--gray);font-size:0.72rem;"> × ' + item.qty + '</span>';
+    html += '</div>';
+    html += '<div style="text-align:right;flex-shrink:0;">';
+    html += '<p style="font-weight:700;color:var(--green);">₦' + lineTotal.toLocaleString() + '</p>';
+    html += '<button onclick="toggleProduct(' + id + ','',0,'')" style="background:none;border:none;color:red;font-size:0.72rem;cursor:pointer;padding:0;">Remove</button>';
+    html += '</div></div>';
   });
 
-  // Update only dynamic content, preserve emptyMsg
-  Array.from(basketItems.children).forEach(child => {
-    if (child.id !== 'emptyMsg') child.remove();
+  // Remove old dynamic items
+  var children = Array.prototype.slice.call(basketItems.children);
+  children.forEach(function(child) {
+    if (child.id !== 'emptyMsg') child.parentNode.removeChild(child);
   });
-  const tmp = document.createElement('div');
+
+  // Add new items
+  var tmp = document.createElement('div');
   tmp.innerHTML = html;
-  while (tmp.firstChild) basketItems.appendChild(tmp.firstChild);
+  while (tmp.firstChild) {
+    basketItems.appendChild(tmp.firstChild);
+  }
+
   if (totalEl) totalEl.textContent = '₦' + total.toLocaleString();
 }
 
 function prepareForm(e) {
-  const items = Object.entries(selected);
-  if (items.length === 0) {
+  var keys = Object.keys(selected);
+  if (keys.length === 0) {
     e.preventDefault();
     alert('Please select at least one product.');
     return;
   }
-  const data = items.map(([id, item]) => ({
-    id, name: item.name, price: item.price,
-    qty: item.qty, color: item.color, size: item.size
-  }));
+  var data = keys.map(function(id) {
+    var item = selected[id];
+    return { id: id, name: item.name, price: item.price, qty: item.qty, color: item.color, size: item.size };
+  });
   document.getElementById('byoSelections').value = JSON.stringify(data);
 }
 </script>
