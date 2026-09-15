@@ -574,9 +574,7 @@ def add_custom_to_cart(request):
 
     CartItem.objects.create(
         cart=cart,
-        custom_name='My Custom Package',
-        custom_price=total,
-        selected_size='; '.join(desc)[:500],
+        selected_size=('Custom Package: ' + '; '.join(desc))[:500],
         quantity=1,
     )
     cart.cart_type = 'custom'
