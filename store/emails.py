@@ -2,7 +2,6 @@
 BTS Project — Email sending utilities
 """
 from django.core.mail import EmailMultiAlternatives
-from django.template.loader import render_to_string
 from django.conf import settings
 
 
@@ -26,7 +25,7 @@ def send_order_confirmation(order, request=None):
     first_name = order.full_name.split()[0] if order.full_name else 'there'
 
     subject = f'Order Confirmed! #{order.order_number} — BTS Project'
-    from_email = 'Naomi from BTS <b6bb93001@smtp-brevo.com>'
+    from_email = 'Naomi from BTS <arifalotimothy@gmail.com>'
     to_email = order.customer.email
 
     text_content = f"""Hi {first_name}! 💚
@@ -106,7 +105,9 @@ p {{ color: #333; line-height: 1.7; }}
         msg.send()
         return True
     except Exception as e:
+        import traceback
         print(f'[BTS] Order confirmation email failed for #{order.order_number}: {e}')
+        print(traceback.format_exc())
         return False
 
 
