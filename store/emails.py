@@ -25,7 +25,7 @@ def send_order_confirmation(order, request=None):
     first_name = order.full_name.split()[0] if order.full_name else 'there'
 
     subject = f'Order Confirmed! #{order.order_number} — BTS Project'
-    from_email = 'Naomi from BTS <arifalotimothy@gmail.com>'
+    from_email = 'Naomi from BTS <b6bb93001@smtp-brevo.com>'
     to_email = order.customer.email
 
     text_content = f"""Hi {first_name}! 💚
