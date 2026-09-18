@@ -289,9 +289,14 @@ class PromoCode(models.Model):
         return None  # Apply to full subtotal
 
     def calculate_discount(self, subtotal):
-        base = self.get_discount_base() or subtotal
+        if self.applies_to_product:
+            base = float(self.applies_to_product.price)
+        elif self.applies_to_pkg:
+            base = float(self.applies_to_pkg.price)
+        else:
+            base = float(subtotal)
         if self.discount_type == 'percent':
-            return int(round(float(base) * float(self.discount_value) / 100))
+            return int(round(base * float(self.discount_value) / 100))
         else:
             return min(int(self.discount_value), int(base))
 
