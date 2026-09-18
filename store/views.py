@@ -289,8 +289,25 @@ def checkout(request):
                 promo = PromoCode.objects.get(code=promo_code)
                 if promo.is_valid:
                     if not (request.user.is_authenticated and promo.used_by.filter(pk=request.user.pk).exists()):
-                        promo_discount = promo.calculate_discount(int(cart.subtotal))
-                        applied_promo  = promo
+                        if promo.applies_to_product:
+                            # Promo is for a specific product
+                            # Check if that product exists in any package in the cart
+                            product_in_cart = False
+                            for cart_item in cart.items.all():
+                                if cart_item.product and cart_item.product == promo.applies_to_product:
+                                    product_in_cart = True
+                                    break
+                                if cart_item.package:
+                                    pkg_product_ids = cart_item.package.package_items.values_list('product_id', flat=True)
+                                    if promo.applies_to_product.id in pkg_product_ids:
+                                        product_in_cart = True
+                                        break
+                            if product_in_cart:
+                                promo_discount = promo.calculate_discount(int(cart.subtotal))
+                                applied_promo  = promo
+                        else:
+                            promo_discount = promo.calculate_discount(int(cart.subtotal))
+                            applied_promo  = promo
             except Exception:
                 pass
 
