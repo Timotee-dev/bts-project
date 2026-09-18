@@ -23,13 +23,82 @@ def send_order_confirmation(order, request=None):
         'site_url': site_url,
     }
 
+    first_name = order.full_name.split()[0] if order.full_name else 'there'
+
     subject = f'Order Confirmed! #{order.order_number} — BTS Project'
-    from_email = settings.DEFAULT_FROM_EMAIL
+    from_email = 'Naomi from BTS <b6bb93001@smtp-brevo.com>'
     to_email = order.customer.email
 
-    # Render both versions
-    text_content = render_to_string('emails/order_confirmation.txt', context)
-    html_content = render_to_string('emails/order_confirmation.html', context)
+    text_content = f"""Hi {first_name}! 💚
+
+Welcome to BTS PROJECT '26! 🎉
+
+Thank you so much for shopping with us. Your order has been received, and we're getting your BTS package ready for you.
+
+Your physical package will be delivered to you soon, and we'll keep you updated as it makes its way to you. 📦
+
+Butttt… your BTS experience doesn't stop at the box. 👀
+
+YOU JUST UNLOCKED YOUR BTS FRESHER STARTER BUNDLE 💚📦
+
+Your BTS Fresher Starter Bundle gives you access to the additional resources and student experiences that come with your package — from fresher guidance and practical student resources to style, money tips, community access and more, depending on your package.
+
+Basically:
+You shop. We sort the essentials. Then we help you navigate the rest.
+
+READY TO UNLOCK IT?
+
+Click the link below to activate your BTS Fresher Starter Bundle:
+https://wa.me/2349052384844
+
+Once you click, you'll be taken through the next step to verify your purchase and get access to your bundle.
+
+Keep your order details handy: Order #{order.order_number}
+
+We're excited to have you on this journey with us. 💚📦
+
+Naomi from BTS
+"""
+
+    html_content = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><style>
+body {{ font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }}
+.container {{ max-width: 600px; margin: 0 auto; background: white; }}
+.header {{ background: #1a4a2e; padding: 32px 24px; text-align: center; }}
+.header img {{ height: 48px; }}
+.body {{ padding: 32px 24px; }}
+.cta {{ display: block; background: #1a4a2e; color: white !important; text-decoration: none; padding: 16px 32px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 16px; margin: 24px 0; }}
+.footer {{ background: #1a4a2e; color: rgba(255,255,255,0.7); padding: 20px 24px; text-align: center; font-size: 12px; }}
+h1 {{ color: #1a4a2e; }}
+p {{ color: #333; line-height: 1.7; }}
+</style></head>
+<body>
+<div class="container">
+  <div class="header">
+    <h2 style="color:white;margin:0;">BTS PROJECT '26 💚</h2>
+  </div>
+  <div class="body">
+    <h1>Hi {first_name}! 💚</h1>
+    <p>Welcome to <strong>BTS PROJECT '26!</strong> 🎉</p>
+    <p>Thank you so much for shopping with us. Your order has been received, and we're getting your BTS package ready for you.</p>
+    <p>Your physical package will be delivered to you soon, and we'll keep you updated as it makes its way to you. 📦</p>
+    <p>Butttt… your BTS experience doesn't stop at the box. 👀</p>
+    <h2 style="color:#1a4a2e;">YOU JUST UNLOCKED YOUR BTS FRESHER STARTER BUNDLE 💚📦</h2>
+    <p>Your BTS Fresher Starter Bundle gives you access to the additional resources and student experiences that come with your package — from fresher guidance and practical student resources to style, money tips, community access and more, depending on your package.</p>
+    <p><strong>Basically:</strong><br>You shop. We sort the essentials. Then we help you navigate the rest.</p>
+    <p><strong>READY TO UNLOCK IT?</strong></p>
+    <p>Click the button below to activate your BTS Fresher Starter Bundle.</p>
+    <a href="https://wa.me/2349052384844" class="cta">ACTIVATE MY BTS FRESHER STARTER BUNDLE →</a>
+    <p style="color:#666;font-size:13px;">Once you click, you'll be taken through the next step to verify your purchase and get access to your bundle. Keep your order details handy — Order <strong>#{order.order_number}</strong></p>
+    <p>We're excited to have you on this journey with us. 💚📦</p>
+    <p><strong>Naomi from BTS</strong></p>
+  </div>
+  <div class="footer">
+    <p>BTS Project '26 &nbsp;|&nbsp; <a href="https://instagram.com/the_btsproject" style="color:rgba(255,255,255,0.7);">@the_btsproject</a></p>
+  </div>
+</div>
+</body></html>"""
 
     try:
         msg = EmailMultiAlternatives(subject, text_content, from_email, [to_email])
@@ -37,7 +106,6 @@ def send_order_confirmation(order, request=None):
         msg.send()
         return True
     except Exception as e:
-        # Never crash the order flow because of email failure
         print(f'[BTS] Order confirmation email failed for #{order.order_number}: {e}')
         return False
 
@@ -64,7 +132,7 @@ def send_vendor_order_notification(order):
             # Get only this vendor's items
             vendor_items = order.items.filter(product__vendor=vendor)
 
-            subject = f'New Order #{order.order_number} — BTS Project'
+            subject = f'🛍️ New Order #{order.order_number} — BTS Project'
             text = f"""Hi {vendor.business_name},
 
 You have a new order on BTS Project!
@@ -91,60 +159,3 @@ The BTS Project Team
 
         except Exception as e:
             print(f'[BTS] Vendor notification failed for vendor {vendor_id}: {e}')
-
-
-def send_order_status_update(order):
-    """
-    Email customer when vendor updates order status to processing, shipped, or delivered.
-    """
-    if not order.customer or not order.customer.email:
-        return False
-
-    status_messages = {
-        'processing': (
-            'Your order is being prepared',
-            'The vendor is packing your items and will ship soon.'
-        ),
-        'shipped': (
-            'Your order is on its way',
-            'Your BTS package has been shipped and is heading to you. Check your delivery address below.'
-        ),
-        'delivered': (
-            'Your order has been delivered',
-            'Your BTS package has been delivered. We hope you love everything!'
-        ),
-    }
-
-    subject_suffix, body_line = status_messages.get(
-        order.status,
-        ('Order Update', 'Your order status has been updated.')
-    )
-
-    subject  = f'BTS Project: {subject_suffix} — Order #{order.order_number}'
-    message  = f"""Hi {order.full_name},
-
-{body_line}
-
-Order Details:
-  Order Number : #{order.order_number}
-  Status       : {order.get_status_display()}
-  Delivery To  : {order.shipping_address}
-  Phone        : {order.phone}
-
-If you have any questions, contact us via our website or WhatsApp.
-
-The BTS Project Team
-"""
-    from django.core.mail import send_mail
-    try:
-        send_mail(
-            subject=subject,
-            message=message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[order.customer.email],
-            fail_silently=True,
-        )
-        return True
-    except Exception as e:
-        print(f'[BTS] Status update email failed for #{order.order_number}: {e}')
-        return False
