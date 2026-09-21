@@ -160,6 +160,27 @@
 <script>
 var selected = {};
 
+// Restore selections from sessionStorage on page load
+try {
+  var saved = sessionStorage.getItem('byo_selected');
+  if (saved) selected = JSON.parse(saved);
+} catch(e) {}
+
+// Restore button states for products on this page
+document.addEventListener('DOMContentLoaded', function() {
+  Object.keys(selected).forEach(function(id) {
+    var btn = document.getElementById('selectBtn-' + id);
+    var card = document.getElementById('card-' + id);
+    if (btn) {
+      btn.textContent = '\u2713 Added';
+      btn.style.background = 'var(--green)';
+      btn.style.color = 'white';
+    }
+    if (card) card.classList.add('selected');
+  });
+  renderBasket();
+});
+
 function toggleProduct(id, name, price, img) {
   var btn = document.getElementById('selectBtn-' + id);
   var card = document.getElementById('card-' + id);
@@ -182,7 +203,12 @@ function toggleProduct(id, name, price, img) {
     if (qtyDiv) qtyDiv.style.display = 'flex';
     if (btn) { btn.textContent = '✓ Added'; btn.style.background = 'var(--green)'; btn.style.color = 'white'; }
   }
+  saveSelected();
   renderBasket();
+}
+
+function saveSelected() {
+  try { sessionStorage.setItem('byo_selected', JSON.stringify(selected)); } catch(e) {}
 }
 
 function changeQty(id, delta) {
@@ -190,6 +216,7 @@ function changeQty(id, delta) {
   var newVal = Math.max(1, Math.min(20, parseInt(input.value || 1) + delta));
   input.value = newVal;
   if (selected[id]) { selected[id].qty = newVal; }
+  saveSelected();
   renderBasket();
 }
 
@@ -201,6 +228,7 @@ function updateSelection(id) {
   if (colorSel) selected[id].color = colorSel.value;
   if (sizeSel) selected[id].size = sizeSel.value;
   if (qtyInput) selected[id].qty = parseInt(qtyInput.value) || 1;
+  saveSelected();
   renderBasket();
 }
 
@@ -272,6 +300,7 @@ function prepareForm(e) {
     return { id: id, name: item.name, price: item.price, qty: item.qty, color: item.color, size: item.size };
   });
   document.getElementById('byoSelections').value = JSON.stringify(data);
+  try { sessionStorage.removeItem('byo_selected'); } catch(e) {}
   return true;
 }
 </script>
