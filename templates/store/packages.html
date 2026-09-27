@@ -1,129 +1,288 @@
 {% extends 'base.html' %}
-{% block title %}BTS Packages — Back to School Project{% endblock %}
+{% block title %}Shop BTS Packages{% endblock %}
 
 {% block extra_css %}
 <style>
-.gender-btn {
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  gap:12px; padding:32px 24px; border-radius:var(--radius); cursor:pointer;
-  border:3px solid var(--border); background:white; transition:all 0.25s;
-  text-decoration:none; color:var(--dark); flex:1; min-width:140px;
+.flow-container { max-width: 560px; margin: 0 auto; padding: 24px 16px; }
+.flow-step { display: none; }
+.flow-step.active { display: block; }
+.flow-question { font-size: clamp(1.2rem, 4vw, 1.6rem); font-weight: 800; color: var(--dark); margin-bottom: 8px; text-align: center; }
+.flow-sub { color: var(--gray); font-size: 0.9rem; text-align: center; margin-bottom: 28px; }
+.flow-options { display: grid; gap: 12px; }
+.flow-option {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 20px; border: 2px solid var(--border);
+  border-radius: var(--radius-sm); cursor: pointer;
+  background: white; transition: all 0.2s; text-align: left;
+  font-size: 1rem; font-weight: 600; color: var(--dark);
 }
-.gender-btn:hover { transform:translateY(-2px); box-shadow:var(--shadow-lg); }
-.gender-btn.female-active { border-color:#f9a8d4; background:#fdf2f8; }
-.gender-btn.male-active   { border-color:#93c5fd; background:#eff6ff; }
-.gender-icon { font-size:2.5rem; }
-.gender-label { font-size:1.1rem; font-weight:800; }
+.flow-option:hover { border-color: var(--green); background: var(--green-xpale); }
+.flow-option.selected { border-color: var(--green); background: var(--green-xpale); color: var(--green); }
+.flow-option-icon { font-size: 1.6rem; flex-shrink: 0; }
+.flow-progress { display: flex; gap: 6px; justify-content: center; margin-bottom: 32px; }
+.flow-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: background 0.3s; }
+.flow-dot.done { background: var(--green); }
+.flow-dot.active { background: var(--green); transform: scale(1.3); }
+.flow-back { background: none; border: none; color: var(--gray); cursor: pointer; font-size: 0.85rem; margin-bottom: 16px; display: flex; align-items: center; gap: 6px; }
+.flow-back:hover { color: var(--dark); }
 </style>
 {% endblock %}
 
 {% block content %}
 
 <div class="page-header">
-  <h1 class="page-header-title">BTS Packages</h1>
-  <p class="page-header-sub">Pick your set and add extras at checkout.</p>
-  <div class="breadcrumb"><a href="{% url 'home' %}">Home</a><span class="sep">/</span><span>Packages</span></div>
+  <h1 class="page-header-title">Shop BTS</h1>
+  <p class="page-header-sub">Let's find the perfect package for you.</p>
 </div>
 
-<section class="section">
-  <div class="container">
+<!-- QUIZ FLOW -->
+<section id="flowSection" class="section" style="padding-top:16px;">
+  <div class="flow-container">
 
-    {% if not active_gender %}
-    <!-- Step 1: Gender selection -->
-    <div style="text-align:center;margin-bottom:40px;">
-      <p style="font-size:1rem;font-weight:700;color:var(--dark);margin-bottom:8px;">Who are you shopping for?</p>
-      <p style="color:var(--gray);font-size:0.875rem;">Select to see packages tailored for you</p>
+    <!-- Progress dots -->
+    <div class="flow-progress">
+      <div class="flow-dot active" id="dot0"></div>
+      <div class="flow-dot" id="dot1"></div>
+      <div class="flow-dot" id="dot2"></div>
+      <div class="flow-dot" id="dot3"></div>
     </div>
 
-    <div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:40px;">
-      <a href="?gender=female" class="gender-btn">
-        <span class="gender-icon">&#9792;</span>
-        <span class="gender-label">Female</span>
-        <small style="color:var(--gray);font-size:0.78rem;">Tops, skirts, jewellery, skincare & more</small>
-      </a>
-      <a href="?gender=male" class="gender-btn">
-        <span class="gender-icon">&#9794;</span>
-        <span class="gender-label">Male</span>
-        <small style="color:var(--gray);font-size:0.78rem;">Shirts, trousers, ties, grooming & more</small>
-      </a>
-    </div>
-
-    <!-- Show all packages below gender selection -->
-    <div style="text-align:center;margin-bottom:24px;">
-      <p style="color:var(--gray);font-size:0.85rem;">Or browse all packages</p>
-    </div>
-    {% endif %}
-
-    {% if active_gender %}
-    <!-- Gender selected - show tier filter -->
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
-      <div style="display:flex;gap:8px;">
-        <a href="?gender=female" class="gender-btn {% if active_gender == 'female' %}female-active{% endif %}"
-           style="padding:12px 20px;flex-direction:row;min-width:auto;gap:8px;">
-          <span>&#9792;</span> <span style="font-weight:700;">Female</span>
-        </a>
-        <a href="?gender=male" class="gender-btn {% if active_gender == 'male' %}male-active{% endif %}"
-           style="padding:12px 20px;flex-direction:row;min-width:auto;gap:8px;">
-          <span>&#9794;</span> <span style="font-weight:700;">Male</span>
-        </a>
+    <!-- Step 1: Gender -->
+    <div class="flow-step active" id="step0">
+      <p class="flow-question">Who are you shopping for?</p>
+      <p class="flow-sub">We'll show you packages tailored for you.</p>
+      <div class="flow-options">
+        <button class="flow-option" onclick="selectOption(0, 'female', 'female')">
+          <span class="flow-option-icon">♀</span>
+          <span>Female</span>
+        </button>
+        <button class="flow-option" onclick="selectOption(0, 'male', 'male')">
+          <span class="flow-option-icon">♂</span>
+          <span>Male</span>
+        </button>
       </div>
-      <a href="{% url 'packages' %}" style="color:var(--gray);font-size:0.82rem;text-decoration:none;">Clear</a>
     </div>
 
-    <!-- Tier filter -->
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;">
-      <a href="?gender={{ active_gender }}" class="filter-tab {% if not active_tier %}active{% endif %}">All Sets</a>
-      <a href="?gender={{ active_gender }}&tier=essential" class="filter-tab {% if active_tier == 'essential' %}active{% endif %}">Essential Set</a>
-      <a href="?gender={{ active_gender }}&tier=glow"      class="filter-tab {% if active_tier == 'glow' %}active{% endif %}">Glow Set</a>
-      <a href="?gender={{ active_gender }}&tier=complete"  class="filter-tab {% if active_tier == 'complete' %}active{% endif %}">Complete Set</a>
-    </div>
-    {% endif %}
-
-    <!-- Package grid -->
-    <div class="packages-grid">
-      {% for pkg in packages %}
-      <div class="package-card">
-        <div class="package-card-img">
-          {% if pkg.cover_image %}
-            <img src="{{ pkg.cover_image.url }}" alt="{{ pkg.name }}">
-          {% else %}
-            <div style="display:flex;align-items:center;justify-content:center;height:100%;background:var(--green-xpale);">
-              <i class="fas fa-box-open" style="font-size:2.5rem;opacity:0.2;color:var(--green);"></i>
-            </div>
-          {% endif %}
-          <span class="pkg-badge pkg-badge-tier">{{ pkg.get_budget_tier_display }}</span>
-        </div>
-        <div class="package-card-body">
-          <h3 class="package-name">{{ pkg.name }}</h3>
-          <p class="package-desc">{{ pkg.description|truncatechars:80 }}</p>
-          {% if pkg.items_list %}
-          <div class="package-items-preview">
-            {% for item in pkg.items_list.splitlines|slice:":4" %}
-            {% if item.strip %}<span class="item-pill">{{ item.strip }}</span>{% endif %}
-            {% endfor %}
+    <!-- Step 2: Student Stage -->
+    <div class="flow-step" id="step1">
+      <button class="flow-back" onclick="goBack(1)"><i class="fas fa-arrow-left"></i> Back</button>
+      <p class="flow-question">What is your student stage?</p>
+      <p class="flow-sub">This helps us personalise your experience.</p>
+      <div class="flow-options">
+        <button class="flow-option" onclick="selectOption(1, 'fresher', 'fresher')">
+          <span class="flow-option-icon">🌱</span>
+          <div>
+            <div>Fresher</div>
+            <div style="font-weight:400;font-size:0.78rem;color:var(--gray);">First year, brand new to campus life</div>
           </div>
-          {% endif %}
-          <div class="package-price-row">
-            <span class="package-price">&#x20A6;{{ pkg.price|floatformat:0 }}</span>
-            {% if pkg.original_price and pkg.original_price > pkg.price %}
-            <span class="package-orig">&#x20A6;{{ pkg.original_price|floatformat:0 }}</span>
-            {% endif %}
+        </button>
+        <button class="flow-option" onclick="selectOption(1, 'returning', 'returning')">
+          <span class="flow-option-icon">📚</span>
+          <div>
+            <div>Returning Student</div>
+            <div style="font-weight:400;font-size:0.78rem;color:var(--gray);">Been here before, know what you need</div>
           </div>
-          <a href="{% url 'package_detail' pkg.slug %}" class="btn btn-primary btn-block">
-            Get This Package
-          </a>
-        </div>
+        </button>
+        <button class="flow-option" onclick="selectOption(1, 'finalyear', 'finalyear')">
+          <span class="flow-option-icon">🎓</span>
+          <div>
+            <div>Final Year</div>
+            <div style="font-weight:400;font-size:0.78rem;color:var(--gray);">Last chapter, going out in style</div>
+          </div>
+        </button>
       </div>
-      {% empty %}
-      <div style="grid-column:1/-1;text-align:center;padding:80px 24px;color:var(--gray);">
-        <i class="fas fa-box-open" style="font-size:3rem;opacity:0.1;display:block;margin-bottom:20px;"></i>
-        <h3 style="margin-bottom:8px;">No packages found</h3>
-        <p>Check back soon — vendors are adding packages now.</p>
-        <a href="{% url 'packages' %}" class="btn btn-outline-green" style="margin-top:16px;">View All Packages</a>
+    </div>
+
+    <!-- Step 3: What are you looking for -->
+    <div class="flow-step" id="step2">
+      <button class="flow-back" onclick="goBack(2)"><i class="fas fa-arrow-left"></i> Back</button>
+      <p class="flow-question">What are you looking for?</p>
+      <p class="flow-sub">Choose what matters most to you this resumption.</p>
+      <div class="flow-options">
+        <button class="flow-option" onclick="selectOption(2, 'essential', 'School Essentials')">
+          <span class="flow-option-icon">📖</span>
+          <div>
+            <div>School Essentials</div>
+            <div style="font-weight:400;font-size:0.78rem;color:var(--gray);">Notebooks, stationery, study tools</div>
+          </div>
+        </button>
+        <button class="flow-option" onclick="selectOption(2, 'glow', 'Campus Style')">
+          <span class="flow-option-icon">✨</span>
+          <div>
+            <div>Campus Style</div>
+            <div style="font-weight:400;font-size:0.78rem;color:var(--gray);">Clothes, accessories, personal care</div>
+          </div>
+        </button>
+        <button class="flow-option" onclick="selectOption(2, 'complete', 'Everything for Resumption')">
+          <span class="flow-option-icon">🎒</span>
+          <div>
+            <div>Everything for Resumption</div>
+            <div style="font-weight:400;font-size:0.78rem;color:var(--gray);">The full package — essentials + style</div>
+          </div>
+        </button>
       </div>
-      {% endfor %}
+    </div>
+
+    <!-- Step 4: Budget -->
+    <div class="flow-step" id="step3">
+      <button class="flow-back" onclick="goBack(3)"><i class="fas fa-arrow-left"></i> Back</button>
+      <p class="flow-question">What is your budget?</p>
+      <p class="flow-sub">We'll show packages that fit your range.</p>
+      <div class="flow-options">
+        <button class="flow-option" onclick="selectOption(3, '0-15000', 'Under ₦15,000')">
+          <span class="flow-option-icon">💚</span>
+          <div>
+            <div>Under ₦15,000</div>
+            <div style="font-weight:400;font-size:0.78rem;color:var(--gray);">Budget-friendly essentials</div>
+          </div>
+        </button>
+        <button class="flow-option" onclick="selectOption(3, '15000-30000', '₦15,000 – ₦30,000')">
+          <span class="flow-option-icon">💛</span>
+          <div>
+            <div>₦15,000 – ₦30,000</div>
+            <div style="font-weight:400;font-size:0.78rem;color:var(--gray);">Good value, more variety</div>
+          </div>
+        </button>
+        <button class="flow-option" onclick="selectOption(3, '30000-50000', '₦30,000 – ₦50,000')">
+          <span class="flow-option-icon">🧡</span>
+          <div>
+            <div>₦30,000 – ₦50,000</div>
+            <div style="font-weight:400;font-size:0.78rem;color:var(--gray);">Premium selection</div>
+          </div>
+        </button>
+        <button class="flow-option" onclick="selectOption(3, '50000+', 'Above ₦50,000')">
+          <span class="flow-option-icon">👑</span>
+          <div>
+            <div>Above ₦50,000</div>
+            <div style="font-weight:400;font-size:0.78rem;color:var(--gray);">Complete & ultimate sets</div>
+          </div>
+        </button>
+      </div>
     </div>
 
   </div>
 </section>
+
+<!-- RESULTS SECTION -->
+<section id="resultsSection" style="display:none;">
+  <div class="page-header" style="padding-bottom:8px;">
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:8px;">
+      <button onclick="restartFlow()" style="background:none;border:1px solid var(--border);padding:6px 14px;border-radius:var(--radius-full);cursor:pointer;font-size:0.82rem;color:var(--gray);">
+        <i class="fas fa-redo"></i> Start over
+      </button>
+    </div>
+    <p id="resultsSubtitle" class="page-header-sub"></p>
+    <div id="selectionSummary" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:8px;"></div>
+  </div>
+
+  <div class="container">
+    <div class="packages-grid" id="resultsGrid"></div>
+  </div>
+</section>
+
+<script>
+const answers = {};
+const allPackages = {{ packages_json|safe }};
+
+function selectOption(step, value, label) {
+  answers[step] = { value, label };
+
+  // Update dots
+  document.getElementById('dot' + step).classList.add('done');
+
+  if (step < 3) {
+    document.getElementById('step' + step).classList.remove('active');
+    document.getElementById('step' + (step+1)).classList.add('active');
+    document.getElementById('dot' + (step+1)).classList.add('active');
+  } else {
+    // All answered - show results
+    showResults();
+  }
+}
+
+function goBack(step) {
+  document.getElementById('step' + step).classList.remove('active');
+  document.getElementById('step' + (step-1)).classList.add('active');
+  document.getElementById('dot' + step).classList.remove('active', 'done');
+  delete answers[step-1];
+}
+
+function showResults() {
+  document.getElementById('flowSection').style.display = 'none';
+  document.getElementById('resultsSection').style.display = 'block';
+
+  const gender  = answers[0].value;
+  const tier    = answers[2].value;
+  const budget  = answers[3].value;
+  const budgetLabel = answers[3].label;
+
+  // Filter packages
+  let filtered = allPackages.filter(function(p) {
+    // Gender match
+    if (p.gender !== gender && p.gender !== 'both') return false;
+    // Tier match
+    if (p.budget_tier !== tier) return false;
+    // Budget match
+    var price = parseFloat(p.price);
+    if (budget === '0-15000' && price > 15000) return false;
+    if (budget === '15000-30000' && (price < 15000 || price > 30000)) return false;
+    if (budget === '30000-50000' && (price < 30000 || price > 50000)) return false;
+    if (budget === '50000+' && price < 50000) return false;
+    return true;
+  });
+
+  // Sort cheapest to highest
+  filtered.sort(function(a, b) { return parseFloat(a.price) - parseFloat(b.price); });
+
+  // Summary chips
+  var summary = document.getElementById('selectionSummary');
+  summary.innerHTML = [answers[0], answers[1], answers[2], answers[3]].map(function(a) {
+    return '<span style="background:var(--green-xpale);color:var(--green);padding:4px 12px;border-radius:var(--radius-full);font-size:0.78rem;font-weight:600;">' + a.label + '</span>';
+  }).join('');
+
+  document.getElementById('resultsSubtitle').textContent = filtered.length > 0
+    ? filtered.length + ' package' + (filtered.length > 1 ? 's' : '') + ' found for you'
+    : 'No packages found for this combination yet';
+
+  // Render packages
+  var grid = document.getElementById('resultsGrid');
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 24px;color:var(--gray);">' +
+      '<i class="fas fa-box-open" style="font-size:3rem;opacity:0.1;display:block;margin-bottom:20px;"></i>' +
+      '<h3 style="margin-bottom:8px;">No packages found</h3>' +
+      '<p>Try a different combination or <a href="/packages/" style="color:var(--green);">browse all packages</a>.</p>' +
+      '</div>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map(function(pkg) {
+    var img = pkg.cover_image
+      ? '<img src="' + pkg.cover_image + '" alt="' + pkg.name + '" style="width:100%;height:100%;object-fit:cover;">'
+      : '<div style="display:flex;align-items:center;justify-content:center;height:100%;background:var(--green-xpale);"><i class="fas fa-box-open" style="font-size:2.5rem;opacity:0.2;color:var(--green);"></i></div>';
+
+    return '<div class="package-card">' +
+      '<div class="package-card-img">' + img +
+      '<span class="pkg-badge pkg-badge-tier">' + pkg.tier_display + '</span>' +
+      '</div>' +
+      '<div class="package-card-body">' +
+      '<h3 class="package-name">' + pkg.name + '</h3>' +
+      '<p class="package-desc">' + (pkg.description || '') + '</p>' +
+      '<div class="package-price-row">' +
+      '<span class="package-price">&#x20A6;' + parseFloat(pkg.price).toLocaleString() + '</span>' +
+      '</div>' +
+      '<a href="/packages/' + pkg.slug + '/" class="btn btn-primary btn-block">Get This Package</a>' +
+      '</div></div>';
+  }).join('');
+}
+
+function restartFlow() {
+  Object.keys(answers).forEach(function(k) { delete answers[k]; });
+  document.querySelectorAll('.flow-step').forEach(function(s) { s.classList.remove('active'); });
+  document.querySelectorAll('.flow-dot').forEach(function(d) { d.classList.remove('active', 'done'); });
+  document.getElementById('step0').classList.add('active');
+  document.getElementById('dot0').classList.add('active');
+  document.getElementById('flowSection').style.display = 'block';
+  document.getElementById('resultsSection').style.display = 'none';
+}
+</script>
 {% endblock %}

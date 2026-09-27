@@ -35,6 +35,7 @@ def home(request):
 
 
 def packages(request):
+    import json
     tier   = request.GET.get('tier', '')
     gender = request.GET.get('gender', '')
     pkgs   = BTSPackage.objects.filter(is_active=True)
@@ -42,10 +43,27 @@ def packages(request):
         pkgs = pkgs.filter(budget_tier=tier)
     if gender:
         pkgs = pkgs.filter(gender__in=[gender, 'both'])
+
+    # Serialize packages for JS quiz flow
+    packages_data = []
+    for p in BTSPackage.objects.filter(is_active=True):
+        packages_data.append({
+            'id':           p.id,
+            'name':         p.name,
+            'slug':         p.slug,
+            'description':  p.description or '',
+            'price':        str(p.price),
+            'budget_tier':  p.budget_tier,
+            'tier_display': p.get_budget_tier_display(),
+            'gender':       p.gender,
+            'cover_image':  p.cover_image.url if p.cover_image else '',
+        })
+
     return render(request, 'store/packages.html', {
         'packages':      pkgs,
         'active_tier':   tier,
         'active_gender': gender,
+        'packages_json': json.dumps(packages_data),
     })
 
 
@@ -289,25 +307,8 @@ def checkout(request):
                 promo = PromoCode.objects.get(code=promo_code)
                 if promo.is_valid:
                     if not (request.user.is_authenticated and promo.used_by.filter(pk=request.user.pk).exists()):
-                        if promo.applies_to_product:
-                            # Promo is for a specific product
-                            # Check if that product exists in any package in the cart
-                            product_in_cart = False
-                            for cart_item in cart.items.all():
-                                if cart_item.product and cart_item.product == promo.applies_to_product:
-                                    product_in_cart = True
-                                    break
-                                if cart_item.package:
-                                    pkg_product_ids = cart_item.package.package_items.values_list('product_id', flat=True)
-                                    if promo.applies_to_product.id in pkg_product_ids:
-                                        product_in_cart = True
-                                        break
-                            if product_in_cart:
-                                promo_discount = promo.calculate_discount(int(cart.subtotal))
-                                applied_promo  = promo
-                        else:
-                            promo_discount = promo.calculate_discount(int(cart.subtotal))
-                            applied_promo  = promo
+                        promo_discount = promo.calculate_discount(int(cart.subtotal))
+                        applied_promo  = promo
             except Exception:
                 pass
 
