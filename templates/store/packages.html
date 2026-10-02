@@ -216,13 +216,15 @@ function showResults() {
   const budget  = answers[3].value;
   const budgetLabel = answers[3].label;
 
-  // Filter packages
-  let filtered = allPackages.filter(function(p) {
-    // Gender match
+  // Filter by gender and tier first
+  var byGenderTier = allPackages.filter(function(p) {
     if (p.gender !== gender && p.gender !== 'both') return false;
-    // Tier match
     if (p.budget_tier !== tier) return false;
-    // Budget match
+    return true;
+  });
+
+  // Try to filter by budget
+  var filtered = byGenderTier.filter(function(p) {
     var price = parseFloat(p.price);
     if (budget === '0-15000' && price > 15000) return false;
     if (budget === '15000-30000' && (price < 15000 || price > 30000)) return false;
@@ -230,6 +232,21 @@ function showResults() {
     if (budget === '50000+' && price < 50000) return false;
     return true;
   });
+
+  var budgetFallback = false;
+  // If no packages in budget range, show all gender+tier packages
+  if (filtered.length === 0 && byGenderTier.length > 0) {
+    filtered = byGenderTier;
+    budgetFallback = true;
+  }
+
+  // If still nothing, show all packages matching gender only
+  if (filtered.length === 0) {
+    filtered = allPackages.filter(function(p) {
+      return p.gender === gender || p.gender === 'both';
+    });
+    budgetFallback = true;
+  }
 
   // Sort cheapest to highest
   filtered.sort(function(a, b) { return parseFloat(a.price) - parseFloat(b.price); });
@@ -240,9 +257,15 @@ function showResults() {
     return '<span style="background:var(--green-xpale);color:var(--green);padding:4px 12px;border-radius:var(--radius-full);font-size:0.78rem;font-weight:600;">' + a.label + '</span>';
   }).join('');
 
-  document.getElementById('resultsSubtitle').textContent = filtered.length > 0
-    ? filtered.length + ' package' + (filtered.length > 1 ? 's' : '') + ' found for you'
-    : 'No packages found for this combination yet';
+  var subtitle = '';
+  if (filtered.length === 0) {
+    subtitle = 'No packages found for this combination yet';
+  } else if (budgetFallback) {
+    subtitle = 'No packages in that exact budget range yet — here are all available packages for you, sorted by price';
+  } else {
+    subtitle = filtered.length + ' package' + (filtered.length > 1 ? 's' : '') + ' found for you';
+  }
+  document.getElementById('resultsSubtitle').textContent = subtitle;
 
   // Render packages
   var grid = document.getElementById('resultsGrid');
